@@ -26,6 +26,8 @@ const ROOT = resolve(__dirname, "..");
 const CURSOR_HOME = resolve(homedir(), ".cursor");
 const CURSOR_SKILLS = resolve(CURSOR_HOME, "skills");
 const CURSOR_RULES = resolve(CURSOR_HOME, "rules");
+const CURSOR_COMMANDS = resolve(CURSOR_HOME, "commands");
+const CURSOR_AGENTS = resolve(CURSOR_HOME, "agents");
 
 // Deployed skills live outside the plugin dir, so relative ../../guide links break.
 // Prepend an absolute plugin-root pointer right after the frontmatter.
@@ -59,6 +61,33 @@ function main() {
     for (const rule of readdirSync(rulesDir).filter((f) => f.endsWith(".mdc"))) {
       cpSync(resolve(rulesDir, rule), resolve(CURSOR_RULES, rule));
       console.log(`[deploy] ✓ rule: ${rule}`);
+      deployed++;
+    }
+  }
+
+  // Commands (slash commands): Cursor reads these from ~/.cursor/commands/, NOT from the
+  // plugin dir's .cursor-plugin manifest — a local (non-marketplace) install must copy them.
+  // Same pluginRoot pointer as skills, so `scripts/`, `guide/`, and agent references resolve.
+  console.log("");
+  mkdirSync(CURSOR_COMMANDS, { recursive: true });
+  const commandsDir = resolve(ROOT, "commands");
+  if (existsSync(commandsDir)) {
+    for (const cmd of readdirSync(commandsDir).filter((f) => f.endsWith(".md"))) {
+      writeFileSync(resolve(CURSOR_COMMANDS, cmd), withPluginRootPointer(readFileSync(resolve(commandsDir, cmd), "utf8")));
+      console.log(`[deploy] ✓ command: /${cmd.replace(/\.md$/, "")}`);
+      deployed++;
+    }
+  }
+
+  // Agents (subagents): deployed to ~/.cursor/agents/ so the orchestrator/planner/builder/judge
+  // are dispatchable by name from any project. Same pointer injection for their guide refs.
+  console.log("");
+  mkdirSync(CURSOR_AGENTS, { recursive: true });
+  const agentsDir = resolve(ROOT, "agents");
+  if (existsSync(agentsDir)) {
+    for (const ag of readdirSync(agentsDir).filter((f) => f.endsWith(".md"))) {
+      writeFileSync(resolve(CURSOR_AGENTS, ag), withPluginRootPointer(readFileSync(resolve(agentsDir, ag), "utf8")));
+      console.log(`[deploy] ✓ agent: ${ag.replace(/\.md$/, "")}`);
       deployed++;
     }
   }

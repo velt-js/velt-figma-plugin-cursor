@@ -89,4 +89,5 @@ async function main() {
   console.log(`  The Judge MUST produce a disposition for every one (verdict-gate enforces coverage — a sample is INCOMPLETE, not PASS).`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });
+import { pathToFileURL } from "node:url";
+if (import.meta.url === pathToFileURL(process.argv[1]).href) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });

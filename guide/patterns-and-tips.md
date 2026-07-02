@@ -48,9 +48,9 @@ One place to change your brand; Velt + your app stay in sync.
 
 **Reveal actions only on hover.** Hide the kebab/options/reaction icons; show on hover. Velt already wires this on `.velt-thread-card--container:hover`; you can also force it with `.velt-thread-card--show-actions`.
 ```css
-.hw-comment-actions { opacity: 0; transition: opacity .12s ease; }
-.hw-comment:hover .hw-comment-actions,
-.hw-comment-actions:focus-within { opacity: 1; }
+.vc-comment-actions { opacity: 0; transition: opacity .12s ease; }
+.vc-comment:hover .vc-comment-actions,
+.vc-comment-actions:focus-within { opacity: 1; }
 ```
 
 **Reaction tool when empty vs reaction panel when populated.** The pin carries `velt-reaction-pin--no-reactions` only when count is 0. Use it (and `:has(app-reaction-pin)`) to swap/position the reaction UI by count.

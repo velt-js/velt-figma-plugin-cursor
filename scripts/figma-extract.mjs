@@ -17,7 +17,7 @@
 
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import os from "node:os";
 import { execFileSync } from "node:child_process";
 
@@ -394,6 +394,6 @@ async function main() {
 }
 
 // run as CLI only — importable for unit tests (golden icon-resolver calibration)
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });
 }

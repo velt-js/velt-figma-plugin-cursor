@@ -43,9 +43,62 @@
 // Exit codes: 0 = PASS, 2 = FAIL, 3 = INCOMPLETE, 4 = STOPPED (bounds/human-checkpoint), 1 = usage/error.
 
 import { promises as fs } from "node:fs";
+import { pathToFileURL } from "node:url";
+import path from "node:path";
 
 const STATUS_EXIT = { PASS: 0, FAIL: 2, INCOMPLETE: 3, STOPPED: 4 };
 const TERMINAL = new Set(["BLOCKED", "GAP", "STUCK"]);
+
+// ---- artifact audit (fs layer — kept OUT of the pure verdict function so golden calibration
+// can keep calling verdictGateBlocks with plain objects). The gate previously trusted every
+// value in block-report.json as the Judge transcribed it; this audit makes a PASS require
+// on-disk, script-written evidence:
+//   * capturePng/framePng must EXIST (a report naming a file that isn't there is INCOMPLETE);
+//   * when the entry was assembled by report-block.mjs (entry.artifacts), the report's numbers
+//     must MATCH the persisted artifact JSONs (a hand-edited report is INCOMPLETE);
+//   * when loop-state.json stamps the block's startedAt, the capture's mtime must be ≥ it
+//     (a stale screenshot from a prior attempt can't back this block);
+//   * a terminal GAP/BLOCKED/STUCK must carry an `evidence` path that EXISTS (a one-word note
+//     alone no longer accounts a block — "declare a gap to escape" is structurally closed).
+export async function auditReportArtifacts(blocks, report, phaseDir) {
+  const problems = [];
+  const reps = (report && report.blocks) || {};
+  const ids = new Set(((blocks && blocks.blocks) || []).map((b) => b.id));
+  const resolve = (p) => (path.isAbsolute(p) ? p : path.join(phaseDir, p));
+  const stat = (p) => fs.stat(resolve(p)).catch(() => null);
+  const loopState = JSON.parse(await fs.readFile(path.join(phaseDir, "loop-state.json"), "utf8").catch(() => "null"));
+
+  for (const [id, r] of Object.entries(reps)) {
+    if (!ids.has(id)) continue; // extra entries are the pure gate's concern, not the audit's
+    const disp = typeof r.disposition === "string" ? r.disposition.toUpperCase() : null;
+    if (disp && TERMINAL.has(disp)) {
+      if (!r.evidence || typeof r.evidence !== "string") { problems.push(`block '${id}' ${disp}: no \`evidence\` file recorded — a note alone cannot account a block (use report-block.mjs account / block-iter.mjs)`); continue; }
+      if (!(await stat(r.evidence))) problems.push(`block '${id}' ${disp}: evidence file missing on disk: ${r.evidence}`);
+      continue;
+    }
+    if (!r.built) continue; // unbuilt → the pure gate already yields INCOMPLETE
+    for (const [k, what] of [["capturePng", "capture PNG"], ["framePng", "frame PNG"]]) {
+      if (typeof r[k] !== "string") continue; // shape errors are the pure gate's job
+      const st = await stat(r[k]);
+      if (!st) { problems.push(`block '${id}': ${what} missing on disk: ${r[k]}`); continue; }
+      const startedAt = loopState?.blocks?.[id]?.startedAt;
+      if (k === "capturePng" && startedAt && st.mtimeMs < new Date(startedAt).getTime()) problems.push(`block '${id}': capture PNG is STALE (mtime predates the block's startedAt ${startedAt}) — re-capture this block`);
+    }
+    if (r.artifacts) {
+      const vis = r.artifacts.visual && JSON.parse(await fs.readFile(resolve(r.artifacts.visual), "utf8").catch(() => "null"));
+      if (!vis) problems.push(`block '${id}': visual artifact missing/unreadable: ${r.artifacts.visual}`);
+      else if (vis.diffPct !== r.visualDiff?.diffPct || (vis.regions || []).length !== (r.visualDiff?.regions || []).length)
+        problems.push(`block '${id}': report visualDiff does not match the persisted artifact ${r.artifacts.visual} — the report was edited by hand`);
+      const del = r.artifacts.delta && JSON.parse(await fs.readFile(resolve(r.artifacts.delta), "utf8").catch(() => "null"));
+      if (del) { const ok = typeof del.ok === "boolean" ? del.ok : del.verdict === "PASS"; if (ok !== r.deltaCompare?.ok) problems.push(`block '${id}': report deltaCompare.ok does not match artifact ${r.artifacts.delta}`); }
+      const sta = r.artifacts.stability && JSON.parse(await fs.readFile(resolve(r.artifacts.stability), "utf8").catch(() => "null"));
+      if (sta && sta.ok !== r.stability?.ok) problems.push(`block '${id}': report stability.ok does not match artifact ${r.artifacts.stability}`);
+    } else {
+      problems.push(`block '${id}': entry was not assembled by report-block.mjs (no \`artifacts\`) — hand-written report entries are not accepted as evidence`);
+    }
+  }
+  return problems;
+}
 
 export function verdictGateBlocks(blocks, report, { maxRegionFill = 0.05 } = {}) {
   const missing = [];   // coverage / artifact gaps ⇒ INCOMPLETE (cannot terminate)
@@ -118,6 +171,11 @@ async function main() {
   const blocks = JSON.parse(await fs.readFile(bp, "utf8"));
   const report = JSON.parse(await fs.readFile(rp, "utf8"));
   const r = verdictGateBlocks(blocks, report, { maxRegionFill: fill });
+  // artifact audit: a verdict is only as good as its on-disk evidence. Audit failures force
+  // INCOMPLETE (evidence problem = not measured), except a FAIL stays FAIL (already failing).
+  const audit = a.includes("--no-artifact-audit") ? [] : await auditReportArtifacts(blocks, report, path.dirname(path.resolve(rp)));
+  if (audit.length && r.verdict !== "FAIL") { r.missing.push(...audit); r.verdict = "INCOMPLETE"; r.note = "artifact audit failed — evidence on disk doesn't back the report"; }
+  else if (audit.length) r.missing.push(...audit);
   console.log(`VERDICT: ${r.verdict}  (block coverage ${r.coverage}% of ${(blocks.blocks || []).length})`);
   if (r.missing.length) { console.log("  INCOMPLETE — not built / not driven / artifacts missing:"); for (const m of r.missing.slice(0, 24)) console.log("    · " + m); }
   if (r.failures.length) { console.log("  FAIL — built but does not match:"); for (const f of r.failures.slice(0, 24)) console.log("    · " + f); }
@@ -127,4 +185,4 @@ async function main() {
   process.exit(STATUS_EXIT[r.verdict]);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });
+if (import.meta.url === pathToFileURL(process.argv[1]).href) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });

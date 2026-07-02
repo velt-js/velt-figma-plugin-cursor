@@ -9,11 +9,10 @@
       "provenance": "reference/wireframe-components.md (appendix tags + accessor tree) + reference/component-definitions.md (VeltCommentsSidebar intent) + reference/css-classes.md",
       "paddingResets": [
         ".velt-sidebar-container",
-        ".app-comment-sidebar-list",
         ".velt-comment-dialog--page-mode-composer",
         ".velt-comments-sidebar-list-wireframe .velt-comment-dialog"
       ],
-      "_paddingResetsNote": "M1: these Velt-default wrappers each carry their own horizontal padding which COMPOUNDS with our .hw-* sections. Zero them (padding:0 !important) and apply the design's single gutter once at the panel; derive inner spacing from designSpec gaps (R22).",
+      "_paddingResetsNote": "These VELT-default wrappers carry their own padding which COMPOUNDS with your custom sections (any consistent class prefix; docs use .vc-*). Zero them (padding:0 !important) and apply the design's single gutter once at the panel; derive inner spacing from designSpec gaps (R22). HOST-app wrappers vary per project and are NEVER listed here — LAYER_PROBE discovers them live per design.",
       "layout": {
         "Panel": {
           "stack": [

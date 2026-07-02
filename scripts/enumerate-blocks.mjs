@@ -20,7 +20,7 @@
 // geometry comes from its OWN frame box (no fixed 354px width) and its state identity from its OWN
 // label/name (no fixed taxonomy). A Loop of sidebar, dialog, or notification frames enumerates the
 // same way. If a node has no recognizable State/Flows groups it falls back to LEGACY flat mode
-// (every same-width top-level frame = a block) and warns — so the older flat Harvey designs still work.
+// (every same-width top-level frame = a block) and warns — so older flat-layout designs still work.
 //
 // Deterministic skeleton only: id, figma node, exported frame PNG, the label, a best-guess state slug
 // + drive/fixture/liveSelector DEFAULTS (comments-surface HINTS, applied best-effort). The Planner
@@ -34,6 +34,7 @@
 // Token: FIGMA_TOKEN env, else the OS keychain entry used by figma-extract (never the repo .env).
 
 import { promises as fs } from "node:fs";
+import { pathToFileURL } from "node:url";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 
@@ -180,7 +181,7 @@ export function enumerateBlocks(rootDoc, { width, scale = 2, forceWidth } = {}) 
       flowStep: r.role === "flow" ? r.label : null,
       surface: null,                         // Planner infers/fills (no hardcoded "sidebar")
       state, drive,
-      liveSelector: null,                    // Planner resolves against the live DOM (no Harvey defaults)
+      liveSelector: null,                    // Planner resolves against the live DOM (no design-specific defaults)
       // frameBox = this frame's own box on the Figma canvas (device-independent px). Geometry is
       // DERIVED here — never a hardcoded width.
       frameBox: { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) },
@@ -226,6 +227,8 @@ async function main() {
   const scale = +argv("--scale", "2");
   const forceWidth = a.includes("--width") ? +argv("--width", "0") : undefined;
   const outDir = path.resolve(argv("--out", "."));
+  const maxBlocks = +argv("--max-blocks", "8");
+  const allowLarge = a.includes("--allow-large");
   await fs.mkdir(outDir, { recursive: true });
 
   let rootDoc, fileKey;
@@ -239,7 +242,7 @@ async function main() {
     if (!rootDoc) { console.error(`✗ node ${id} not found in ${fileKey}`); process.exit(1); }
 
     const result = enumerateBlocks(rootDoc, { scale, forceWidth });
-    guardEmpty(result);
+    guardEmpty(result, { maxBlocks, allowLarge });
     const images = await exportFrames(fileKey, result.blocks.map((b) => b.figmaNodeId), scale, token, outDir);
     for (const b of result.blocks) {
       const url = images[b.figmaNodeId];
@@ -256,7 +259,7 @@ async function main() {
     const j = JSON.parse(await fs.readFile(nodesPath, "utf8"));
     rootDoc = (j.nodes?.[id]?.document) || j.document || j;
     const result = enumerateBlocks(rootDoc, { scale, forceWidth });
-    guardEmpty(result);
+    guardEmpty(result, { maxBlocks, allowLarge });
     result.source = `nodes:${path.basename(nodesPath)}`; result.nodeId = id;
     await fs.writeFile(path.join(outDir, "blocks.json"), JSON.stringify(result, null, 2) + "\n");
     report(result, outDir);
@@ -265,12 +268,21 @@ async function main() {
     process.exit(1);
   }
 }
-function guardEmpty(result) {
+function guardEmpty(result, { maxBlocks = 8, allowLarge = false } = {}) {
   if (result.count === 0) {
     console.error("✗ no blocks found. Expected a 'Loop' node containing 'State' and/or 'Flows' groups of mockup frames,");
     console.error("  or a flat node with same-width state frames. Confirm the passed node is a Loop (or point at one).");
     process.exit(2);
   }
+  // HARD halt on an oversized phase (P1-7): an accidental 16-block Loop is a multi-hour/token
+  // marathon. The cap is mechanical — the old prompt-only "warn at ~8" was never enforced.
+  if (result.count > maxBlocks && !allowLarge) {
+    console.error(`✗ ${result.count} blocks exceeds the per-phase cap of ${maxBlocks}. A phase should be ONE bounded Loop.`);
+    console.error(`  Fix: split the Loop in Figma into smaller Loops (e.g. 'Loop 1: composer states', 'Loop 2: thread states')`);
+    console.error(`  and run them as separate phases — or override deliberately with --allow-large [--max-blocks N].`);
+    process.exit(3);
+  }
+  if (result.count > maxBlocks) console.warn(`⚠ ${result.count} blocks > cap ${maxBlocks} — proceeding under --allow-large; expect a long phase.`);
   if (result.mode === "legacy")
     console.warn("⚠ no State/Flows groups found — using LEGACY flat mode (every same-width top-level frame = a block).");
 }
@@ -281,4 +293,4 @@ function report(result, outDir) {
   console.log("  The verdict gate requires a PASS for EVERY block — a run that builds fewer is INCOMPLETE.");
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });
+if (import.meta.url === pathToFileURL(process.argv[1]).href) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });

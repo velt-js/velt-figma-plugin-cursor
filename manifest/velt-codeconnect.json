@@ -1,9 +1,9 @@
 {
   "version": {
-    "hash": "575046e79c29",
-    "sha": "8c5117c",
-    "isoTime": "2026-06-25T22:14:38.838Z",
-    "totalSlots": 770,
+    "hash": "e4c9201daba7",
+    "sha": "0453295",
+    "isoTime": "2026-07-02T08:33:54.826Z",
+    "totalSlots": 790,
     "coveredSlots": 61,
     "components": 3
   },
@@ -211,7 +211,6 @@
       "variants": [],
       "paddingResets": [
         ".velt-sidebar-container",
-        ".app-comment-sidebar-list",
         ".velt-comment-dialog--page-mode-composer",
         ".velt-comments-sidebar-list-wireframe .velt-comment-dialog"
       ],

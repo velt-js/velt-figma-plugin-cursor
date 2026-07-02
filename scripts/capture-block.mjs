@@ -2,7 +2,7 @@
 // capture-block.mjs — REFERENCE capture adapter: a device-resolution PNG element screenshot of one
 // block's live state, for visual-diff. This is the capture path the redesign requires — the Chrome
 // MCP `computer` screenshot returns a ~1x lossy JPEG (too noisy for pixel work); a DPR-2 element
-// screenshot aligns 1:1 with the @2x Figma frame (354px → 708px). See BLOCK-BY-BLOCK-REDESIGN-PLAN.md §0b.
+// screenshot aligns 1:1 with the @2x Figma frame (frame-width × 2). See BLOCK-BY-BLOCK-REDESIGN-PLAN.md §0b.
 //
 // Capture is the one step that can't be pure-node (it drives a browser). This adapter uses
 // playwright-core via DYNAMIC import so the repo's scripts stay dependency-free at the validate gate;
@@ -21,6 +21,7 @@
 // playwright-core resolution: $PLAYWRIGHT_CORE, else a normal import, else a clear install hint.
 
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 async function loadChromium() {
   const candidates = [process.env.PLAYWRIGHT_CORE, "playwright-core",
@@ -78,7 +79,7 @@ async function main() {
 
     // RESET state before driving this block — so a prior block's open menu / typed composer / hover
     // doesn't leak into this capture (§0d fix #b). Surface-agnostic: Escape closes menus; clear ANY
-    // focused/visible contenteditable (not a Harvey-specific selector); blur; dismiss overlays.
+    // focused/visible contenteditable (not a design-specific selector); blur; dismiss overlays.
     await page.keyboard.press("Escape").catch(() => {});
     await page.evaluate(() => {
       for (const ed of document.querySelectorAll("[contenteditable]:not([contenteditable='false'])")) {
@@ -104,4 +105,4 @@ async function main() {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });
+if (import.meta.url === pathToFileURL(process.argv[1]).href) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });

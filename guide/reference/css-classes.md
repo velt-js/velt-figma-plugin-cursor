@@ -1090,7 +1090,7 @@ Newly verified conditional classes plus corrections to commonly-misremembered na
 
 ## base element selectors (always-on, confirmed by live-DOM inspection)
 
-The classes above are mostly **stateful** (applied under a condition). These are the stable, **always-rendered** Velt element classes the Judge targets for per-element measurement — they are curated into the manifest's `cssClasses` so the Judge has a design-agnostic selector for each measured leaf (independent of whatever the Builder names its `.hw-*` wrappers). They carry no state condition; they are present whenever the element renders. Confirmed against the live DOM (`shadowDom={false}`).
+The classes above are mostly **stateful** (applied under a condition). These are the stable, **always-rendered** Velt element classes the Judge targets for per-element measurement — they are curated into the manifest's `cssClasses` so the Judge has a design-agnostic selector for each measured leaf (independent of whatever the Builder names its `.vc-*` wrappers). They carry no state condition; they are present whenever the element renders. Confirmed against the live DOM (`shadowDom={false}`).
 
 **thread-card**
 - `velt-thread-card--name` — applied when the thread card renders the author name

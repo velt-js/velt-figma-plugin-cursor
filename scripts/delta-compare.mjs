@@ -5,10 +5,10 @@
 // No aggregate score (Design2Code) — a model can't hide a failure behind an average.
 //
 // The SAME functions power two consumers, so the logic is written once:
-//   * the Judge injects `BROWSER_PROBE` via the browser tool (CDP Runtime.evaluate) to read live
+//   * the Judge injects `BROWSER_PROBE` via the host browser tool (Chrome MCP javascript_tool / Cursor CDP Runtime.evaluate) to read live
 //     getComputedStyle/getBoundingClientRect and produce the delta table in-page;
 //   * golden/ calibration imports compareDecls/verdictOf to prove the engine FAILs a known-bad
-//     render and PASSes a known-good one (vs velt-harvey-demo).
+//     render and PASSes a known-good one (vs the golden fixtures).
 //
 // Tolerances: lengths ±1px, colour ΔE(CIEDE2000) < 2, keywords exact, font-family by family name.
 
@@ -232,7 +232,7 @@ export function reconcilePlan(o = {}) {
   return plan;
 }
 
-// ---- browser probe (built from the SAME functions; injected via the browser tool (CDP Runtime.evaluate)) ----
+// ---- browser probe (built from the SAME functions; injected via the host browser tool) ----
 const READ_PROP = `function readProp(cs, prop){
   const map={background:'backgroundColor','border-radius':'borderRadius','font-family':'fontFamily','font-size':'fontSize','font-weight':'fontWeight','line-height':'lineHeight','letter-spacing':'letterSpacing','flex-direction':'flexDirection','justify-content':'justifyContent','align-items':'alignItems','align-self':'alignSelf'};
   if(prop==='border'){return cs.borderTopWidth+' solid '+cs.borderTopColor;}
@@ -422,7 +422,8 @@ export const STABILITY_PROBE = `(function(SPEC){
 //   spec.json     = array of {name,expected,box?} OR {elements,relations,gaps,tol,surfaceSelector}
 //   rendered.json = array of {present, rendered, box?} aligned to spec.elements
 // Used by golden/ to prove the engine FAILs known-bad styles AND known-bad geometry.
-if (import.meta.url === `file://${process.argv[1]}`) {
+import { pathToFileURL } from "node:url";
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const fs = await import("node:fs/promises");
   const [eF, rF] = process.argv.slice(2);
   if (eF && rF) {

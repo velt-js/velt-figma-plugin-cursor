@@ -10,12 +10,52 @@ Every agent pins a **Claude model** in its frontmatter, and `rules/velt-customiz
 
 | Agent | Model |
 |---|---|
-| `velt-orchestrator` | `claude-sonnet-5-thinking-high` |
-| `velt-planner` | `claude-opus-4-8-thinking-high` (readonly) |
-| `velt-builder` | `claude-opus-4-8-thinking-high` |
-| `velt-judge` | `claude-sonnet-5-thinking-high` (readonly) |
+| `velt-orchestrator` | `claude-fable-5-thinking` |
+| `velt-planner` | `claude-fable-5-thinking` (readonly) |
+| `velt-builder` | `claude-fable-5-thinking` |
+| `velt-judge` | `claude-fable-5-thinking` (readonly) |
+
+If `claude-fable-5-thinking` isn't in your Cursor model picker yet, the rule's fallback applies: newest available Claude thinking model (Fable preferred, then Opus) — never a non-Claude model.
 
 `scripts/validate.mjs` hard-fails if any agent is missing a `model` pin or pins a non-Claude slug.
+
+## Quick setup (plain language)
+
+What you need before starting: **your React app with Velt already working** (comments show up when you run it), **a Figma design** of how you want Velt to look, and **Cursor**.
+
+**1. Install the plugin** — clone this repo anywhere, then from inside it:
+```bash
+npm run all
+```
+This checks the plugin is healthy and copies its skills, rules, commands, and agents into `~/.cursor/` (where Cursor actually reads them). **Fully restart Cursor** afterwards. If you later move this repo or pull updates, run `npm run all` again.
+
+**2. Give it your Figma token** — the plugin reads your design straight from Figma's API, so it needs a personal access token. Create one at figma.com → Settings → Security → Personal access tokens, then store it once (you'll paste it when prompted; it goes in your OS keychain, never in a file):
+```bash
+node scripts/figma-extract.mjs token set
+```
+
+**3. Install the one screenshot dependency:**
+```bash
+npm i -g playwright-core
+```
+
+**4. Start a run** — open **your app's repo** in Cursor (not this plugin repo) and type:
+```
+/velt-customize-run <figma-loop-node-url> --mode "wireframes + primitives" --budget balanced
+```
+- The URL must point at one **Loop** node in your Figma file (right-click the Loop → Copy link), not the whole file. Keep a Loop to 8 frames or fewer — bigger designs are split into several Loops, run one at a time.
+- `--mode` is how it's allowed to build: `strictly wireframe`, `strictly primitives`, `wireframes + primitives`, or `freeform`. Leave it out and the plugin will ask you, with a recommendation.
+- `--budget` controls how long it may spend per block: `strict`, `balanced`, or `thorough`.
+
+**5. Watch it work** — in a terminal:
+```bash
+node /path/to/velt-figma-plugin-cursor/scripts/progress.mjs --watch
+```
+New lines appearing = it's working. First it checks everything is ready (and tells you exactly what to fix if not), shows you the list of design frames it found, plans, then builds and verifies one frame at a time. At the end you get a handoff report: what matched, what got stuck, and anything the Velt SDK genuinely can't do yet.
+
+**6. Finish or fix** — happy? Say **"phase N complete"** (it saves what it learned for the next Loop). See a mismatch? Run `/velt-customize-fix "<describe what's wrong>"`. Start over? `/velt-customize-clear`.
+
+---
 
 ## Install (local)
 
@@ -23,7 +63,7 @@ Every agent pins a **Claude model** in its frontmatter, and `rules/velt-customiz
 npm run all        # check-guide + validate + deploy skills/rules to ~/.cursor/
 ```
 
-Cursor loads **skills from `~/.cursor/skills/` and rules from `~/.cursor/rules/`**, not from the plugin directory — `npm run deploy` copies them there (skills get an absolute plugin-root pointer so `guide/` references resolve). Restart / reload Cursor afterwards. Commands and agents load from the plugin's `commands/` and `agents/` dirs via `.cursor-plugin/plugin.json`.
+Cursor loads **skills, rules, commands, and agents from `~/.cursor/`** (`skills/`, `rules/`, `commands/`, `agents/`), not from the plugin directory — `npm run deploy` copies all four there (skills/commands/agents get an absolute plugin-root pointer so `guide/`/`scripts/` references resolve; re-run deploy if you move the plugin repo). Restart / reload Cursor afterwards.
 
 Run a customization from the target app's directory with:
 

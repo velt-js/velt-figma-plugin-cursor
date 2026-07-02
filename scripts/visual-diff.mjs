@@ -3,7 +3,7 @@
 // to a device-res live screenshot PNG and returns: diffPct, changedPixels, and the bounding-box
 // REGIONS that differ (so the Builder gets "WHAT + WHERE differs", not just a number).
 //
-// WHY chrome-only (measured — see BLOCK-BY-BLOCK-REDESIGN-PLAN.md §0b): the 354px width-match makes
+// WHY chrome-only (measured — see BLOCK-BY-BLOCK-REDESIGN-PLAN.md §0b): the frame-width match makes
 // borders/icons/avatars/layout align at ~0%, but TEXT has a ~4% POSITIONAL floor (Figma vs Chrome
 // glyph placement) that thresholds can't remove. So we MASK every text box (the caller supplies them
 // from the designSpec / live DOM) and diff chrome only. Text/colour/size exactness is owned by
@@ -18,6 +18,7 @@
 //   both images, top-left aligned (per-element alignment is the caller's job — pass cropped blocks).
 
 import { promises as fs } from "node:fs";
+import { pathToFileURL } from "node:url";
 import zlib from "node:zlib";
 import path from "node:path";
 
@@ -174,7 +175,7 @@ export function visualDiff(refImg, liveImg, { masks = [], threshold = 0.1, cell 
 async function main() {
   const [refP, liveP, ...rest] = process.argv.slice(2);
   if (!refP || !liveP) { console.error("usage: visual-diff.mjs <refPng> <livePng> [--mask x,y,w,h ...] [--masks-json f] [--out diff.png] [--threshold 0.1] [--scale 2]"); process.exit(1); }
-  const masks = []; let outP = null, threshold = 0.1, cell = 24, scale = 2, minChanged = 0, minFill = 0, textSpecPath = null, maskPad = 3, cropRef = null, cropLive = null, maskFrame = null;
+  const masks = []; let outP = null, jsonOutP = null, threshold = 0.1, cell = 24, scale = 2, minChanged = 0, minFill = 0, textSpecPath = null, maskPad = 3, cropRef = null, cropLive = null, maskFrame = null;
   for (let i = 0; i < rest.length; i++) {
     if (rest[i] === "--mask") masks.push(rest[++i].split(",").map(Number));
     else if (rest[i] === "--masks-json") masks.push(...JSON.parse(await fs.readFile(rest[++i], "utf8")));
@@ -184,6 +185,7 @@ async function main() {
     else if (rest[i] === "--crop-ref") cropRef = rest[++i].split(",").map(Number);   // x,y,w,h device px — scope the frame to the block's element region
     else if (rest[i] === "--crop-live") cropLive = rest[++i].split(",").map(Number); // x,y,w,h device px — scope the live capture (use when the live element sits at a different y than the frame)
     else if (rest[i] === "--out") outP = rest[++i];
+    else if (rest[i] === "--json-out") jsonOutP = rest[++i];   // persist the result JSON — report-block.mjs assembles from THIS file, never from a transcript
     else if (rest[i] === "--threshold") threshold = +rest[++i];
     else if (rest[i] === "--cell") cell = +rest[++i];
     else if (rest[i] === "--scale") scale = +rest[++i];
@@ -197,7 +199,9 @@ async function main() {
   const r = visualDiff(refImg, liveImg, { masks, threshold, cell, scale, minChanged, minFill });
   if (outP) await fs.writeFile(outP, encodePNG(r._w, r._h, r._diff));
   const { _diff, _w, _h, ...pub } = r;
-  console.log(JSON.stringify({ ref: path.basename(refP), live: path.basename(liveP), masks: masks.length, ...pub, diffMask: outP || null }, null, 2));
+  const result = { ref: path.basename(refP), live: path.basename(liveP), masks: masks.length, ...pub, diffMask: outP || null, generatedAt: new Date().toISOString() };
+  if (jsonOutP) await fs.writeFile(jsonOutP, JSON.stringify(result, null, 2));
+  console.log(JSON.stringify(result, null, 2));
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });
+if (import.meta.url === pathToFileURL(process.argv[1]).href) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });
