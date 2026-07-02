@@ -1,0 +1,28 @@
+{
+  "design": "design-1-review-card-dialog",
+  "surface": "VeltCommentDialog",
+  "layer": "wireframe",
+  "expectedVerdict": "PASS",
+  "rootWireframe": "velt-comment-dialog-wireframe",
+  "variants": ["dialog", "sidebar"],
+  "identifiers": [
+    "velt-comment-dialog-wireframe",
+    "velt-comment-dialog-header-wireframe",
+    "velt-comment-dialog-status-wireframe",
+    "velt-comment-dialog-body-wireframe",
+    "velt-comment-dialog-threads-wireframe",
+    "velt-comment-dialog-thread-card-wireframe",
+    "velt-comment-dialog-thread-card-avatar-wireframe",
+    "velt-comment-dialog-thread-card-name-wireframe",
+    "velt-comment-dialog-thread-card-message-wireframe",
+    "velt-comment-dialog-composer-wireframe",
+    "annotation.status.id"
+  ],
+  "goals": [
+    { "kind": "visual", "id": "header-review-pill", "criterion": "indigo header with REVIEW label + uppercase status pill top-left", "states": ["default", "resolved"] },
+    { "kind": "visual", "id": "thread-card-accent", "criterion": "thread card with indigo left-accent: avatar/name/time/message/reactions", "states": ["default"] },
+    { "kind": "visual", "id": "renders-in-sidebar", "criterion": "same card renders in sidebar rows (variant=sidebar)", "states": ["default"] },
+    { "kind": "behavior", "id": "thread-behaviors", "criterion": "reply, status change, resolve all still work" },
+    { "kind": "rules", "id": "clean-scan", "criterion": "one VeltWireframe; ThreadCard nested in Body->Threads; no interactive React in wireframe; verified identifiers" }
+  ]
+}

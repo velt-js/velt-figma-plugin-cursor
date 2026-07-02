@@ -1,0 +1,15 @@
+{
+  "name": "velt-customize-cursor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Native Cursor plugin: Figma -> Velt UI customization via a Planner -> Builder -> Judge block loop, mechanically verified. All agents pinned to Claude models.",
+  "type": "module",
+  "scripts": {
+    "validate": "node scripts/validate.mjs",
+    "check-guide": "node scripts/check-guide.mjs",
+    "deploy": "node scripts/deploy-skills.mjs",
+    "golden": "node golden/run-golden.mjs",
+    "all": "npm run check-guide && npm run validate && npm run deploy"
+  },
+  "license": "MIT"
+}

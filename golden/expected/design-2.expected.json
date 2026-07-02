@@ -1,0 +1,21 @@
+{
+  "design": "design-2-map-marker-pins",
+  "surface": "VeltCommentPin",
+  "layer": "wireframe",
+  "expectedVerdict": "PASS",
+  "rootWireframe": "velt-comment-pin-wireframe",
+  "statusIds": ["OPEN", "IN_PROGRESS", "RESOLVED"],
+  "identifiers": [
+    "velt-comment-pin-wireframe",
+    "velt-comment-pin-index-wireframe",
+    "annotation.status.id",
+    "annotation.annotationIndex"
+  ],
+  "goals": [
+    { "kind": "visual", "id": "rounded-square-badge", "criterion": "pins are rounded-square badges", "states": ["default"] },
+    { "kind": "visual", "id": "color-by-status", "criterion": "badge color set by status via multi-branch velt-if on {annotation.status.id}", "states": ["OPEN", "IN_PROGRESS", "RESOLVED"] },
+    { "kind": "visual", "id": "number-via-velt-data", "criterion": "badge shows placement number via velt-data field=annotation.annotationIndex", "states": ["default"] },
+    { "kind": "behavior", "id": "status-recolor", "criterion": "changing status recolors the badge" },
+    { "kind": "rules", "id": "clean-scan", "criterion": "inline styles only on shadowed pin; real status ids; number via velt-data; verified identifiers" }
+  ]
+}

@@ -1,0 +1,12 @@
+[
+  { "name": "thread-card", "selector": ".velt-comment-dialog--page-comment:not(.velt-comment-dialog--page-mode-composer)",
+    "expected": { "background": "#ffffff", "border": "1px solid #f1efec", "border-radius": "8px", "padding": "14px 16px" } },
+  { "name": "thread-card-name", "selector": ".velt-thread-card--name",
+    "expected": { "color": "#1a1917", "font-size": "14px", "font-weight": "500", "line-height": "20px" } },
+  { "name": "thread-card-time", "selector": ".velt-thread-card--time",
+    "expected": { "color": "#848079", "font-size": "12px" } },
+  { "name": "filter-trigger-icon", "selector": ".velt-comments-sidebar-minimal-filter-dropdown-trigger svg",
+    "expected": { "width": "16px", "height": "16px" } },
+  { "name": "composer-submit", "selector": ".hw-composer .velt-composer--submit-button",
+    "expected": { "background": "#1a1917", "border-radius": "6px" } }
+]

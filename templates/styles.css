@@ -1,0 +1,21 @@
+/* components/velt/ui-customization/styles.css
+   The ONE Velt stylesheet for the whole app (R8).
+
+   - Theme with --velt-* variables (they cross the shadow boundary — no flag needed).
+   - Class/selector overrides need shadowDom={false} on the surface (R6) AND !important (R9b).
+   - Never display:none a feature — turn it off with a prop (R7).
+   - Dark values go under :root[data-velt-theme="dark"] (R9).
+   Verify identifiers in guide/reference/css-variables.md and css-classes.md — never invent (R10). */
+
+:root {
+  /* Brand theme tokens, e.g.:
+  --velt-accent: #625DF5;
+  --velt-default-font-family: "Inter", sans-serif; */
+}
+
+:root[data-velt-theme="dark"] {
+  /* Dark overrides, e.g. --velt-dark-mode-... */
+}
+
+/* Class overrides (only with shadowDom={false}), e.g.:
+.velt-comment-dialog__header { background: var(--velt-accent) !important; } */

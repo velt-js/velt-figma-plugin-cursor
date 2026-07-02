@@ -1,0 +1,15 @@
+---
+description: Core guardrails for velt-customize runs — no hacks, no invented identifiers, guide/ is the source of truth, mechanical verification only.
+alwaysApply: false
+---
+
+# velt-customize — core guardrails
+
+Apply these whenever working on a Velt UI customization (any `/velt-customize-*` command or `velt-*` agent):
+
+- **R0 — never hack.** No `display:none` to remove features, no DOM surgery, no painting over a structural mismatch. If something can't be done cleanly, it's an SDK gap — report it honestly.
+- **R10 — never invent identifiers.** Every slot, prop, CSS variable, wireframe accessor, and class name must be verified against `guide/reference/*` (or ground truth: official Velt docs → live SDK → running app). The guide's silence is not a verdict — verify, don't guess.
+- **`guide/` is the single source of truth.** Commands, agents, and skills carry zero customization knowledge — read the specific `guide/` file for the task at hand. Do NOT generalize from other rules or look-alike docs.
+- **Scope (R18):** touch only `components/velt/ui-customization/` and the git-ignored `.velt-customize/` phase dir. Never alter the host app's non-Velt UI or default behavior; a genuinely required host change is applied temporarily, verified, reverted, and reported.
+- **Termination is mechanical.** A block/phase is done only when `scripts/verdict-gate-blocks.mjs` exits 0 (or 4 = STOPPED with a handoff) — never on an agent's "looks matched", never on an eyeball pass. INCOMPLETE is not done.
+- **Never enter credentials.** Use the app's existing auth harness; a manual login is a pause-and-ask.

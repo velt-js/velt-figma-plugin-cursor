@@ -1,0 +1,26 @@
+{
+  "name": "velt-customize",
+  "version": "1.0.0",
+  "description": "Figma -> Velt UI customization (comments + notifications) via a Planner -> Builder -> Judge block-by-block loop that mechanically verifies each Figma frame against the live app. Native Cursor plugin; all agents pinned to Claude models.",
+  "author": {
+    "name": "Velt",
+    "email": "support@velt.dev",
+    "url": "https://velt.dev"
+  },
+  "homepage": "https://velt.dev",
+  "repository": "https://github.com/velt-js/velt-figma-plugin-cursor",
+  "license": "MIT",
+  "keywords": [
+    "velt",
+    "figma",
+    "design-to-code",
+    "ui-customization",
+    "comments",
+    "notifications",
+    "react"
+  ],
+  "skills": "./skills/",
+  "rules": "./rules/",
+  "agents": "./agents/",
+  "commands": "./commands/"
+}

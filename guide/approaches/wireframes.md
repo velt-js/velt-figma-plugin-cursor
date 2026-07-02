@@ -1,0 +1,299 @@
+# Approach · Wireframes
+
+**What it is:** keep all of Velt's behavior **and data wiring**, but **supply your own HTML layout** for each piece of the UI. You decompose a Velt component into named **slots** (header, thread card, composer, …) and fill each slot with your markup. **Velt does the heavy lifting** — it fetches the data, loops the threads/comments, and wires each slot's behavior; you only lay out the slots.
+
+**This is the default for structural customization** — prefer it. It's *less* work than primitives precisely because Velt handles the data/looping/wiring for you (with primitives you'd write all of that yourself).
+
+**Use it when:** the design changes the **structure/layout** of Velt's UI (custom header, reordered parts, custom thread‑card, custom empty state) while the features stay the same — and the custom parts are **non‑interactive markup**. (Decision tree Q2.)
+
+**Don't use it when:** you need your **own interactive components** / UI‑library widgets inside the UI (→ [primitives](./primitives.md)), or you only need recoloring (→ [css](./css.md)).
+
+> ⚠️ **Read [§6 The interactivity rule](#6-the-interactivity-rule-the-single-most-important-thing) before you write any wireframe.** It is the #1 source of wireframe bugs.
+
+---
+
+## The model
+
+Two pieces work together:
+
+1. **`<VeltWireframe>`** — an **invisible registry** (`display:none`). You put your wireframe templates inside it. **Use one per app** (extra roots merge first‑with‑content‑wins → conflict‑prone; see R1).
+2. **`Velt…Wireframe` slot components** — e.g. `VeltCommentDialogWireframe`, `VeltCommentsSidebarWireframe`, with nested static slots like `.Header`, `.Body`, `.ThreadCard`, `.Composer`. You fill these with your own markup.
+
+Then, **separately**, you mount the normal feature component (`VeltComments`, `VeltCommentsSidebar`, `VeltCommentDialog`, …). It renders using the template you registered.
+
+So a wireframe doesn't render anything by itself — it **registers a template** that the live feature component picks up.
+
+## Steps
+
+### Step 1 — Register one `<VeltWireframe>` root
+
+Put every feature wireframe inside a single registry, rendered once near your app root (this is `VeltCustomization.tsx` in the reference structure):
+
+```tsx
+// components/velt/ui-customization/VeltCustomization.tsx
+import { VeltWireframe } from "@veltdev/react";
+import { VeltCommentDialogWf } from "./VeltCommentDialogWf";
+import { VeltCommentSidebarWf } from "./VeltCommentSidebarWf";
+import "./styles.css";
+
+// Exactly one <VeltWireframe> per app (global template registry).
+export function VeltCustomization() {
+  return (
+    <VeltWireframe>
+      <VeltCommentSidebarWf />
+      <VeltCommentDialogWf />
+    </VeltWireframe>
+  );
+}
+```
+
+### Step 2 — Fill a feature's slots with your layout
+
+Inside a `Velt…Wireframe`, lay out the slots however your design wants. Your own elements (`<header>`, `<div className="…">`) provide structure/visuals; the `Velt…Wireframe.X` slots are where Velt's behavior renders.
+
+```tsx
+import { VeltCommentDialogWireframe } from "@veltdev/react";
+
+export function VeltCommentDialogWf() {
+  return (
+    <VeltCommentDialogWireframe>
+      <div className="vcd-shell">
+        <VeltCommentDialogWireframe.Header>
+          <header className="vcd-header">
+            <div className="vcd-chips">
+              <VeltCommentDialogWireframe.Status />
+              <VeltCommentDialogWireframe.Priority />
+            </div>
+            <div className="vcd-actions">
+              <VeltCommentDialogWireframe.CopyLink />
+              <VeltCommentDialogWireframe.ResolveButton />
+              <VeltCommentDialogWireframe.Options />
+              <VeltCommentDialogWireframe.CloseButton />
+            </div>
+          </header>
+        </VeltCommentDialogWireframe.Header>
+
+        <VeltCommentDialogWireframe.Body>
+          <VeltCommentDialogWireframe.Threads>
+            <VeltCommentDialogWireframe.ThreadCard>
+              <div className="vcd-card">
+                <VeltCommentDialogWireframe.ThreadCard.Avatar />
+                <div className="vcd-card-body">
+                  <VeltCommentDialogWireframe.ThreadCard.Name />
+                  <VeltCommentDialogWireframe.ThreadCard.Time />
+                  <VeltCommentDialogWireframe.ThreadCard.Message />
+                </div>
+              </div>
+            </VeltCommentDialogWireframe.ThreadCard>
+          </VeltCommentDialogWireframe.Threads>
+        </VeltCommentDialogWireframe.Body>
+
+        <VeltCommentDialogWireframe.Composer>
+          <footer className="vcd-composer">
+            <VeltCommentDialogWireframe.Composer.Avatar />
+            <VeltCommentDialogWireframe.Composer.Input />
+            <VeltCommentDialogWireframe.Composer.ActionButton type="submit" />
+          </footer>
+        </VeltCommentDialogWireframe.Composer>
+      </div>
+    </VeltCommentDialogWireframe>
+  );
+}
+```
+
+Then mount the live feature somewhere (it renders using the template above):
+
+```tsx
+<VeltComments shadowDom={false} />
+// or a standalone thread:
+<VeltCommentDialog annotationId={annotation.annotationId} fullExpanded defaultCondition={false} />
+```
+
+> **Slots take inputs too.** Some slots accept props — e.g. `Composer.ActionButton type="submit"`, `Composer.Input placeholder="…"`, `ThreadCard.Reactions excludeReactionIds={[…]}`. The complete slot list, per‑slot props, and every wireframe component are in [`../reference/wireframe-components.md`](../reference/wireframe-components.md).
+
+## What it can and can't do
+
+| ✅ Wireframes can | ❌ Wireframes can't |
+|---|---|
+| Give Velt's UI any layout/structure you want | Run your React handlers/state/hooks inside slots |
+| Add non‑interactive custom markup around Velt's parts | Host live UI‑library components (interactivity is stripped) |
+| Conditionally render via `velt-if` and show data via `velt-data` | Change Velt's *behavior* (slots give you Velt's behavior, not custom) |
+| Override only the slots you care about | Relayout a **list/repeater** slot — customize its **item** instead (§7b) |
+| Customize each row via its item slot | Be split across multiple `<VeltWireframe>` roots |
+
+---
+
+## Notes & deep-dives
+
+### 3b. Scoping — global vs scoped wireframes (important)
+
+Where you place a child wireframe changes **where it applies**:
+
+- **Child wireframe nested *inside* its parent wireframe → scoped to that parent's render.** It travels as part of the parent's cloned subtree, so it only customizes the child *as it appears inside that parent*. Example: a `ThreadCard` layout placed inside `VeltCommentDialogWireframe` customizes thread cards **in the dialog**, not elsewhere.
+- **Child wireframe placed *directly* at the `<VeltWireframe>` root → global.** It registers under its own key and applies to that component **everywhere it renders** (dialog, sidebar, inline section, …).
+
+```tsx
+<VeltWireframe>
+  {/* SCOPED: this ThreadCard layout applies only inside the dialog */}
+  <VeltCommentDialogWireframe>
+    <VeltCommentDialogWireframe.Body>
+      <VeltCommentDialogWireframe.Threads>
+        <VeltCommentDialogWireframe.ThreadCard>{/* …custom… */}</VeltCommentDialogWireframe.ThreadCard>
+      </VeltCommentDialogWireframe.Threads>
+    </VeltCommentDialogWireframe.Body>
+  </VeltCommentDialogWireframe>
+
+  {/* GLOBAL: a ThreadCard registered at the root would apply to thread cards everywhere */}
+</VeltWireframe>
+```
+
+**Mechanism:** the registry is a flat global map keyed by component name (+ optional `variant`/suffix), never by parent. The root `<VeltWireframe>` scan registers only its **direct** children as global keys; a nested child isn't a direct child, so it isn't registered globally — it rides inside the parent's clone. Collisions resolve **first‑with‑content‑wins**, so a global/root definition is *not* overwritten by a nested one. Practical rule: **nest to scope, root‑level to go global; don't register the same component both ways.**
+
+### 3c. Variants — multiple looks for the same component
+
+By default a component has **one** registered wireframe. **Variants let you register several wireframe templates for the *same* component and choose which one renders, by a `variant` name.** This is how you give one component **different looks in different contexts** — without that, a component looks identical everywhere it appears.
+
+- **Register a variant:** put `variant="<name>"` on the `Velt…Wireframe`. Its template is registered under that variant (internally keyed as `component---<name>`).
+- **Select a variant:** the live component renders the wireframe whose variant matches its **current variant**. You set that with the component's variant prop(s): the general `variant`, and — because the comment dialog is reused in several contexts — `dialogVariant`, `focusedThreadDialogVariant`, and `pageModeComposerVariant` pick the variant for each of those contexts.
+- **Fallback:** if no wireframe matches the active variant, Velt falls back to the **base (no‑variant) wireframe** for that component. So "one base wireframe + a couple of variant wireframes" is the normal setup.
+
+Example — the comment dialog appears both as a floating popover on the page **and** as a row inside the sidebar; give each its own design:
+
+```tsx
+<VeltWireframe>
+  {/* base look (used for the floating dialog) */}
+  <VeltCommentDialogWireframe> …floating layout… </VeltCommentDialogWireframe>
+
+  {/* a different look, used only when the dialog renders inside the sidebar */}
+  <VeltCommentDialogWireframe variant="sidebar"> …compact row layout… </VeltCommentDialogWireframe>
+</VeltWireframe>
+
+// tell the sidebar's embedded dialog to use the "sidebar" variant:
+<VeltCommentsSidebar dialogVariant="sidebar" shadowDom={false} />
+```
+
+**When to use:** the same component needs two+ distinct designs (floating vs sidebar vs focused‑thread vs page‑mode composer), or A/B variations. **When not:** if the look is the same everywhere, skip variants — one base wireframe is enough. (Variant names are yours to choose; they just have to match between the `variant` on the wireframe and the `…Variant` prop on the component.)
+
+### 4. Slot granularity — override only what you want
+
+The slot tree is **very** fine‑grained (hundreds of slots across the SDK). For example, inside a comment dialog you'll find slots such as: composer → `Input` / `Attachments` (image *and* other, each with delete/download/loading sub‑slots) / `AssignUser`; thread‑card → `Avatar` / `Attachments` / `Name` / `Time` / `Message` / `Options` / `Reactions`; assignee‑banner → `ResolveButton` / `UnresolveButton`; options dropdown → `Edit` / `Delete`.
+
+**You only fill the slots you care about — a slot you never declare falls back to Velt's default.** This means you can do a tiny override (just the empty state) or a near‑total rebuild (overriding 40+ slots across the dialog/sidebar). **Two exceptions to the fallback rule:** **container/structural** slots (the ⚠️ below — declare a container and you own its whole child tree) and **list/repeater** slots (§7b — Velt keeps rendering its own loop; customize the *item*, not the wrapper).
+
+> ⚠️ **Container slots are the exception — verified in‑browser.** The fallback rule holds for **leaf** slots, but the moment you declare a **structural/container** slot (a feature root like `velt-comments-sidebar-v2-wireframe`, or a parent like the sidebar `panel`/`header`), **you own its layout: any structural children you *don't* declare inside it disappear — they do NOT fall back to Velt's default.** Tested live: a sidebar root wireframe containing *only* a custom empty‑placeholder rendered the empty state correctly **but dropped the search box, filter buttons, and list** (which the default empty state shows). Fix: declare the full structural tree you want inside the container (e.g. `panel → header(search, filter) → list → empty‑placeholder`), exactly as the SDK's own wireframe examples do. **Rule of thumb:** override a *leaf* and the rest stays; override a *container* and you must re‑declare its children.
+
+The complete slot list per feature: [`reference/wireframe-components.md`](../reference/wireframe-components.md).
+
+### 5. Tokens — conditional rendering, classes, and live data
+
+Inside wireframe markup you can read live state with **`{…}` tokens** and use them three ways. (Full syntax + the 240+ variable names: [`reference/wireframe-tokens.md`](../reference/wireframe-tokens.md).)
+
+**`velt-if` — show/hide based on a condition:**
+
+```tsx
+import { VeltIf } from "@veltdev/react";
+
+<VeltCommentsSidebarWireframe.EmptyPlaceholder>
+  <VeltIf condition="{noCommentsFound}">
+    <h3>Be the first to comment</h3>
+  </VeltIf>
+  <VeltIf condition="!{noCommentsFound}">
+    <h3>No comments match your filters</h3>
+  </VeltIf>
+</VeltCommentsSidebarWireframe.EmptyPlaceholder>
+```
+
+`velt-if` supports logical/comparison operators, e.g. `condition="{enableResolve} && {canResolveAnnotation}"` or `condition="{commentIndex} === 0"`.
+
+**`velt-data` — print a live value as text:**
+
+```tsx
+import { VeltData } from "@veltdev/react";
+<span>Assigned to <VeltData field="annotation.assignedTo.name" /></span>
+```
+
+**`velt-class` — toggle CSS classes conditionally:**
+
+```tsx
+<div velt-class="'is-dark': {darkMode}, 'is-resolved': {resolved}" />
+{/* or the single-class form: */}
+<div velt-class-active="{showReplies}" />
+```
+
+> Where do variable names come from? They're a fixed set (`{user}`, `{annotation}`, `{comment}`, `{commentIndex}`, `{noCommentsFound}`, `{darkMode}`, …). **A name not in the catalog resolves to `undefined`.** Never invent one. Syntax: [`reference/wireframe-tokens.md`](../reference/wireframe-tokens.md); full catalog: [`reference/wireframe-variables.md`](../reference/wireframe-variables.md).
+
+### 6. The interactivity rule (the single most important thing)
+
+> **Inside a wireframe, your own React interactivity does NOT run. Behavior comes only from Velt's `Velt…Wireframe.X` slot components.**
+
+When Velt renders a wireframe, it **copies your slot markup** into its own render tree (technically: it serializes your slot to HTML and re‑instantiates only the `velt-*` slot elements inside it). The copy is plain DOM. That means, for markup you put in a slot:
+
+| In your wireframe markup | Survives into the live UI? |
+|---|---|
+| Static elements (`<div>`, `<span>`, `<header>`, icons) | ✅ yes |
+| **Your UI‑library components used as static presentation** (a `<Card>`, `<Badge>`, styled button shell) | ✅ yes — their **rendered markup + CSS classes** survive |
+| CSS `className` / inline styles | ✅ yes |
+| `{…}` tokens (`velt-if`, `velt-class`, `velt-data`) | ✅ yes (Velt resolves them) |
+| `Velt…Wireframe.X` slot components | ✅ yes — **this is where behavior comes from** |
+| Your React `onClick`, `useState`, hooks | ❌ **no — silently dead** |
+| A UI‑library component's **behavior** (its own click/state/effects) | ❌ no — only its static markup renders |
+
+> **Using your UI library in wireframes = static components and classes.** You *can* drop in your design‑system components for their look (markup + classes survive the clone), but their interactivity does not run. For interactive library components, use [primitives](./primitives.md).
+
+**Why:** Velt reduces wireframe slot content to an HTML string, which strips React listeners; it then re‑instantiates only its own `velt-*` components. A probe `<button onClick>` placed in a wireframe slot does **not** fire on the rendered (cloned) copy. More detail: [`edge-cases-and-limitations.md`](../edge-cases-and-limitations.md).
+
+**What to do instead:** want a working button? Use the **Velt slot** for it (e.g. `VeltCommentDialogWireframe.ResolveButton`, `.Options.Content.Delete`, `.Composer.ActionButton`). Your markup goes *inside* that slot as its appearance:
+
+```tsx
+{/* ✅ correct — the Velt slot provides the click behavior; your markup is the look */}
+<VeltCommentDialogWireframe.ResolveButton>
+  <span className="my-icon-btn"><ResolveIcon /></span>
+</VeltCommentDialogWireframe.ResolveButton>
+
+{/* ❌ wrong — this onClick never runs in the rendered dialog */}
+<button onClick={() => doSomething()}>Resolve</button>
+```
+
+If your design genuinely needs custom interactive behavior that no slot provides, that's the signal to go **[headless](./headless.md)**.
+
+### 7. Page‑mode (a common wireframe scenario)
+
+"Page mode" renders the comments **sidebar anchored to elements on your page** (e.g. one thread per form question), with a per‑element **comment‑count bubble** and a page‑mode composer. It's still just wireframes — you fill the sidebar/thread/composer slots and the comment‑bubble count slot to get custom comment cards, attachments, reactions, and assignment rows, all while Velt keeps the behavior.
+
+> Page mode usually goes hand‑in‑hand with **context** — attaching your domain data (e.g. the question id/title) to each comment and reading it back in the dialog/composer. See [`../context.md`](../context.md).
+
+### 7b. List/repeater slots — custom layout is ignored (the `replaceTemplate: false` case)
+
+A few slots are **list/repeater containers** — they render a loop of child items (e.g. the comments **list**, the presence **avatar list**, the **reactions panel items**, the activity‑log **list**). These slots run in a mode where **your custom layout/markup around them does NOT replace the container** — Velt keeps rendering its own loop and ignores wrapper divs or reordering you put there.
+
+What this means in practice:
+
+- ❌ Wrapping a list slot in your own grid/flex layout, or adding sibling markup inside it, **won't take effect** — the default loop renders regardless.
+- ✅ **Customize the repeated *item* instead.** Velt passes a child/item template directly to the specific child component, so you style/restructure each **row via its own item wireframe** (e.g. customize the *list item*, not the *list*). The list keeps Velt's looping; you control how one item looks.
+
+```tsx
+{/* The LIST container keeps Velt's loop — your wrapping layout here is ignored.
+    Customize the per-row look via the item/child slot it renders. */}
+<VeltCommentsSidebarWireframe.List>
+  <VeltCommentsSidebarWireframe.List.Item>{/* ← customize the ROW here */}</VeltCommentsSidebarWireframe.List.Item>
+</VeltCommentsSidebarWireframe.List>
+```
+
+Rule of thumb: **if a slot represents a *list of things*, don't try to relayout the list — restructure the item.** (If you truly need a custom list layout/virtualization, that's a signal for [primitives](./primitives.md), where you own the loop.)
+
+### 8. How to discover slots and variables
+
+- **Slots & slot props:** [`reference/wireframe-components.md`](../reference/wireframe-components.md) (every wireframe + full slot trees) and the overview in [`reference/component-catalog.md`](../reference/component-catalog.md).
+- **Variables/tokens:** syntax in [`reference/wireframe-tokens.md`](../reference/wireframe-tokens.md); the full `{…}` catalog in [`reference/wireframe-variables.md`](../reference/wireframe-variables.md).
+- **Stateful CSS classes** (to style state without a slot): [`reference/css-classes.md`](../reference/css-classes.md).
+
+## Checklist
+
+- [ ] Exactly **one** `<VeltWireframe>` in the app.
+- [ ] The live feature component (`VeltComments` / `VeltCommentsSidebar` / `VeltCommentDialog`) is **mounted** in addition to the wireframe.
+- [ ] No React `onClick`/`useState`/hooks inside slot markup — interactivity comes from `Velt…Wireframe.X` slots only.
+- [ ] For list/repeater slots, customized the **item**, not the container layout (§7b).
+- [ ] Only real slot names ([`reference/wireframe-components.md`](../reference/wireframe-components.md)) and real `{…}` variables ([`reference/wireframe-variables.md`](../reference/wireframe-variables.md)).
+- [ ] `shadowDom={false}` if you style the result.
+- [ ] Decided scope per child wireframe: nested = scoped, root = global (§3b).
+- [ ] Unfilled slots intentionally left to Velt defaults.

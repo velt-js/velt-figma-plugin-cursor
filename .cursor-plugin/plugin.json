@@ -1,0 +1,27 @@
+{
+  "name": "velt-customize",
+  "displayName": "Velt Customize",
+  "version": "1.0.0",
+  "description": "Turn a Figma design into clean, rule-compliant Velt UI customization (comments + notifications) on an existing React app, via a Planner -> Builder -> Judge loop that mechanically verifies each Figma block against the live app in Cursor's native browser, or honestly reports an SDK gap. Always reads the latest bundled customization guide. All agents are pinned to Claude models.",
+  "author": {
+    "name": "Velt",
+    "email": "support@velt.dev",
+    "url": "https://velt.dev"
+  },
+  "homepage": "https://velt.dev",
+  "repository": "https://github.com/velt-js/velt-figma-plugin-cursor",
+  "license": "MIT",
+  "keywords": [
+    "velt",
+    "figma",
+    "design-to-code",
+    "ui-customization",
+    "comments",
+    "notifications",
+    "react"
+  ],
+  "skills": "./skills/",
+  "rules": "./rules/",
+  "agents": "./agents/",
+  "commands": "./commands/"
+}

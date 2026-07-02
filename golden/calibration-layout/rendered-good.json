@@ -1,0 +1,8 @@
+[
+  { "present": true, "rendered": { "background": "rgb(255, 255, 255)" }, "box": { "x": 0, "y": 0, "w": 353, "h": 64 } },
+  { "present": true, "rendered": { "background": "rgb(255, 255, 255)" }, "box": { "x": 0, "y": 72, "w": 353, "h": 64 } },
+  { "present": true, "rendered": { "color": "rgb(26, 25, 23)" }, "box": { "x": 28, "y": 10, "w": 80, "h": 20 } },
+  { "present": true, "rendered": { "color": "rgb(106, 102, 96)" }, "box": { "x": 114, "y": 12, "w": 40, "h": 16 } },
+  { "present": true, "rendered": { "color": "rgb(26, 25, 23)" }, "box": { "x": 28, "y": 34, "w": 300, "h": 20 } },
+  { "present": true, "rendered": {}, "box": { "x": 300, "y": 8, "w": 48, "h": 24 } }
+]

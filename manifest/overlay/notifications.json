@@ -1,0 +1,296 @@
+{
+  "_note": "Curated semantic+structural overlay for the notifications surfaces. Derived from reference/wireframe-components.md (the 770-slot appendix + the VeltNotificationsPanelWireframe accessor tree) + reference/component-definitions.md — the SDK is the ground truth, not a demo. Same field semantics as comments.json: reactPath/tag/parent/role/slotType/mustSupply/defaultContent, hostProps as a design-gated catalog (S6/R24), layout (S5).",
+  "components": [
+    {
+      "name": "VeltNotificationsPanelWireframe",
+      "reactImport": "VeltNotificationsPanelWireframe",
+      "rootWireframe": "velt-notifications-panel-wireframe",
+      "onComponent": "VeltNotificationsTool",
+      "provenance": "reference/wireframe-components.md (appendix tags + the VeltNotificationsPanelWireframe accessor tree) + reference/component-definitions.md (VeltNotificationsTool/Panel intent)",
+      "layout": {
+        "Panel": {
+          "stack": [
+            "Header",
+            "Content"
+          ],
+          "rows": [
+            {
+              "name": "Header",
+              "slots": [
+                "Header",
+                "SettingsButton",
+                "ReadAllButton",
+                "CloseButton"
+              ],
+              "note": "tabs row (For you / All / Documents / People) with settings + read-all + close controls on the right"
+            }
+          ],
+          "relations": [
+            {
+              "a": "Content",
+              "b": "Header",
+              "type": "below"
+            }
+          ],
+          "states": {
+            "Header.TabAll": "selectable",
+            "Content.List.Item.Unread": "shown-when-unread"
+          }
+        }
+      },
+      "hostProps": [
+        {
+          "prop": "shadowDom",
+          "value": false,
+          "required": true,
+          "producesStructure": "REQUIRED to style: lets external class CSS reach inside the panel markup",
+          "designCue": "always set — infra, not design-gated"
+        },
+        {
+          "prop": "tabConfig",
+          "producesStructure": "which notification tabs render (forYou / all / documents / people)",
+          "designCue": "the panel header shows a specific set of tabs — enable only those"
+        },
+        {
+          "prop": "panelOpenMode",
+          "producesStructure": "how the panel opens from the bell/tool (e.g. popover vs page)",
+          "designCue": "the design shows the panel anchored to a bell/tool vs full-page"
+        }
+      ],
+      "variants": [],
+      "slots": [
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Skeleton",
+          "tag": "velt-notifications-panel-skeleton-wireframe",
+          "parent": null,
+          "role": "container",
+          "slotType": "container",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "_note": "loading state — supply skeleton rows matching the design's notification items"
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Header",
+          "tag": "velt-notifications-panel-header-wireframe",
+          "parent": null,
+          "role": "container",
+          "slotType": "container",
+          "mustSupply": false,
+          "defaultContent": "none",
+          "_note": "the tabs + actions row"
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Header.TabForYou",
+          "tag": "velt-notifications-panel-header-tab-for-you-wireframe",
+          "parent": "Header",
+          "role": "item",
+          "slotType": "text",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "_note": "supply the exact tab label from the design",
+          "behavioral": true
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Header.TabAll",
+          "tag": "velt-notifications-panel-header-tab-all-wireframe",
+          "parent": "Header",
+          "role": "item",
+          "slotType": "text",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "behavioral": true
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Header.TabDocuments",
+          "tag": "velt-notifications-panel-header-tab-documents-wireframe",
+          "parent": "Header",
+          "role": "item",
+          "slotType": "text",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "behavioral": true
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Header.TabPeople",
+          "tag": "velt-notifications-panel-header-tab-people-wireframe",
+          "parent": "Header",
+          "role": "item",
+          "slotType": "text",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "behavioral": true
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.SettingsButton",
+          "tag": "velt-notifications-panel-settings-button-wireframe",
+          "parent": "Header",
+          "role": "trigger",
+          "slotType": "icon",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "iconHint": {
+            "glyph": "kebab",
+            "ancestryKeyword": "settings"
+          },
+          "_note": "settings/gear trigger — supply the design's icon; style as a small icon, not a surface",
+          "behavioral": true
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.ReadAllButton",
+          "tag": "velt-notifications-panel-read-all-button-wireframe",
+          "parent": "Header",
+          "role": "item",
+          "slotType": "action",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "_note": "'Mark all as read' — supply the exact label",
+          "behavioral": true
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.CloseButton",
+          "tag": "velt-notifications-panel-close-button-wireframe",
+          "parent": "Header",
+          "role": "item",
+          "slotType": "icon",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "iconHint": {
+            "glyph": "close",
+            "ancestryKeyword": "header"
+          },
+          "_note": "panel close (x) icon",
+          "behavioral": true
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content",
+          "tag": "velt-notifications-panel-content-wireframe",
+          "parent": null,
+          "role": "container",
+          "slotType": "container",
+          "mustSupply": false,
+          "defaultContent": "none",
+          "_note": "the body that swaps per selected tab"
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content.List",
+          "tag": "velt-notifications-panel-content-list-wireframe",
+          "parent": "Content",
+          "role": "container",
+          "slotType": "container",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "_note": "list/repeater — Velt renders the loop; customize the Item, not the wrapper",
+          "behavioral": true,
+          "singleton": true
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content.List.Item",
+          "tag": "velt-notifications-panel-content-list-item-wireframe",
+          "parent": "List",
+          "role": "container",
+          "slotType": "container",
+          "mustSupply": false,
+          "defaultContent": "none",
+          "_note": "one notification row; compose Avatar | (Headline·Body·Time) | Unread",
+          "behavioral": true
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content.List.Item.Avatar",
+          "tag": "velt-notifications-panel-content-list-item-avatar-wireframe",
+          "parent": "Item",
+          "role": "container",
+          "slotType": "container",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": "actor user (color/initial drive the avatar)"
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content.List.Item.Headline",
+          "tag": "velt-notifications-panel-content-list-item-headline-wireframe",
+          "parent": "Item",
+          "role": "item",
+          "slotType": "text",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": "notification headline"
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content.List.Item.Body",
+          "tag": "velt-notifications-panel-content-list-item-body-wireframe",
+          "parent": "Item",
+          "role": "item",
+          "slotType": "text",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": "notification body"
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content.List.Item.Time",
+          "tag": "velt-notifications-panel-content-list-item-time-wireframe",
+          "parent": "Item",
+          "role": "item",
+          "slotType": "text",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": "notification createdAt"
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content.List.Item.FileName",
+          "tag": "velt-notifications-panel-content-list-item-file-name-wireframe",
+          "parent": "Item",
+          "role": "item",
+          "slotType": "text",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": "source document name"
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content.List.Item.Unread",
+          "tag": "velt-notifications-panel-content-list-item-unread-wireframe",
+          "parent": "Item",
+          "role": "item",
+          "slotType": "text",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "_note": "unread dot/badge — shown only when the notification is unread"
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content.LoadMore",
+          "tag": "velt-notifications-panel-content-load-more-wireframe",
+          "parent": "Content",
+          "role": "item",
+          "slotType": "action",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "_note": "'Load more' / pagination affordance — supply the design's label",
+          "behavioral": true
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content.AllReadContainer",
+          "tag": "velt-notifications-panel-content-all-read-container-wireframe",
+          "parent": "Content",
+          "role": "container",
+          "slotType": "container",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "_note": "empty/all-caught-up state — supply the design's illustration + copy"
+        }
+      ]
+    }
+  ],
+  "recognition": [
+    {
+      "cue": "A notifications panel with tabs (For you / All / Documents / People), a list of notification rows (avatar, headline, time, unread dot), settings + mark-all-read + close controls, and an empty 'all caught up' state",
+      "component": "VeltNotificationsPanelWireframe",
+      "hostProps": [
+        "tabConfig",
+        "panelOpenMode"
+      ],
+      "note": "panel opened from the notifications bell/tool"
+    },
+    {
+      "cue": "A notification row: actor avatar, a headline + body + relative time, and an unread indicator",
+      "component": "VeltNotificationsPanelWireframe.Content.List.Item"
+    }
+  ]
+}

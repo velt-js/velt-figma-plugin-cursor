@@ -1,0 +1,7 @@
+[
+  { "present": true, "rendered": { "background": "rgb(255, 255, 255)", "border": "1px solid rgb(241, 239, 236)", "border-radius": "8px", "padding": "14px 16px" } },
+  { "present": true, "rendered": { "color": "rgb(26, 25, 23)", "font-size": "14px", "font-weight": "500", "line-height": "20px" } },
+  { "present": true, "rendered": { "color": "rgb(132, 128, 121)", "font-size": "12px" } },
+  { "present": true, "rendered": { "width": "16px", "height": "16px" } },
+  { "present": true, "rendered": { "background": "rgb(26, 25, 23)", "border-radius": "6px" } }
+]

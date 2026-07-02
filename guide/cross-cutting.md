@@ -1,0 +1,89 @@
+# Cross-cutting concerns — a11y, i18n, RTL, responsive, testing
+
+These apply to **every** approach and feature. Handle them as you build, not after. (The short version lives in [`03-getting-started.md`](./03-getting-started.md) §6; this is the deep version.)
+
+---
+
+## Accessibility (a11y)
+
+**What Velt gives you for free, and when you keep it:**
+
+- **Velt's default UI and its slot components** ship with roles, labels, keyboard handling, and focus management.
+- **Primitives** render Velt's components, so they **keep** that a11y. Wrapping a primitive in your own UI library is fine — the Velt part stays accessible.
+- **Wireframes**: Velt's behavior **and a11y** live in the `Velt…Wireframe.X` **slot components** — keep using them for anything interactive (buttons, inputs, dropdowns). The custom markup *you* add around slots is **yours to make accessible.**
+- **Headless**: you own 100% of the a11y — there's no Velt UI to inherit from.
+
+**Your checklist when wireframing or going headless:**
+
+- Use semantic elements (`<button>`, `<nav>`, `<ul>`) and add `aria-*`/`role`/`aria-label` where your markup needs them.
+- Preserve a sensible **focus order** and visible **focus styles** (`:focus-visible`). Don't `outline: none` without a replacement.
+- Keep interactive behavior in Velt slot components — a custom `<div onClick>` in a wireframe doesn't even run (R4), and a bare div isn't keyboard-accessible anyway.
+- Don't rely on **color alone** for state (resolved/unread/priority) — pair it with an icon/label.
+- When you override colors via `--velt-*`, keep **contrast** at WCAG AA (4.5:1 text). This is easy to break with brand palettes — check both light and dark.
+- Respect `prefers-reduced-motion` in any custom transitions you add (e.g. hover-reveal).
+
+**Verify:** keyboard-only navigation through the whole surface; a screen reader pass (VoiceOver / NVDA); zoom to 200%.
+
+---
+
+## i18n / localization
+
+Three levers, in order of power:
+
+1. **Override Velt's built-in strings / add languages** — the strongest lever:
+   ```tsx
+   const { client } = useVeltClient();
+   client.setTranslations({
+     en: { /* "<string key>": "Your text" */ },
+     fr: { /* … */ },
+   });
+   client.setLanguage("fr");   // switch the active language
+   ```
+   `setTranslations` takes `{ [language]: { [key]: value } }` — use it to **reword or translate Velt's own UI text**, not just translate. `setLanguage` switches the active language at runtime.
+2. **Placeholder props** — composer text: `commentPlaceholder`, `replyPlaceholder`, `editPlaceholder`, `editCommentPlaceholder`, `editReplyPlaceholder` (and the slot‑level `placeholder` props). Pass already‑translated values.
+3. **Your own text** — anything in your wireframe markup or headless components is yours: render it through your app's i18n library.
+
+Notes: dates/relative times render in Velt's UI; if you show your own timestamps (headless), localize them yourself. Combine i18n with RTL (below) for right‑to‑left languages.
+
+---
+
+## RTL (right-to-left)
+
+- Set **`dir="rtl"`** on the container that wraps your Velt UI; Velt's UI inherits direction from the DOM.
+- In **your own** CSS overrides and wireframe markup, prefer **logical properties** — `margin-inline-start`, `padding-inline`, `inset-inline` — instead of hard `left`/`right`, so they mirror automatically.
+- **Mirror directional glyphs** (chevrons, arrows, "reply" icons) — flip them with `transform: scaleX(-1)` under `[dir="rtl"]` if they're your icons.
+- Check anything **absolutely positioned** (pins, dialogs, dropdown popovers) and your `position: relative` wrappers — verify they anchor on the correct side.
+- **Verify** the whole surface in an RTL language; fix mirroring in your CSS, never by hacking Velt internals (R0).
+
+---
+
+## Responsive / mobile
+
+- **Use the layout props first** (cheapest): `filterPanelLayout="bottomSheet"` and `filterOptionLayout` on the sidebar, `panelOpenMode` on notifications, the dialog's bottom‑sheet mode, `embedMode`/`floatingMode`/`position`. See [`reference/component-config.md`](./reference/component-config.md).
+- **Your media queries** apply to your wrappers and your wireframe markup. Velt also flips some internal layouts at mobile breakpoints on its own.
+- **Touch targets** ≥ ~44px. Important for any custom buttons you place in wireframe slots.
+- **Hover-reveal caveat:** the "show actions on hover" recipe ([`patterns-and-tips.md`](./patterns-and-tips.md)) has no hover on touch. Velt already force‑shows per‑comment actions on mobile widths; if you build your own hover‑reveal, add a tap/always‑visible fallback under a mobile media query.
+- Test the scroll/height chain (R14) at mobile sizes too — collapsed viewports expose missing `min-height:0` links.
+
+---
+
+## Testing / verifying a customization
+
+> For the full **definition of "done"** — driving each surface's states, confirming Velt's behavior is intact, the static rules scan, and the PASS/PARTIAL/FAIL/BLOCKED verdict — see [`verifying-a-customization.md`](./verifying-a-customization.md). The checklist below is the **cross‑cutting** slice of that flow (a11y/dark/RTL/responsive), applied to every surface with custom markup.
+
+**Per-surface manual checklist** (run after customizing each surface):
+
+- States: **empty**, **loading/skeleton**, **unread**, **resolved**, **private**, **filtered‑to‑zero**, long content (truncation).
+- **Dark mode** on/off; **RTL** on/off; **mobile** width.
+- **Keyboard** navigation + visible focus; quick **screen‑reader** pass.
+- **Scroll** actually works (R14); nothing overflows or clips.
+- **Compare against default** — temporarily remove your customization to confirm a problem is yours vs Velt's.
+
+**Automated:**
+
+- Assert on Velt's **stateful classes** (`reference/css-classes.md`) — e.g. expect `.velt-comment-pin-unread-comment` present/absent.
+- Read live data via **hooks** (`reference/hooks.md`) in component tests — e.g. assert `useUnreadCommentAnnotationCountOnCurrentDocument()?.count`.
+- Put **`data-testid`** on **your own** wrapper/markup (not on Velt internals, whose class/structure can change between versions) and target those in e2e.
+- **Visual regression** snapshots per surface × (light/dark) × (LTR/RTL) catch CSS‑override drift after SDK upgrades — the main risk for class‑based overrides.
+
+> After every SDK upgrade, re‑run the visual + a11y checks: variable‑based theming is upgrade‑safe, but **class/selector overrides** (and wireframe slot names) are the things most likely to need a re‑check.

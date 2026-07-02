@@ -1,0 +1,49 @@
+# Feature · Activity Log
+
+A chronological timeline of activity (comments, resolves, reactions, …), grouped by date with a filter dropdown. **Fully wireframed** — the richest non-comment customization surface. All four layers apply; the same model as comments ([`../02-decision-tree.md`](../02-decision-tree.md)).
+
+## Components
+
+| | Primitive | Wireframe |
+|---|---|---|
+| Activity log | `VeltActivityLog` | `VeltActivityLogWireframe` |
+
+## Config props
+
+None feature‑specific — Activity Log has no dedicated config props. Primitive props on `VeltActivityLog`: `darkMode`, `shadowDom`, `variant`, `useDummyData` (render sample data while styling).
+
+## CSS — stateful classes
+
+Host/structural classes to target (override with `!important`, R9b): `velt-activity-log--container`, `velt-activity-log-loading--container`, `velt-activity-log-empty--container`. Theme with `--velt-*` as usual. State‑dependent styling is done with `velt-class` toggles in the wireframe (there's no large built‑in stateful‑class table for this feature).
+
+## Wireframes — slot trees + tokens
+
+```
+VeltActivityLogWireframe
+├── .Loading                      (shows while allActivities === null)
+├── .Empty                        (filteredActivities.length === 0)
+├── .Header
+│   ├── .Title   .CloseButton
+│   └── .Filter
+│       ├── .Trigger → .Icon / .Label
+│       └── .Content → .Item → .Icon / .Label
+└── .List
+    ├── .DateGroup → .Label
+    ├── .ShowMore                 (dateGroup.totalCount > defaultVisibleCount)
+    └── .Item
+        ├── .Icon  .Avatar  .Time
+        └── .Content → .User / .Action / .Target / .Detail
+```
+
+**Key tokens** (read with `velt-if`/`velt-class`/`velt-data`): `{isEnabled}`, `{isOpen}`, `{darkMode}`, `{allActivities}` (null = loading), `{filteredActivities}`, `{groupedActivities}`, `{activeFilter}` (`'all'` | a feature type), `{availableFilters}`, `{expandedGroups}`, `{defaultVisibleCount}` (default 5), `{filterDropdownOpen}`. Inside iteration: `{dateGroup}` (`.dateKey`/`.displayLabel`/`.totalCount`), `{activity}` (alias `{activityRecord}` — `.user`/`.timestamp`/`.featureType`/`.action`/`.target`/`.detail`), `{filter}` (alias `{filterOption}`), `{isActive}`, `{isExpanded}`, `{remainingCount}`. (See [`../reference/wireframe-variables.md`](../reference/wireframe-variables.md).)
+
+## Headless hooks
+
+- `useAllActivities(config?)` → `ActivityRecord[] | null` (reactive; `null` = still loading).
+- `useActivityUtils()` → the activity element for imperative control.
+
+Build a fully custom timeline by mapping `useAllActivities()` and rendering your own rows.
+
+## Limitations
+
+None notable — full slot coverage + data hooks. The interactivity rule (R4) still applies inside slots.

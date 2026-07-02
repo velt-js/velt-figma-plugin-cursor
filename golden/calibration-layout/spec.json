@@ -1,0 +1,20 @@
+{
+  "surfaceSelector": ".hw-rail-inner",
+  "tol": { "pos": 3, "size": 2, "gap": 3 },
+  "elements": [
+    { "name": "card1", "selector": ".hw-card:nth-of-type(1)", "expected": { "background": "#ffffff" }, "box": { "x": 0, "y": 0, "w": 353, "h": 64 } },
+    { "name": "card2", "selector": ".hw-card:nth-of-type(2)", "expected": { "background": "#ffffff" }, "box": { "x": 0, "y": 72, "w": 353, "h": 64 } },
+    { "name": "name", "selector": ".velt-thread-card--name", "expected": { "color": "#1a1917" }, "box": { "x": 28, "y": 10, "w": 80, "h": 20 } },
+    { "name": "time", "selector": ".velt-thread-card--time", "expected": { "color": "#6a6660" }, "box": { "x": 114, "y": 12, "w": 40, "h": 16 } },
+    { "name": "message", "selector": ".velt-thread-card--message", "expected": { "color": "#1a1917" }, "box": { "x": 28, "y": 34, "w": 300, "h": 20 } },
+    { "name": "actions", "selector": ".hw-comment-actions", "expected": {}, "box": { "x": 300, "y": 8, "w": 48, "h": 24 } }
+  ],
+  "relations": [
+    { "a": "name", "b": "time", "type": "left-of" },
+    { "a": "message", "b": "name", "type": "below" },
+    { "a": "actions", "b": "card1", "type": "top-right-of" }
+  ],
+  "gaps": [
+    { "a": "card1", "b": "card2", "axis": "y", "expected": 8 }
+  ]
+}

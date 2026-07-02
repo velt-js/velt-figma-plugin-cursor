@@ -1,0 +1,1202 @@
+{
+  "version": {
+    "hash": "575046e79c29",
+    "sha": "8c5117c",
+    "isoTime": "2026-06-25T22:14:38.838Z",
+    "totalSlots": 770,
+    "coveredSlots": 61,
+    "components": 3
+  },
+  "components": {
+    "VeltCommentsSidebarWireframe": {
+      "name": "VeltCommentsSidebarWireframe",
+      "reactImport": "VeltCommentsSidebarWireframe",
+      "rootWireframe": "velt-comments-sidebar-wireframe",
+      "onComponent": "VeltCommentsSidebar",
+      "provenance": "reference/wireframe-components.md (appendix tags + accessor tree) + reference/component-definitions.md (VeltCommentsSidebar intent) + reference/css-classes.md",
+      "slots": [
+        {
+          "reactPath": "VeltCommentsSidebarWireframe.Skeleton",
+          "tag": "velt-comments-sidebar-skeleton-wireframe",
+          "parent": null,
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentsSidebarWireframe.Panel",
+          "tag": "velt-comments-sidebar-panel-wireframe",
+          "parent": null,
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": false,
+          "defaultContent": "none",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentsSidebarWireframe.MinimalFilterDropdown",
+          "tag": "velt-comments-sidebar-minimal-filter-dropdown-wireframe",
+          "parent": "Panel",
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": false,
+          "defaultContent": "none",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentsSidebarWireframe.MinimalFilterDropdown.Trigger",
+          "tag": "velt-comments-sidebar-minimal-filter-dropdown-trigger-wireframe",
+          "parent": "MinimalFilterDropdown",
+          "slotType": "icon",
+          "role": "trigger",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": [],
+          "iconHint": {
+            "glyph": "filter-lines",
+            "ancestryKeyword": "filter"
+          }
+        },
+        {
+          "reactPath": "VeltCommentsSidebarWireframe.MinimalFilterDropdown.Content",
+          "tag": "velt-comments-sidebar-minimal-filter-dropdown-content-wireframe",
+          "parent": "MinimalFilterDropdown",
+          "slotType": "container",
+          "role": "content",
+          "mustSupply": false,
+          "defaultContent": "none",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentsSidebarWireframe.MinimalFilterDropdown.Content.SortDate",
+          "tag": "velt-comments-sidebar-minimal-filter-dropdown-content-sort-date-wireframe",
+          "parent": "Content",
+          "slotType": "menu-item",
+          "role": "item",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentsSidebarWireframe.MinimalFilterDropdown.Content.SortUnread",
+          "tag": "velt-comments-sidebar-minimal-filter-dropdown-content-sort-unread-wireframe",
+          "parent": "Content",
+          "slotType": "menu-item",
+          "role": "item",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentsSidebarWireframe.MinimalFilterDropdown.Content.FilterResolved",
+          "tag": "velt-comments-sidebar-minimal-filter-dropdown-content-filter-resolved-wireframe",
+          "parent": "Content",
+          "slotType": "menu-item",
+          "role": "item",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentsSidebarWireframe.MinimalFilterDropdown.Content.FilterAssignedToMe",
+          "tag": "velt-comments-sidebar-minimal-filter-dropdown-content-filter-assigned-to-me-wireframe",
+          "parent": "Content",
+          "slotType": "menu-item",
+          "role": "item",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentsSidebarWireframe.MinimalFilterDropdown.Content.SelectedIcon",
+          "tag": "velt-comments-sidebar-minimal-filter-dropdown-content-selected-icon-wireframe",
+          "parent": "Content",
+          "slotType": "icon",
+          "role": "item",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentsSidebarWireframe.PageModeComposer",
+          "tag": "velt-comments-sidebar-page-mode-composer-wireframe",
+          "parent": "Panel",
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentsSidebarWireframe.EmptyPlaceholder",
+          "tag": "velt-comments-sidebar-empty-placeholder-wireframe",
+          "parent": "Panel",
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentsSidebarWireframe.List",
+          "tag": "velt-comments-sidebar-list-wireframe",
+          "parent": "Panel",
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentsSidebarWireframe.List.Item.DialogContainer",
+          "tag": "velt-comments-sidebar-list-item-dialog-container-wireframe",
+          "parent": "List",
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        }
+      ],
+      "hostProps": [
+        {
+          "prop": "shadowDom",
+          "value": false,
+          "required": true,
+          "producesStructure": "REQUIRED to style: lets external class CSS reach inside the sidebar + the dialogs it renders",
+          "designCue": "always set — infra, not design-gated"
+        },
+        {
+          "prop": "embedMode",
+          "producesStructure": "embeds the sidebar inline in the page rather than a floating drawer",
+          "designCue": "the comments surface is docked/embedded inline in the page (not a floating overlay)"
+        },
+        {
+          "prop": "pageMode",
+          "producesStructure": "renders comments as a page-mode list with the composer at the top (not pin-anchored)",
+          "designCue": "a vertical list of comment cards with a composer at the top of the panel"
+        },
+        {
+          "prop": "defaultMinimalFilter",
+          "producesStructure": "initial minimal-filter selection",
+          "designCue": "the filter dropdown shows a specific default-selected sort/filter option"
+        },
+        {
+          "prop": "sortBy",
+          "producesStructure": "list ordering field",
+          "designCue": "the card timestamps imply an ordering field (e.g. createdAt)"
+        },
+        {
+          "prop": "sortOrder",
+          "producesStructure": "list ordering direction",
+          "designCue": "the card order implies ascending/descending (e.g. newest-first)"
+        }
+      ],
+      "variants": [],
+      "paddingResets": [
+        ".velt-sidebar-container",
+        ".app-comment-sidebar-list",
+        ".velt-comment-dialog--page-mode-composer",
+        ".velt-comments-sidebar-list-wireframe .velt-comment-dialog"
+      ],
+      "layout": {
+        "Panel": {
+          "stack": [
+            "header",
+            "PageModeComposer",
+            "List"
+          ],
+          "rows": [
+            {
+              "name": "header",
+              "slots": [
+                "title",
+                "MinimalFilterDropdown"
+              ],
+              "note": "'Comments' title on the left, filter trigger on the right"
+            }
+          ],
+          "relations": [
+            {
+              "a": "MinimalFilterDropdown",
+              "b": "title",
+              "type": "right-of"
+            }
+          ],
+          "states": {
+            "MinimalFilterDropdown.Content": "open-on-trigger"
+          }
+        }
+      },
+      "contract": {
+        "parts": [
+          {
+            "part": "Panel",
+            "reactPath": "VeltCommentsSidebarWireframe.Panel",
+            "selectorHint": "velt-comments-sidebar-panel-wireframe",
+            "requiredAncestorHint": null,
+            "singleton": true
+          },
+          {
+            "part": "Trigger",
+            "reactPath": "VeltCommentsSidebarWireframe.MinimalFilterDropdown.Trigger",
+            "selectorHint": "velt-comments-sidebar-minimal-filter-dropdown-trigger-wireframe",
+            "requiredAncestorHint": "velt-comments-sidebar-minimal-filter-dropdown-wireframe",
+            "singleton": false
+          },
+          {
+            "part": "PageModeComposer",
+            "reactPath": "VeltCommentsSidebarWireframe.PageModeComposer",
+            "selectorHint": "velt-comments-sidebar-page-mode-composer-wireframe",
+            "requiredAncestorHint": "velt-comments-sidebar-panel-wireframe",
+            "singleton": true
+          },
+          {
+            "part": "List",
+            "reactPath": "VeltCommentsSidebarWireframe.List",
+            "selectorHint": "velt-comments-sidebar-list-wireframe",
+            "requiredAncestorHint": "velt-comments-sidebar-panel-wireframe",
+            "singleton": false
+          }
+        ]
+      }
+    },
+    "VeltCommentDialogWireframe": {
+      "name": "VeltCommentDialogWireframe",
+      "reactImport": "VeltCommentDialogWireframe",
+      "rootWireframe": "velt-comment-dialog-wireframe",
+      "onComponent": "VeltComments",
+      "provenance": "reference/wireframe-components.md (appendix tags + accessor tree; ThreadCard nests in Body→Threads) + reference/component-definitions.md (VeltCommentDialog intent) + reference/data-models.md (Comment fields)",
+      "slots": [
+        {
+          "reactPath": "VeltCommentDialogWireframe.Body",
+          "tag": "velt-comment-dialog-body-wireframe",
+          "parent": null,
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": false,
+          "defaultContent": "none",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.Threads",
+          "tag": "velt-comment-dialog-threads-wireframe",
+          "parent": "Body",
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": false,
+          "defaultContent": "none",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.ThreadCard",
+          "tag": "velt-comment-dialog-thread-card-wireframe",
+          "parent": "Threads",
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": false,
+          "defaultContent": "none",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.ThreadCard.Avatar",
+          "tag": "velt-comment-dialog-thread-card-avatar-wireframe",
+          "parent": "ThreadCard",
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": "Comment.from (user.color/initial drive the avatar)",
+          "cssClasses": [
+            "s-user-avatar-container"
+          ]
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.ThreadCard.Name",
+          "tag": "velt-comment-dialog-thread-card-name-wireframe",
+          "parent": "ThreadCard",
+          "slotType": "text",
+          "role": "item",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": "Comment.from.name",
+          "cssClasses": [
+            "velt-thread-card--name"
+          ]
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.ThreadCard.Time",
+          "tag": "velt-comment-dialog-thread-card-time-wireframe",
+          "parent": "ThreadCard",
+          "slotType": "text",
+          "role": "item",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": "Comment.createdAt",
+          "cssClasses": [
+            "velt-thread-card--time"
+          ]
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.ThreadCard.Edited",
+          "tag": "velt-comment-dialog-thread-card-edited-wireframe",
+          "parent": "ThreadCard",
+          "slotType": "text",
+          "role": "item",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": "Comment.isEdited",
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.ThreadCard.Draft",
+          "tag": "velt-comment-dialog-thread-card-draft-wireframe",
+          "parent": "ThreadCard",
+          "slotType": "text",
+          "role": "item",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.ThreadCard.Unread",
+          "tag": "velt-comment-dialog-thread-card-unread-wireframe",
+          "parent": "ThreadCard",
+          "slotType": "text",
+          "role": "item",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.ThreadCard.Message",
+          "tag": "velt-comment-dialog-thread-card-message-wireframe",
+          "parent": "ThreadCard",
+          "slotType": "text",
+          "role": "item",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": "Comment.commentText/commentHtml",
+          "cssClasses": [
+            "velt-thread-card--message"
+          ],
+          "mentionScope": ".velt-thread-card--message .velt-mention"
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.ThreadCard.Reply",
+          "tag": "velt-comment-dialog-thread-card-reply-wireframe",
+          "parent": "ThreadCard",
+          "slotType": "action",
+          "role": "item",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": [],
+          "iconHint": {
+            "nearText": "Reply",
+            "glyph": "reply-arrow"
+          }
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.ResolveButton",
+          "tag": "velt-comment-dialog-resolve-button-wireframe",
+          "parent": "ThreadCard",
+          "slotType": "icon",
+          "role": "item",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": [],
+          "iconHint": {
+            "glyph": "check-circle",
+            "ancestryKeyword": "hover"
+          }
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.UnresolveButton",
+          "tag": "velt-comment-dialog-unresolve-button-wireframe",
+          "parent": "ThreadCard",
+          "slotType": "icon",
+          "role": "item",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.ThreadCard.Options",
+          "tag": "velt-comment-dialog-thread-card-options-wireframe",
+          "parent": "ThreadCard",
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": false,
+          "defaultContent": "none",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.ThreadCard.Options.Trigger",
+          "tag": "velt-comment-dialog-options-dropdown-trigger-wireframe",
+          "parent": "Options",
+          "slotType": "icon",
+          "role": "trigger",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": [],
+          "iconHint": {
+            "glyph": "kebab",
+            "ancestryKeyword": "comment"
+          }
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.ThreadCard.Options.Content",
+          "tag": "velt-comment-dialog-options-dropdown-content-wireframe",
+          "parent": "Options",
+          "slotType": "container",
+          "role": "content",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.ThreadCard.Options.Content.Edit",
+          "tag": "velt-comment-dialog-options-dropdown-content-edit-wireframe",
+          "parent": "Content",
+          "slotType": "menu-item",
+          "role": "item",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": [],
+          "iconHint": {
+            "nearText": "Edit",
+            "glyph": "pencil"
+          }
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.CopyLink",
+          "tag": "velt-comment-dialog-copy-link-wireframe",
+          "parent": "Content",
+          "slotType": "menu-item",
+          "role": "item",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": [],
+          "iconHint": {
+            "nearText": "Copy",
+            "glyph": "link"
+          }
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.ThreadCard.Options.Content.Delete",
+          "tag": "velt-comment-dialog-options-dropdown-content-delete-wireframe",
+          "parent": "Content",
+          "slotType": "menu-item",
+          "role": "item",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": [],
+          "iconHint": {
+            "nearText": "Delete",
+            "glyph": "trash"
+          }
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.MoreReply",
+          "tag": "velt-comment-dialog-more-reply-wireframe",
+          "parent": "Body",
+          "slotType": "action",
+          "role": "item",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.MoreReply.Count",
+          "tag": "velt-comment-dialog-more-reply-count-wireframe",
+          "parent": "MoreReply",
+          "slotType": "text",
+          "role": "item",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": "hidden reply count (SDK-controlled)",
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.MoreReply.Text",
+          "tag": "velt-comment-dialog-more-reply-text-wireframe",
+          "parent": "MoreReply",
+          "slotType": "text",
+          "role": "item",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.ToggleReply",
+          "tag": "velt-comment-dialog-toggle-reply-wireframe",
+          "parent": "Body",
+          "slotType": "action",
+          "role": "item",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.Composer",
+          "tag": "velt-comment-dialog-composer-wireframe",
+          "parent": null,
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": false,
+          "defaultContent": "none",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.Composer.Avatar",
+          "tag": "velt-comment-dialog-composer-avatar-wireframe",
+          "parent": "Composer",
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.Composer.Input",
+          "tag": "velt-comment-dialog-composer-input-wireframe",
+          "parent": "Composer",
+          "slotType": "input",
+          "role": "item",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": [
+            "velt-composer-input--message"
+          ]
+        },
+        {
+          "reactPath": "VeltCommentDialogWireframe.Composer.ActionButton",
+          "tag": "velt-comment-dialog-composer-action-button-wireframe",
+          "parent": "Composer",
+          "slotType": "action",
+          "role": "item",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": [
+            "velt-composer--submit-button"
+          ],
+          "slotProps": [
+            {
+              "prop": "type",
+              "values": "`userMentions` · `autocomplete` · `file` · `audio` · `video` · `screen` · `submit` · `attachments` · `format`"
+            },
+            {
+              "prop": "hotkey",
+              "values": "string"
+            }
+          ]
+        }
+      ],
+      "hostProps": [
+        {
+          "prop": "shadowDom",
+          "value": false,
+          "required": true,
+          "producesStructure": "REQUIRED to style: external class CSS reaches the dialog markup",
+          "designCue": "always set — infra, not design-gated"
+        },
+        {
+          "prop": "commentPlaceholder",
+          "producesStructure": "page-mode composer placeholder text",
+          "designCue": "the composer input shows placeholder text — read the exact string from the design"
+        },
+        {
+          "prop": "replyPlaceholder",
+          "producesStructure": "reply composer placeholder text",
+          "designCue": "the reply input shows placeholder text"
+        },
+        {
+          "prop": "collapsedComments",
+          "producesStructure": "collapses a long thread to first comment + a 'Show N replies' MoreReply control + last; WITHOUT this the MoreReply/overflow structure never renders",
+          "designCue": "a thread shows a 'Show N replies' / collapsed-replies control between the first and last comment"
+        },
+        {
+          "prop": "collapsedRepliesPreview",
+          "producesStructure": "shows the collapsed replies preview divider (the MoreReply Count/Text slots)",
+          "designCue": "the collapsed thread shows a replies-preview divider/count"
+        },
+        {
+          "prop": "paginatedContactList",
+          "producesStructure": "paginates the @mention contact list",
+          "designCue": "M4: rarely visible in a static frame — DO NOT set without explicit evidence of a paginated contact list"
+        },
+        {
+          "prop": "visibilityOptions",
+          "producesStructure": "renders the VisibilityBanner / visibility dropdown",
+          "designCue": "M4: only set if a visibility banner or 'who can see this' control is actually shown in the design — otherwise it adds an unwanted banner"
+        }
+      ],
+      "variants": [
+        "dialog",
+        "sidebar",
+        "page-mode-composer"
+      ],
+      "layout": {
+        "ThreadCard": {
+          "rows": [
+            {
+              "name": "header",
+              "slots": [
+                "Avatar",
+                "Name",
+                "Time",
+                "Edited",
+                "Unread",
+                "actions"
+              ],
+              "note": "Avatar on the left; Name·Time·Edited·Unread inline next to each other on ONE header row; actions (Resolve + Options kebab) pinned top-right of the card"
+            }
+          ],
+          "stack": [
+            "header",
+            "Message",
+            "Reply"
+          ],
+          "relations": [
+            {
+              "a": "Name",
+              "b": "Time",
+              "type": "left-of"
+            },
+            {
+              "a": "Message",
+              "b": "Name",
+              "type": "below"
+            },
+            {
+              "a": "actions",
+              "b": "ThreadCard",
+              "type": "top-right-of"
+            }
+          ],
+          "states": {
+            "actions": "hover-reveal"
+          },
+          "_note": "M3: Name belongs on the header row beside Time (not on its own row), Message stacks UNDER the header at the same left edge as Name (not over-indented), and the hover actions must actually reveal on hover."
+        }
+      },
+      "contract": {
+        "parts": [
+          {
+            "part": "ThreadCard",
+            "reactPath": "VeltCommentDialogWireframe.ThreadCard",
+            "selectorHint": "velt-comment-dialog-thread-card-wireframe",
+            "requiredAncestorHint": "velt-comment-dialog-threads-wireframe",
+            "singleton": false
+          },
+          {
+            "part": "Reply",
+            "reactPath": "VeltCommentDialogWireframe.ThreadCard.Reply",
+            "selectorHint": "velt-comment-dialog-thread-card-reply-wireframe",
+            "requiredAncestorHint": "velt-comment-dialog-thread-card-wireframe",
+            "singleton": false
+          },
+          {
+            "part": "ResolveButton",
+            "reactPath": "VeltCommentDialogWireframe.ResolveButton",
+            "selectorHint": "velt-comment-dialog-resolve-button-wireframe",
+            "requiredAncestorHint": "velt-comment-dialog-thread-card-wireframe",
+            "singleton": false
+          },
+          {
+            "part": "Trigger",
+            "reactPath": "VeltCommentDialogWireframe.ThreadCard.Options.Trigger",
+            "selectorHint": "velt-comment-dialog-options-dropdown-trigger-wireframe",
+            "requiredAncestorHint": "velt-comment-dialog-thread-card-options-wireframe",
+            "singleton": false
+          },
+          {
+            "part": "Content",
+            "reactPath": "VeltCommentDialogWireframe.ThreadCard.Options.Content",
+            "selectorHint": "velt-comment-dialog-options-dropdown-content-wireframe",
+            "requiredAncestorHint": "velt-comment-dialog-thread-card-options-wireframe",
+            "singleton": false
+          },
+          {
+            "part": "MoreReply",
+            "reactPath": "VeltCommentDialogWireframe.MoreReply",
+            "selectorHint": "velt-comment-dialog-more-reply-wireframe",
+            "requiredAncestorHint": "velt-comment-dialog-body-wireframe",
+            "singleton": false
+          },
+          {
+            "part": "ToggleReply",
+            "reactPath": "VeltCommentDialogWireframe.ToggleReply",
+            "selectorHint": "velt-comment-dialog-toggle-reply-wireframe",
+            "requiredAncestorHint": "velt-comment-dialog-body-wireframe",
+            "singleton": false
+          },
+          {
+            "part": "Composer",
+            "reactPath": "VeltCommentDialogWireframe.Composer",
+            "selectorHint": "velt-comment-dialog-composer-wireframe",
+            "requiredAncestorHint": null,
+            "singleton": true
+          },
+          {
+            "part": "ActionButton",
+            "reactPath": "VeltCommentDialogWireframe.Composer.ActionButton",
+            "selectorHint": "velt-comment-dialog-composer-action-button-wireframe",
+            "requiredAncestorHint": "velt-comment-dialog-composer-wireframe",
+            "singleton": false
+          }
+        ]
+      }
+    },
+    "VeltNotificationsPanelWireframe": {
+      "name": "VeltNotificationsPanelWireframe",
+      "reactImport": "VeltNotificationsPanelWireframe",
+      "rootWireframe": "velt-notifications-panel-wireframe",
+      "onComponent": "VeltNotificationsTool",
+      "provenance": "reference/wireframe-components.md (appendix tags + the VeltNotificationsPanelWireframe accessor tree) + reference/component-definitions.md (VeltNotificationsTool/Panel intent)",
+      "slots": [
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Skeleton",
+          "tag": "velt-notifications-panel-skeleton-wireframe",
+          "parent": null,
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Header",
+          "tag": "velt-notifications-panel-header-wireframe",
+          "parent": null,
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": false,
+          "defaultContent": "none",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Header.TabForYou",
+          "tag": "velt-notifications-panel-header-tab-for-you-wireframe",
+          "parent": "Header",
+          "slotType": "text",
+          "role": "item",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Header.TabAll",
+          "tag": "velt-notifications-panel-header-tab-all-wireframe",
+          "parent": "Header",
+          "slotType": "text",
+          "role": "item",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Header.TabDocuments",
+          "tag": "velt-notifications-panel-header-tab-documents-wireframe",
+          "parent": "Header",
+          "slotType": "text",
+          "role": "item",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Header.TabPeople",
+          "tag": "velt-notifications-panel-header-tab-people-wireframe",
+          "parent": "Header",
+          "slotType": "text",
+          "role": "item",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.SettingsButton",
+          "tag": "velt-notifications-panel-settings-button-wireframe",
+          "parent": "Header",
+          "slotType": "icon",
+          "role": "trigger",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": [],
+          "iconHint": {
+            "glyph": "kebab",
+            "ancestryKeyword": "settings"
+          }
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.ReadAllButton",
+          "tag": "velt-notifications-panel-read-all-button-wireframe",
+          "parent": "Header",
+          "slotType": "action",
+          "role": "item",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.CloseButton",
+          "tag": "velt-notifications-panel-close-button-wireframe",
+          "parent": "Header",
+          "slotType": "icon",
+          "role": "item",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": [],
+          "iconHint": {
+            "glyph": "close",
+            "ancestryKeyword": "header"
+          }
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content",
+          "tag": "velt-notifications-panel-content-wireframe",
+          "parent": null,
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": false,
+          "defaultContent": "none",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content.List",
+          "tag": "velt-notifications-panel-content-list-wireframe",
+          "parent": "Content",
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content.List.Item",
+          "tag": "velt-notifications-panel-content-list-item-wireframe",
+          "parent": "List",
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": false,
+          "defaultContent": "none",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content.List.Item.Avatar",
+          "tag": "velt-notifications-panel-content-list-item-avatar-wireframe",
+          "parent": "Item",
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": "actor user (color/initial drive the avatar)",
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content.List.Item.Headline",
+          "tag": "velt-notifications-panel-content-list-item-headline-wireframe",
+          "parent": "Item",
+          "slotType": "text",
+          "role": "item",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": "notification headline",
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content.List.Item.Body",
+          "tag": "velt-notifications-panel-content-list-item-body-wireframe",
+          "parent": "Item",
+          "slotType": "text",
+          "role": "item",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": "notification body",
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content.List.Item.Time",
+          "tag": "velt-notifications-panel-content-list-item-time-wireframe",
+          "parent": "Item",
+          "slotType": "text",
+          "role": "item",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": "notification createdAt",
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content.List.Item.FileName",
+          "tag": "velt-notifications-panel-content-list-item-file-name-wireframe",
+          "parent": "Item",
+          "slotType": "text",
+          "role": "item",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": "source document name",
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content.List.Item.Unread",
+          "tag": "velt-notifications-panel-content-list-item-unread-wireframe",
+          "parent": "Item",
+          "slotType": "text",
+          "role": "item",
+          "mustSupply": false,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content.LoadMore",
+          "tag": "velt-notifications-panel-content-load-more-wireframe",
+          "parent": "Content",
+          "slotType": "action",
+          "role": "item",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        },
+        {
+          "reactPath": "VeltNotificationsPanelWireframe.Content.AllReadContainer",
+          "tag": "velt-notifications-panel-content-all-read-container-wireframe",
+          "parent": "Content",
+          "slotType": "container",
+          "role": "container",
+          "mustSupply": true,
+          "defaultContent": "velt",
+          "dataField": null,
+          "cssClasses": []
+        }
+      ],
+      "hostProps": [
+        {
+          "prop": "shadowDom",
+          "value": false,
+          "required": true,
+          "producesStructure": "REQUIRED to style: lets external class CSS reach inside the panel markup",
+          "designCue": "always set — infra, not design-gated"
+        },
+        {
+          "prop": "tabConfig",
+          "producesStructure": "which notification tabs render (forYou / all / documents / people)",
+          "designCue": "the panel header shows a specific set of tabs — enable only those"
+        },
+        {
+          "prop": "panelOpenMode",
+          "producesStructure": "how the panel opens from the bell/tool (e.g. popover vs page)",
+          "designCue": "the design shows the panel anchored to a bell/tool vs full-page"
+        }
+      ],
+      "variants": [],
+      "layout": {
+        "Panel": {
+          "stack": [
+            "Header",
+            "Content"
+          ],
+          "rows": [
+            {
+              "name": "Header",
+              "slots": [
+                "Header",
+                "SettingsButton",
+                "ReadAllButton",
+                "CloseButton"
+              ],
+              "note": "tabs row (For you / All / Documents / People) with settings + read-all + close controls on the right"
+            }
+          ],
+          "relations": [
+            {
+              "a": "Content",
+              "b": "Header",
+              "type": "below"
+            }
+          ],
+          "states": {
+            "Header.TabAll": "selectable",
+            "Content.List.Item.Unread": "shown-when-unread"
+          }
+        }
+      },
+      "contract": {
+        "parts": [
+          {
+            "part": "TabForYou",
+            "reactPath": "VeltNotificationsPanelWireframe.Header.TabForYou",
+            "selectorHint": "velt-notifications-panel-header-tab-for-you-wireframe",
+            "requiredAncestorHint": "velt-notifications-panel-header-wireframe",
+            "singleton": false
+          },
+          {
+            "part": "TabAll",
+            "reactPath": "VeltNotificationsPanelWireframe.Header.TabAll",
+            "selectorHint": "velt-notifications-panel-header-tab-all-wireframe",
+            "requiredAncestorHint": "velt-notifications-panel-header-wireframe",
+            "singleton": false
+          },
+          {
+            "part": "TabDocuments",
+            "reactPath": "VeltNotificationsPanelWireframe.Header.TabDocuments",
+            "selectorHint": "velt-notifications-panel-header-tab-documents-wireframe",
+            "requiredAncestorHint": "velt-notifications-panel-header-wireframe",
+            "singleton": false
+          },
+          {
+            "part": "TabPeople",
+            "reactPath": "VeltNotificationsPanelWireframe.Header.TabPeople",
+            "selectorHint": "velt-notifications-panel-header-tab-people-wireframe",
+            "requiredAncestorHint": "velt-notifications-panel-header-wireframe",
+            "singleton": false
+          },
+          {
+            "part": "SettingsButton",
+            "reactPath": "VeltNotificationsPanelWireframe.SettingsButton",
+            "selectorHint": "velt-notifications-panel-settings-button-wireframe",
+            "requiredAncestorHint": "velt-notifications-panel-header-wireframe",
+            "singleton": false
+          },
+          {
+            "part": "ReadAllButton",
+            "reactPath": "VeltNotificationsPanelWireframe.ReadAllButton",
+            "selectorHint": "velt-notifications-panel-read-all-button-wireframe",
+            "requiredAncestorHint": "velt-notifications-panel-header-wireframe",
+            "singleton": false
+          },
+          {
+            "part": "CloseButton",
+            "reactPath": "VeltNotificationsPanelWireframe.CloseButton",
+            "selectorHint": "velt-notifications-panel-close-button-wireframe",
+            "requiredAncestorHint": "velt-notifications-panel-header-wireframe",
+            "singleton": false
+          },
+          {
+            "part": "List",
+            "reactPath": "VeltNotificationsPanelWireframe.Content.List",
+            "selectorHint": "velt-notifications-panel-content-list-wireframe",
+            "requiredAncestorHint": "velt-notifications-panel-content-wireframe",
+            "singleton": true
+          },
+          {
+            "part": "Item",
+            "reactPath": "VeltNotificationsPanelWireframe.Content.List.Item",
+            "selectorHint": "velt-notifications-panel-content-list-item-wireframe",
+            "requiredAncestorHint": "velt-notifications-panel-content-list-wireframe",
+            "singleton": false
+          },
+          {
+            "part": "LoadMore",
+            "reactPath": "VeltNotificationsPanelWireframe.Content.LoadMore",
+            "selectorHint": "velt-notifications-panel-content-load-more-wireframe",
+            "requiredAncestorHint": "velt-notifications-panel-content-wireframe",
+            "singleton": false
+          }
+        ]
+      }
+    }
+  },
+  "recognition": [
+    {
+      "cue": "A right-side comment list panel with a 'Comments' header, a sort/filter icon, a composer input at top, and stacked comment cards",
+      "component": "VeltCommentsSidebarWireframe",
+      "hostProps": [
+        "embedMode",
+        "pageMode"
+      ],
+      "note": "page-mode embedded sidebar"
+    },
+    {
+      "cue": "A comment/thread card: small avatar, author name + timestamp on one row, message text below, a 'Reply' affordance; hover reveals resolve + kebab in the top-right",
+      "component": "VeltCommentDialogWireframe.ThreadCard",
+      "note": "author as a separate ThreadCardWf using VeltCommentDialogWireframe.ThreadCard; compose per layout.ThreadCard"
+    },
+    {
+      "cue": "A minimal sort/filter dropdown (Sort by date/unread, Show resolved, mentions)",
+      "component": "VeltCommentsSidebarWireframe.MinimalFilterDropdown",
+      "note": "style the Content popup, not the dropdown container"
+    },
+    {
+      "cue": "A kebab menu with Edit / Copy link / Delete",
+      "component": "VeltCommentDialogWireframe.ThreadCard.Options",
+      "note": "curate items via Options.Content.Edit + CopyLink + Options.Content.Delete; style Options.Content, not Options"
+    },
+    {
+      "cue": "A 'Show N replies…' expander between the first and last comment of a thread",
+      "component": "VeltCommentDialogWireframe.MoreReply",
+      "requiresHostProps": [
+        "collapsedComments",
+        "collapsedRepliesPreview"
+      ]
+    },
+    {
+      "cue": "An empty state with an illustration and 'Be the first to comment'",
+      "component": "VeltCommentsSidebarWireframe.EmptyPlaceholder"
+    },
+    {
+      "cue": "A notifications panel with tabs (For you / All / Documents / People), a list of notification rows (avatar, headline, time, unread dot), settings + mark-all-read + close controls, and an empty 'all caught up' state",
+      "component": "VeltNotificationsPanelWireframe",
+      "hostProps": [
+        "tabConfig",
+        "panelOpenMode"
+      ],
+      "note": "panel opened from the notifications bell/tool"
+    },
+    {
+      "cue": "A notification row: actor avatar, a headline + body + relative time, and an unread indicator",
+      "component": "VeltNotificationsPanelWireframe.Content.List.Item"
+    }
+  ]
+}

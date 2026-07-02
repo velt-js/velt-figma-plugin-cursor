@@ -1,0 +1,4 @@
+# Local tooling state
+.context/
+.DS_Store
+node_modules/

@@ -1,0 +1,7 @@
+[
+  { "present": true, "rendered": { "background": "rgb(255, 255, 255)", "border": "0px none rgb(0, 0, 0)", "border-radius": "0px", "padding": "8px" } },
+  { "present": true, "rendered": { "color": "rgb(26, 25, 23)", "font-size": "14px", "font-weight": "500", "line-height": "20px" } },
+  { "present": true, "rendered": { "color": "rgb(120, 113, 108)", "font-size": "13px" } },
+  { "present": false },
+  { "present": true, "rendered": { "background": "rgb(99, 102, 241)", "border-radius": "50%" } }
+]

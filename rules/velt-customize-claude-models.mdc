@@ -1,0 +1,12 @@
+---
+description: Model policy for velt-customize — every velt-customize run and every velt-* subagent MUST use a Claude model.
+alwaysApply: true
+---
+
+# velt-customize — Claude models only
+
+When executing any velt-customize work (`/velt-customize-run`, `/velt-customize-fix`, `/velt-customize-clear`, `/velt-customize-memory`, or any dispatch of the `velt-orchestrator`, `velt-planner`, `velt-builder`, or `velt-judge` agents):
+
+- **Always run the work on Claude models.** Each `velt-*` agent pins a Claude model in its frontmatter (`claude-sonnet-5-thinking-high` for orchestrator/judge, `claude-opus-4-8-thinking-high` for planner/builder) — dispatch them as those named agents so the pin applies.
+- **Never re-route** a velt-customize step to a generic subagent with a non-Claude model, and never override a `velt-*` agent's `model` with a non-Claude slug.
+- If a pinned Claude slug is unavailable in this environment, substitute **the newest available Claude thinking model** (Opus preferred for planner/builder, Sonnet for orchestrator/judge) — never a non-Claude model. If no Claude model is available at all, HALT and tell the user instead of silently switching model families.
