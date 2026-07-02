@@ -87,8 +87,8 @@ If a name isn't there, it doesn't exist (a wrong `{…}` resolves to `undefined`
 
 ## Architecture & code quality
 
-**R11 — Keep Velt code under `components/velt/`, customization under `components/velt/ui-customization/`.**
-App UI stays separate from Velt UI. One file per customized surface (`VeltCommentDialogWf.tsx`, `VeltCommentSidebarWf.tsx`, …). See [`03-getting-started.md`](./03-getting-started.md).
+**R11 — Keep Velt code under `components/velt/`, customization under `components/velt/ui-customization/` — ONE component per wireframe, one file per component.**
+App UI stays separate from Velt UI. **Every top-level `Velt…Wireframe` registration — including each `variant` of the same wireframe — is its own exported React component in its own file** (`VeltCommentSidebarWf.tsx`, `VeltCommentDialogSidebarWf.tsx`, `VeltCommentDialogPageModeComposerWf.tsx`, …). `VeltCustomization.tsx` contains **only** the single `<VeltWireframe>` root composing those components — never inline wireframe markup. Shared static shells (a composer layout reused by two dialog variants) get their own non-wireframe component file. Cramming multiple wireframes into one file hides which registration broke (defeats R15/R16's build-one-verify-one loop) and makes surfaces impossible to diff/verify independently. See [`03-getting-started.md`](./03-getting-started.md).
 
 **R12 — Cheapest viable layer per feature (CSS → Wireframes → Primitives → Headless).**
 Run the [decision tree](./02-decision-tree.md) per feature. **Wireframes are the default for structural customization** (Velt does the data/looping for you — less work than primitives). Use primitives only when you need full control / your own UI library / your own interactivity / a leaf override; headless only as a last resort. Don't go primitives for layout a wireframe slot already exposes, or headless for what a wireframe can do — over‑building is a maintenance liability.
@@ -147,6 +147,15 @@ A static per-state capture proves the surface looks right *while it sits still*.
 - **Author against the stable anchor.** When you hide/show or re-lay-out a piece by interaction state, key it on a state that **holds through the whole interaction**, not one that drops the instant the pointer leaves the element. Pick the stable twin: e.g. style a composer by `velt-composer-open` (`composerInOpenState`) rather than `velt-composer-input-focused` (`isInputFocused`); gate on a "selected/open" condition (`commentDialogSelected`) rather than `:focus`/`:hover`. Same visual result, no flicker, no shift. (Enabled/disabled may key off the control's own `:disabled` — that tracks the control's state, not pointer position.) Verify any stateful class against [`reference/css-classes.md`](./reference/css-classes.md) (R10).
 - **Verify the target is stable across the transition.** Driving the static states isn't enough — the Judge runs `STABILITY_PROBE` (`scripts/delta-compare.mjs`) on **every interactive affordance the surface renders**: record its box, drop the transient state the click would drop (blur the focused element + `focusout`), reflow, re-measure. **Any shift > 1px ⇒ the target moves under the cursor ⇒ FAIL.** And the real action is performed **end-to-end** (do the interaction, real-click the on-screen control, assert the outcome); a nearby path passing once is not proof (this false-passed exactly this way — drive the *reported* interaction, not a convenient neighbour).
 
+**R28 — `velt-if` / `velt-class` attribute directives work ONLY on Velt wireframe elements — NEVER on plain HTML elements.**
+Spreading or writing `velt-if="…"` / `velt-class="…"` onto a native `<div>`/`<span>` inside a wireframe **silently never fires** (verified live) — the cloner resolves directives only on Velt elements (`Velt…Wireframe.X` slots, `<VeltIf>`, `<VeltData>`). The element renders unconditionally / the class never toggles, and nothing errors. Do it the supported way:
+- **Show/hide custom HTML** → wrap it in **`<VeltIf condition="{…}">`** (it *is* a Velt element).
+- **Print a live value** → **`<VeltData field="…" />`**.
+- **Toggle a class by state** → put `velt-class` on a **Velt wireframe element**, or key your CSS off **Velt's own state classes / attributes** on the live DOM (e.g. `velt-composer-open`, `:has(button.velt-composer--submit-button:not([disabled]))`) — see [`reference/css-classes.md`](./reference/css-classes.md).
+Helper spreads like `{...veltIf("…")}` on HTML elements are the same defect in disguise — a reviewer must treat any `velt-if`/`velt-class` attribute on a non-Velt element as dead code.
+
+---
+
 ## Quick gate before shipping
 
 - [ ] **No hacky/patchy fixes** — clean code only; unresolvable blockers are commented, not faked (R0).
@@ -155,7 +164,7 @@ A static per-state capture proves the surface looks right *while it sits still*.
 - [ ] `shadowDom={false}` where styled; no `display:none` feature‑hiding (R6, R7).
 - [ ] One stylesheet; dark values scoped (R8, R9).
 - [ ] Every identifier/behavior/data fact verified against [`reference/`](./reference); unknowns verified against ground truth, never guessed (R10).
-- [ ] Folder structure matches the reference (R11).
+- [ ] Folder structure matches the reference — **one component per wireframe registration, one file per component**; `VeltCustomization.tsx` is only the `<VeltWireframe>` root (R11).
 - [ ] Each surface uses the cheapest viable layer (R12).
 - [ ] Icons/assets use the design's exported SVGs, not hand‑drawn shapes (R17).
 - [ ] Only the Velt customization changed; required host changes (mount + Connect-Map props) applied + reported (R18).
@@ -168,3 +177,4 @@ A static per-state capture proves the surface looks right *while it sits still*.
 - [ ] Mount-map intact — every behavioral `contract.part` mounts as its Velt primitive, contained, singleton-correct, no phantom interactive; a violation is a hard FAIL regardless of pixels (R25).
 - [ ] Termination is mechanical — `block-report.json` covers **every** block in the **generated** `blocks.json` (no sampling) + the visual artifact per state; `verdict-gate-blocks.mjs` returns PASS/STOPPED (INCOMPLETE ≠ done) (R26).
 - [ ] Interaction-state visibility/layout keyed on a **stable** anchor (a persistent open/selected condition), never `:focus`/`:hover`/`:active`; `STABILITY_PROBE` shows each interactive target moves 0px through the transition; the real action verified end-to-end (R27).
+- [ ] No `velt-if`/`velt-class` attribute on a plain HTML element (dead code — they fire only on Velt elements); custom HTML gated with `<VeltIf>`, classes toggled on Velt elements or via Velt's own state classes (R28).

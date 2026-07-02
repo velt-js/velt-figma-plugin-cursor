@@ -31,6 +31,8 @@ A token is `{…}`. The resolver matches `/\{(.*?)\}/g` and supports nested path
 | Show/hide on a boolean | `velt-if="{…}"` (React: `<VeltIf condition="{…}">`) | `<VeltIf condition="{enableResolve}">` |
 | Toggle CSS classes | `velt-class="'cls': {…}, …"` or `velt-class-<name>="{…}"` | `velt-class="'is-dark': {darkMode}"` · `velt-class-active="{showReplies}"` |
 
+> **Placement (R28 in [`rules.md`](../rules.md)): the `velt-if` / `velt-class` attribute forms work ONLY on Velt wireframe elements** (`Velt…Wireframe.X` slots, `<VeltIf>`, `<VeltData>`). On a plain HTML `<div>`/`<span>` they **silently never fire** — the element renders unconditionally, the class never toggles, no error. To gate custom HTML wrap it in `<VeltIf condition="{…}">`; to style custom HTML by state, key CSS off Velt's own state classes ([`css-classes.md`](./css-classes.md)).
+
 > Booleans are most useful in `velt-if`/`velt-class`; strings/numbers/dates in `velt-data`; compound objects via deep paths (e.g. `field="annotation.from.name"`).
 
 ## Operators allowed in `velt-if`

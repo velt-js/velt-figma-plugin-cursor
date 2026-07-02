@@ -75,7 +75,7 @@ Context is readable via `{…}` tokens — display with `<VeltData field="…">`
 
 1. **Scope a comment to a specific element** — `targetElementId` + a matching DOM `id` (e.g. `question-${id}`); a `<VeltCommentBubble targetElementId=…>` then renders that element's bubble in place.
 2. **Show app metadata in the comment UI** — question title/number in the header, an invoice line label, an email device/mode badge — straight off `annotation.context.*`.
-3. **Conditional UI by domain type** — branch the wireframe on context, e.g. `velt-class="'is-action': {annotation.context.commentType} === 'action'"` or `velt-if="{annotation.context.type} === 'ApproverComment'"`.
+3. **Conditional UI by domain type** — branch the wireframe on context, e.g. `velt-class="'is-action': {annotation.context.commentType} === 'action'"` or `velt-if="{annotation.context.type} === 'ApproverComment'"` — **on a Velt wireframe element only**; to gate plain HTML wrap it in `<VeltIf condition="…">` (directives on native elements never fire, R28).
 4. **Deep‑linking / navigation** — a "jump to" button that exists only when a context key is present, handled via `veltButtonClick`.
 
 ---
@@ -84,5 +84,5 @@ Context is readable via `{…}` tokens — display with `<VeltData field="…">`
 
 - [ ] Attach `context` (+ `targetElementId` for element scoping) on the comment trigger, **or** via `setContextInPageModeComposer` for the page‑mode flow.
 - [ ] Read it with the correct path prefix for the surface (`annotation.context.*` in the dialog, `context.*` in the page‑mode composer, `focusedAnnotation.context.*` in the sidebar).
-- [ ] Gate context‑dependent UI with `velt-if="{…context.key}"` so it only shows when present.
+- [ ] Gate context‑dependent UI with `velt-if="{…context.key}"` (on a Velt element) or `<VeltIf condition="{…context.key}">` (around plain HTML) so it only shows when present — never a `velt-if` attribute on a native element (R28).
 - [ ] Clear page‑mode context after submit/cancel (`clearPageModeComposerContext()`).

@@ -12,7 +12,7 @@ What each layer **can't** do, the gotchas that waste hours, and the proof behind
 
 **Proof (verified live):** a probe `<button onClick={…}>` placed in a wireframe slot rendered as **two** DOM nodes — the hidden React original (`display:none`, has React props, its handler fired) and the **visible cloned copy** injected into the live dialog (no React props, handler did **not** fire). The visible node — the one users click — has no working handler.
 
-**What survives the clone:** static elements, CSS `className`/inline styles, `velt-if`/`velt-class`/`velt-data` tokens, and `Velt…Wireframe.X` slots. **What dies:** `onClick`, `useState`, hooks, component‑library interactivity.
+**What survives the clone:** static elements, CSS `className`/inline styles, `velt-if`/`velt-class`/`velt-data` tokens **on Velt elements** (`<VeltIf>`/`<VeltData>`/`Velt…Wireframe.X` — on a plain HTML element the attribute survives as inert markup but **never fires**, R28), and `Velt…Wireframe.X` slots. **What dies:** `onClick`, `useState`, hooks, component‑library interactivity.
 
 **Consequences / what to do:**
 - Need a working built‑in action? Use the **slot** (`.ResolveButton`, `.Options.Content.Delete`, `.Composer.ActionButton`).
@@ -50,7 +50,7 @@ This is also exactly why the two differ on UI libraries: **primitives preserve a
 - **Absolutely‑positioned pieces need a positioned ancestor.** Some Velt UI (dialog/pin/overlays, reaction pins) uses `position: absolute`. In a primitive or wireframe mount it can land in the wrong place unless the parent you mount it in has `position: relative`.
 - **Can't change behavior or data shape.** Slots give you *Velt's* behavior, not custom behavior. If you wish a slot did something different, you've outgrown wireframes.
 - **Variable availability differs per slot.** `{comment}`/`{commentIndex}` exist only inside thread‑card descendants; `{notification}` only in the notifications panel; `{focusedAnnotation}` in the sidebar. A token used in the wrong slot resolves to `undefined`. (See [`reference/wireframe-tokens.md`](./reference/wireframe-tokens.md).)
-- **`velt-class` needs the class defined in *your* CSS.** The token toggles a class name; you still have to style that class.
+- **`velt-class` needs the class defined in *your* CSS — and a Velt element to live on.** The token toggles a class name; you still have to style that class. And it only resolves on Velt wireframe elements — on a plain HTML element it never fires (R28).
 - **One registry only.** Two `<VeltWireframe>` roots conflict (R1).
 - **Limited/no slots for some features.** Arrows and Tags have limited or no wireframe slots — customize them with CSS + props instead.
 

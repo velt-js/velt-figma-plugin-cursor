@@ -27,7 +27,7 @@ So a wireframe doesn't render anything by itself — it **registers a template**
 
 ### Step 1 — Register one `<VeltWireframe>` root
 
-Put every feature wireframe inside a single registry, rendered once near your app root (this is `VeltCustomization.tsx` in the reference structure):
+Put every feature wireframe inside a single registry, rendered once near your app root (this is `VeltCustomization.tsx` in the reference structure). **One component per wireframe (R11):** every top-level `Velt…Wireframe` registration — including each `variant` — lives in its own exported component in its own file; `VeltCustomization.tsx` holds *only* the `<VeltWireframe>` root that composes them, never inline wireframe markup:
 
 ```tsx
 // components/velt/ui-customization/VeltCustomization.tsx
@@ -212,13 +212,19 @@ import { VeltData } from "@veltdev/react";
 <span>Assigned to <VeltData field="annotation.assignedTo.name" /></span>
 ```
 
-**`velt-class` — toggle CSS classes conditionally:**
+**`velt-class` — toggle CSS classes conditionally (Velt elements ONLY):**
 
 ```tsx
-<div velt-class="'is-dark': {darkMode}, 'is-resolved': {resolved}" />
-{/* or the single-class form: */}
-<div velt-class-active="{showReplies}" />
+{/* ✅ on a Velt wireframe element */}
+<VeltCommentDialogWireframe.Composer velt-class="'is-dark': {darkMode}, 'is-resolved': {resolved}">
+  …
+</VeltCommentDialogWireframe.Composer>
+
+{/* ❌ NEVER on a plain HTML element — silently never fires (R28) */}
+<div velt-class="'is-dark': {darkMode}" />
 ```
+
+> **R28 — directive placement.** The `velt-if` / `velt-class` *attribute* forms work **only on Velt wireframe elements**. On a native `<div>`/`<span>` they are dead code: the element renders unconditionally and the class never toggles, with no error. To gate custom HTML, wrap it in `<VeltIf condition="{…}">`; to style by state on custom HTML, key CSS off Velt's own state classes on the live DOM (e.g. `velt-composer-open`) instead — see [`../reference/css-classes.md`](../reference/css-classes.md).
 
 > Where do variable names come from? They're a fixed set (`{user}`, `{annotation}`, `{comment}`, `{commentIndex}`, `{noCommentsFound}`, `{darkMode}`, …). **A name not in the catalog resolves to `undefined`.** Never invent one. Syntax: [`reference/wireframe-tokens.md`](../reference/wireframe-tokens.md); full catalog: [`reference/wireframe-variables.md`](../reference/wireframe-variables.md).
 
@@ -233,7 +239,8 @@ When Velt renders a wireframe, it **copies your slot markup** into its own rende
 | Static elements (`<div>`, `<span>`, `<header>`, icons) | ✅ yes |
 | **Your UI‑library components used as static presentation** (a `<Card>`, `<Badge>`, styled button shell) | ✅ yes — their **rendered markup + CSS classes** survive |
 | CSS `className` / inline styles | ✅ yes |
-| `{…}` tokens (`velt-if`, `velt-class`, `velt-data`) | ✅ yes (Velt resolves them) |
+| `{…}` tokens via **Velt elements** (`<VeltIf>`, `<VeltData>`, `velt-if`/`velt-class` on `Velt…Wireframe.X`) | ✅ yes (Velt resolves them) |
+| `velt-if`/`velt-class` attributes on **plain HTML elements** | ❌ **no — silently never fire (R28)** |
 | `Velt…Wireframe.X` slot components | ✅ yes — **this is where behavior comes from** |
 | Your React `onClick`, `useState`, hooks | ❌ **no — silently dead** |
 | A UI‑library component's **behavior** (its own click/state/effects) | ❌ no — only its static markup renders |

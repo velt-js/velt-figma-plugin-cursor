@@ -103,11 +103,11 @@ function roleFiles({ role, approaches, feature, surface }) {
     add("reference/css-variables.md", "token mapping (Figma vars → --velt-*) — sections only");
     add("reference/data-models.md", "ONLY when judging primitives/headless feasibility — sections only");
     add("edge-cases-and-limitations.md", "coverage-matrix achievability");
-    add("rules.md", "R0–R27 — the constraints the plan must encode");
+    add("rules.md", "R0–R28 — the constraints the plan must encode");
   } else if (role === "build") {
     add("build-methodology.md", "Step 2 — structure, then small pixel-perfect patches");
     add("build-gotchas.md", "the traps — read BEFORE building");
-    add("rules.md", "R0–R27 (the item's ruleIds if stamped)");
+    add("rules.md", "R0–R28 (the item's ruleIds if stamped)");
     for (const ap of approaches) for (const [rel, why] of APPROACH_FILES[ap] || []) add(rel, why);
     if (approaches.length > 1) add("approaches/combining-approaches.md", "mixing layers on one surface");
     if (surface && SURFACE_BEHAVIORS[surface]) add(SURFACE_BEHAVIORS[surface], "what the surface's props do at runtime");
@@ -131,7 +131,7 @@ const RULE_INDEX = {
   base: ["R0", "R10", "R11", "R15", "R16", "R17", "R18", "R20", "R26"],
   approach: {
     css: ["R6", "R8", "R9", "R9b", "R22", "R23"],
-    wireframes: ["R1", "R2", "R4", "R5", "R7", "R14", "R19", "R21", "R22", "R23", "R25", "R27"],
+    wireframes: ["R1", "R2", "R4", "R5", "R7", "R14", "R19", "R21", "R22", "R23", "R25", "R27", "R28"],
     primitives: ["R3", "R5", "R12", "R13", "R24"],
     headless: ["R13"],
   },
