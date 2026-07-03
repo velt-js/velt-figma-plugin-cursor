@@ -88,7 +88,16 @@ async function writeDisposition(dir, blockId, disposition, note) {
     const rp = reportPath(dir);
     const report = await loadJson(rp, { blocks: {} });
     report.blocks = report.blocks || {};
-    report.blocks[blockId] = { ...(report.blocks[blockId] || {}), disposition, note, evidence: "loop-state.json" };
+    // WRITE-ONCE: an existing DIFFERENT terminal disposition (BLOCKED/GAP, recorded with evidence)
+    // is finalized state — never silently replace it with STUCK (a resume once clobbered finalized
+    // entries this way). Refreshing the note of the SAME disposition is fine.
+    const existing = report.blocks[blockId];
+    const d = existing && typeof existing.disposition === "string" ? existing.disposition.toUpperCase() : null;
+    if (d && d !== disposition.toUpperCase()) {
+      console.error(`⚠ block '${blockId}' already finalized as ${d} — NOT overwriting with ${disposition} (loop bookkeeping still recorded in loop-state.json)`);
+      return;
+    }
+    report.blocks[blockId] = { ...(existing || {}), disposition, note, evidence: "loop-state.json" };
     await saveJson(rp, report);
   } finally { await fs.rmdir(lock).catch(() => {}); }
 }

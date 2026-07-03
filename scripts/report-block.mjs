@@ -14,16 +14,36 @@
 //       [--reconciliation <rec.json>]     # LAYER_PROBE result
 //       [--contract <contract.json>]      # CONTRACT_PROBE result
 //       [--driven]                        # pass ONLY if block.drive.assert matched in the live DOM
-//   report-block.mjs account <phaseDir> <blockId> --disposition BLOCKED|GAP --note "<why>" --evidence <file>
+//       [--force]                         # required to re-measure a FINALIZED (STUCK/BLOCKED/GAP) block
+//   report-block.mjs account <phaseDir> <blockId> --disposition BLOCKED|GAP --note "<why>" --evidence <file> [--force]
 //
 // `measure` validates every artifact exists + has the required shape, copies each JSON into
 // <phaseDir>/results/<blockId>/ (the canonical location the verdict gate audits against), and
 // writes the entry. `account` records a terminal disposition — the note AND an existing evidence
 // file are both REQUIRED (a GAP needs the F3-exhaustion record; a BLOCKED needs the triage
 // capture) so "declare a gap to escape the loop" is structurally unreachable.
+//
+// WRITE-ONCE: a block that already carries a terminal disposition (STUCK/BLOCKED/GAP) is
+// FINALIZED — `measure` and `account` refuse to touch it without --force. A cloud-run resume
+// once re-measured finalized blocks and clobbered their dispositions, silently re-doing paid
+// work; overwriting finalized state must be a deliberate act (the batched fix pass passes
+// --force), never a side effect of a resume.
 
 import { promises as fs } from "node:fs";
 import path from "node:path";
+
+const TERMINAL = new Set(["STUCK", "BLOCKED", "GAP"]);
+// pre-lock guard: a finalized entry only ever transitions BACK to measured via an explicit --force,
+// so checking before the lock is race-safe in practice and keeps the exit path lock-clean.
+async function guardFinalized(phaseDir, blockId, force, action) {
+  const report = JSON.parse(await fs.readFile(path.join(phaseDir, "block-report.json"), "utf8").catch(() => '{"blocks":{}}'));
+  const existing = report.blocks && report.blocks[blockId];
+  const d = existing && typeof existing.disposition === "string" ? existing.disposition.toUpperCase() : null;
+  if (d && TERMINAL.has(d) && !force) {
+    console.error(`✗ block '${blockId}' is FINALIZED as ${d} (${existing.note || "no note"}) — refusing to ${action}. If this overwrite is deliberate (e.g. the batched fix pass re-measuring a STUCK block), re-run with --force.`);
+    process.exit(2);
+  }
+}
 
 // block-report.json is shared with block-iter.mjs's disposition writer — serialize its
 // read-modify-write with an mkdir lock (atomic on every platform) so concurrent writers
@@ -73,6 +93,7 @@ async function measure(phaseDir, blockId, f) {
   };
 
   const rp = path.join(phaseDir, "block-report.json");
+  await guardFinalized(phaseDir, blockId, f.force, "overwrite it with a fresh measurement");
   await withReportLock(phaseDir, async () => {
     const report = JSON.parse(await fs.readFile(rp, "utf8").catch(() => '{"blocks":{}}'));
     report.blocks = report.blocks || {};
@@ -93,12 +114,13 @@ async function measure(phaseDir, blockId, f) {
   console.log(`✓ ${blockId}: assembled from ${Object.keys(artifacts).length} artifacts — driven=${!!f.driven}, ${sig} significant visual region(s), delta ${deltaOk ? "clean" : deltaDiffs.length + " diffs"}, stability ${stability.ok ? "ok" : "FAIL"}`);
 }
 
-async function account(phaseDir, blockId, disposition, note, evidence) {
+async function account(phaseDir, blockId, disposition, note, evidence, force) {
   const d = (disposition || "").toUpperCase();
   if (!["BLOCKED", "GAP"].includes(d)) { console.error("✗ --disposition BLOCKED|GAP (STUCK is written by block-iter.mjs, never by hand)"); process.exit(1); }
   if (!note || !note.trim()) { console.error("✗ --note is required (the specific why)"); process.exit(1); }
   if (!evidence) { console.error(`✗ --evidence <file> is required — a ${d} without evidence is an escape hatch, not a verdict (GAP: the F3-exhaustion record; BLOCKED: the env-triage capture)`); process.exit(1); }
   await mustExist(evidence, `${d} evidence file`);
+  await guardFinalized(phaseDir, blockId, force, `re-account it as ${d}`);
   const rp = path.join(phaseDir, "block-report.json");
   await withReportLock(phaseDir, async () => {
     const report = JSON.parse(await fs.readFile(rp, "utf8").catch(() => '{"blocks":{}}'));
@@ -116,9 +138,9 @@ async function main() {
   if (cmd === "measure") await measure(phaseDir, blockId, {
     capture: flag("--capture"), frame: flag("--frame"), visual: flag("--visual"), delta: flag("--delta"),
     stability: flag("--stability"), reconciliation: flag("--reconciliation"), contract: flag("--contract"),
-    driven: rest.includes("--driven"),
+    driven: rest.includes("--driven"), force: rest.includes("--force"),
   });
-  else if (cmd === "account") await account(phaseDir, blockId, flag("--disposition"), flag("--note"), flag("--evidence"));
+  else if (cmd === "account") await account(phaseDir, blockId, flag("--disposition"), flag("--note"), flag("--evidence"), rest.includes("--force"));
   else { console.error(`✗ unknown command '${cmd}'`); process.exit(1); }
 }
 

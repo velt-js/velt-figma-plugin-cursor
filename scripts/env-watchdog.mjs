@@ -37,6 +37,14 @@ async function probe(url, timeoutMs = 8000) {
   try { const r = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(timeoutMs) }); return r.ok || r.status < 500; }
   catch { return false; }
 }
+// DEBOUNCED probe: a single failed fetch is routinely a dev-server recompile blip, and a false
+// DOWN costs a stall + restart cycle (a cloud run was killed on exactly this class of false
+// positive). Only report DOWN after two consecutive failures a few seconds apart.
+async function probeDebounced(url) {
+  if (await probe(url)) return true;
+  await new Promise((r) => setTimeout(r, 5000));
+  return probe(url);
+}
 async function progressAgeMin(phaseDir) {
   try { const st = await fs.stat(path.join(phaseDir, "progress.log")); return (Date.now() - st.mtimeMs) / 60000; }
   catch { return null; }
@@ -56,14 +64,14 @@ async function main() {
   const restartCmd = argv("--restart-cmd", null);
   const restartCwd = path.resolve(argv("--restart-cwd", "."));
   const maxRestarts = +argv("--max-restarts", "3");
-  let restarts = 0, deadWarned = false;
+  let restarts = 0, deadWarned = false, deadPending = false;
 
-  await heartbeat(phaseDir, `watchdog up — probing ${appUrl} every ${interval / 1000}s (dead-agent threshold ${deadAfter} min)`);
+  await heartbeat(phaseDir, `watchdog up — probing ${appUrl} every ${interval / 1000}s (dead-agent threshold ${deadAfter} min; DOWN and DEAD-AGENT both require two consecutive confirmations)`);
 
   // one probe loop; never throws out
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const ok = await probe(appUrl);
+    const ok = await probeDebounced(appUrl);
     if (!ok) {
       await heartbeat(phaseDir, `appUrl DOWN (${appUrl}) — opening env stall; budgets frozen`);
       await sh("node", [path.join(SCRIPTS, "block-iter.mjs"), "pause", phaseDir, "--reason", `watchdog: ${appUrl} unreachable at ${nowIso()}`]);
@@ -100,14 +108,19 @@ async function main() {
       if (v.code === 0) { await sh("node", [path.join(SCRIPTS, "block-iter.mjs"), "resume", phaseDir]); await heartbeat(phaseDir, "env healthy again — closed the open stall"); }
     }
 
-    // dead-agent detection: heartbeat silence while the env is fine = a wedged/dead subagent
+    // dead-agent detection: heartbeat silence while the env is fine = a wedged/dead subagent.
+    // TWO-TICK confirmation: the staleness must hold across two consecutive loop ticks before the
+    // warning fires — a single stale reading (agent mid-long-tool-call, fs mtime lag) is not death;
+    // a false DEAD-AGENT gets a healthy subagent killed and its work re-done.
     const age = await progressAgeMin(phaseDir);
     if (ok && age != null && age > deadAfter && !(await stallOpen(phaseDir))) {
-      if (!deadWarned) {
+      if (!deadPending) {
+        deadPending = true;   // first stale tick — observe one more interval before declaring
+      } else if (!deadWarned) {
         deadWarned = true;
-        await heartbeat(phaseDir, `DEAD-AGENT WARNING: no heartbeat for ${age.toFixed(0)} min while the env is healthy — the in-flight subagent is likely wedged; orchestrator should kill + respawn it from the journal (prior runs lost 38 and 13 min here)`);
+        await heartbeat(phaseDir, `DEAD-AGENT WARNING (confirmed over 2 ticks): no heartbeat for ${age.toFixed(0)} min while the env is healthy — the in-flight subagent is likely wedged; orchestrator should kill + respawn it from the journal (prior runs lost 38 and 13 min here)`);
       }
-    } else deadWarned = false;
+    } else { deadPending = false; deadWarned = false; }
 
     await new Promise((r) => setTimeout(r, interval));
   }
