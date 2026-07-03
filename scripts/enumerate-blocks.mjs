@@ -214,6 +214,29 @@ export function enumerateBlocks(rootDoc, { width, scale = 2, forceWidth } = {}) 
   return { mode, loopId, scale, count: blocks.length, blocks, families };
 }
 
+// AUTO-SPLIT (--auto mode): pack families into sequential sub-phases of ≤ maxBlocks, NEVER splitting
+// a family (its states share one wireframe subtree). Previously this packing was orchestrator
+// judgment — it happened to get it right on the first --auto run, but load-bearing `--auto` behavior
+// must be script-decided, not LLM-decided. A family larger than the cap gets its own sub-phase with
+// a warning (family coherence beats the cap). Flows land last by family order.
+export function autoSplit(families, maxBlocks = 8) {
+  const subPhases = [];
+  let cur = null;
+  for (const f of families) {
+    const n = f.blockIds.length;
+    if (n > maxBlocks) {
+      if (cur) { subPhases.push(cur); cur = null; }
+      subPhases.push({ blockIds: [...f.blockIds], familyIds: [f.id], oversizedFamily: true });
+      continue;
+    }
+    if (!cur || cur.blockIds.length + n > maxBlocks) { if (cur) subPhases.push(cur); cur = { blockIds: [], familyIds: [] }; }
+    cur.blockIds.push(...f.blockIds);
+    cur.familyIds.push(f.id);
+  }
+  if (cur) subPhases.push(cur);
+  return subPhases.map((s, i) => ({ id: String.fromCharCode(65 + i), ...s }));   // A, B, C…
+}
+
 function dominantWidth(frames) {
   if (!frames.length) return null;
   const counts = new Map();
@@ -246,7 +269,8 @@ async function main() {
   const forceWidth = a.includes("--width") ? +argv("--width", "0") : undefined;
   const outDir = path.resolve(argv("--out", "."));
   const maxBlocks = +argv("--max-blocks", "8");
-  const allowLarge = a.includes("--allow-large");
+  const autoSplitFlag = a.includes("--auto-split");        // --auto runs: split instead of halting
+  const allowLarge = a.includes("--allow-large") || autoSplitFlag;
   await fs.mkdir(outDir, { recursive: true });
 
   let rootDoc, fileKey;
@@ -261,6 +285,7 @@ async function main() {
 
     const result = enumerateBlocks(rootDoc, { scale, forceWidth });
     guardEmpty(result, { maxBlocks, allowLarge });
+    if (autoSplitFlag && result.count > maxBlocks) result.subPhases = autoSplit(result.families, maxBlocks);
     const images = await exportFrames(fileKey, result.blocks.map((b) => b.figmaNodeId), scale, token, outDir);
     for (const b of result.blocks) {
       const url = images[b.figmaNodeId];
@@ -278,6 +303,7 @@ async function main() {
     rootDoc = (j.nodes?.[id]?.document) || j.document || j;
     const result = enumerateBlocks(rootDoc, { scale, forceWidth });
     guardEmpty(result, { maxBlocks, allowLarge });
+    if (autoSplitFlag && result.count > maxBlocks) result.subPhases = autoSplit(result.families, maxBlocks);
     result.source = `nodes:${path.basename(nodesPath)}`; result.nodeId = id;
     await fs.writeFile(path.join(outDir, "blocks.json"), JSON.stringify(result, null, 2) + "\n");
     report(result, outDir);
@@ -309,6 +335,8 @@ function report(result, outDir) {
   for (const b of result.blocks)
     console.log(`  ${String(b.order).padStart(2)}. ${b.id.padEnd(28)} role=${b.role.padEnd(5)} state=${b.state.padEnd(18)} ${b.component ? "[" + b.component + "]" : ""}`);
   console.log(`  families (BUILD units — verify stays per block): ${(result.families || []).map((f) => `${f.id}(${f.blockIds.length})`).join(" → ")}`);
+  if (result.subPhases) for (const s of result.subPhases)
+    console.log(`  sub-phase ${s.id}: ${s.familyIds.join(" + ")} (${s.blockIds.length} blocks)${s.oversizedFamily ? "  ⚠ single family exceeds the cap — kept whole (family coherence beats the cap)" : ""}`);
   console.log("  The verdict gate requires a PASS for EVERY block — a run that builds fewer is INCOMPLETE.");
 }
 

@@ -37,3 +37,13 @@ These don't show up in a static per-state capture; they only bite mid-interactio
 ## Interaction driving (when verifying in the browser)
 - **Velt triggers need a real pointer click; `element.click()` (JS) often won't fire the Angular handler.** Use a real click at the element's coordinates.
 - **The demo's Velt auth/`documentsReady` can stall after reloads** (`useCurrentUser` doesn't emit → nothing mounts, `velt-*` count 0). This is an ENVIRONMENT block, not a build failure — wait longer (10s+) for the mount, or recover with a fresh tab; re-auth via the user select. Triage app-vs-build before ever blaming the customization.
+
+## Brief/drive selectors must survive the BUILD (post-build stability)
+Probe briefs and drive steps are authored at PLAN time, against the app's **pre-build** DOM — but the wireframe registration **replaces that DOM**. A selector keyed to default Velt markup or host structure that the wireframe supersedes matches nothing the moment the Builder's first registration renders, and every downstream drive/measure dies on a selector that "worked when I verified it." (A planner discovered this live and re-keyed its briefs mid-run; author it correctly from the start.)
+
+**Key every brief/drive selector to something that survives the build:**
+- a **contract wireframe tag** (`velt-*-wireframe` — the manifest `contract.parts` `selectorHint`s exist precisely for this),
+- a **stable `velt-*` runtime class** (`.velt-comment-dialog--sidebar-mode`, `.velt-composer--submit-button`, … — verified in [`reference/css-classes.md`](./reference/css-classes.md)),
+- or the Builder's own **`.vc-*` classes** from the first-shot stylesheet (the Builder controls that markup, so those classes are guaranteed post-build).
+
+Never a pre-build class, a default-slot structure the design replaces, or a host wrapper the reconciliation may neutralize. Content-anchored selectors (`:has-text("…")`) are fine **only** on top of a stable base selector — fixture text survives; structure doesn't.

@@ -66,6 +66,34 @@ async function resetState(page) {
   await page.waitForTimeout(400);
 }
 
+// selectUser, HYDRATION-SAFE (BUG-2, found live on the first --auto run): the old version fired the
+// change right after DOMContentLoaded and raced the app's hydration — the selection sometimes didn't
+// stick, silently poisoning every downstream drive. Now: wait for the select to be hydrated (present,
+// enabled, and the app alive — a velt-* element or window.Velt), set + dispatch, then VERIFY the value
+// took and the app reaches an identified state; retry up to 3 times; fail loudly, never silently.
+async function selectUserRobust(page, user, timeout = 20000) {
+  await page.waitForFunction(() => {
+    const sel = document.querySelector("select");
+    const alive = !!window.Velt || [...document.querySelectorAll("*")].some((el) => el.tagName.toLowerCase().startsWith("velt-"));
+    return !!sel && !sel.disabled && alive;
+  }, { timeout });
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    await page.evaluate((u) => {
+      const sel = document.querySelector("select");
+      Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, "value").set.call(sel, u);
+      sel.dispatchEvent(new Event("change", { bubbles: true }));
+    }, user);
+    const stuck = await page.waitForFunction((u) => {
+      const sel = document.querySelector("select");
+      const alive = !!window.Velt || [...document.querySelectorAll("*")].some((el) => el.tagName.toLowerCase().startsWith("velt-"));
+      return !!sel && sel.value === u && alive;
+    }, user, { timeout: 5000 }).then(() => true, () => false);
+    if (stuck) { await page.waitForTimeout(600); return; }
+    await page.waitForTimeout(500 * attempt);
+  }
+  throw new Error(`selectUser '${user}' did not stick after 3 attempts (hydration race) — the app never reached an identified state with that user; treat as BLOCKED (env), not FAIL`);
+}
+
 async function runSteps(page, steps, { timeout = 15000 } = {}) {
   for (const s of steps || []) {
     const a = s.action;
@@ -78,10 +106,7 @@ async function runSteps(page, steps, { timeout = 15000 } = {}) {
     else if (a === "sleep") await page.waitForTimeout(s.ms || 300);
     else if (a === "eval") await page.evaluate(`(async()=>{ ${s.js} })()`);
     else if (a === "clear") await resetState(page);
-    else if (a === "selectUser") await page.evaluate(async (u) => {
-      const sel = document.querySelector("select");
-      if (sel) { Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, "value").set.call(sel, u); sel.dispatchEvent(new Event("change", { bubbles: true })); await new Promise((r) => setTimeout(r, 600)); }
-    }, s.text);
+    else if (a === "selectUser") await selectUserRobust(page, s.text, timeout);
     else throw new Error(`unknown drive action '${a}' (click|dblclick|hover|type|press|waitFor|sleep|eval|clear|selectUser)`);
   }
 }
@@ -108,8 +133,24 @@ async function measure(phaseDir, blockId, opts) {
   const probesPath = opts.probes || path.join(phaseDir, "briefs", `${blockId}.probes.json`);
   const probes = JSON.parse(await fs.readFile(probesPath, "utf8").catch(() => "null"));
   if (!probes) { console.error(`✗ probe brief missing: ${probesPath}\n  The Planner must author machine-executable drive steps + probe SPECs per block (briefs/<blockId>.probes.json).`); process.exit(3); }
-  const specPath = opts.spec
-    || (await fs.access(path.join(phaseDir, "briefs", `${blockId}.spec.json`)).then(() => path.join(phaseDir, "briefs", `${blockId}.spec.json`), () => path.join(phaseDir, "designSpec.json")));
+  // spec resolution (BUG-1b): prefer the block's slice; if missing, generate it ON THE FLY via
+  // spec-slice.mjs (geometric slicing + box rebase — the ONLY correct masking basis). Falling back
+  // to the full designSpec with `--mask-frame <block.figmaNodeId>` silently emptied every text mask
+  // (frameIds key to the top-level State/Flows groups, never per-block frames).
+  let specPath = opts.spec, maskFrameOk = true;
+  if (!specPath) {
+    const slicePath = path.join(phaseDir, "briefs", `${blockId}.spec.json`);
+    if (!(await fs.access(slicePath).then(() => true, () => false))) {
+      const r = spawnSync("node", [path.join(SCRIPTS, "spec-slice.mjs"), path.join(phaseDir, "designSpec.json"), path.join(phaseDir, "blocks.json"), "--block", blockId, "--out-dir", phaseDir], { encoding: "utf8" });
+      if (r.status === 0) console.error(`⚠ slice for '${blockId}' was missing — generated on the fly via spec-slice.mjs`);
+    }
+    if (await fs.access(slicePath).then(() => true, () => false)) specPath = slicePath;
+    else {
+      specPath = path.join(phaseDir, "designSpec.json");
+      maskFrameOk = false;   // full spec: --mask-frame would match nothing — omit it and warn
+      console.error(`⚠ no slice available for '${blockId}' and on-the-fly slicing failed — using the FULL designSpec WITHOUT --mask-frame; text masking will be degraded (expect false text diffs)`);
+    }
+  }
 
   const resDir = path.join(phaseDir, "results", blockId);
   await fs.mkdir(resDir, { recursive: true });
@@ -144,7 +185,7 @@ async function measure(phaseDir, blockId, opts) {
 
     if (opts.structureOnly) {
       // structural visit: capture + visual-diff only (gross-structure catch, before styling compounds)
-      const vd = runVisualDiff({ framePng, shotPng, specPath, block, resDir, acceptGlyph: false });
+      const vd = runVisualDiff({ framePng, shotPng, specPath, block, resDir, acceptGlyph: false, maskFrameOk });
       console.log(JSON.stringify({ mode: "structure-only", driven, regions: vd.regions?.length ?? -1, consoleErrors: consoleErrors.length }));
       process.exit((vd.regions || []).length ? 2 : 0);
     }
@@ -168,7 +209,7 @@ async function measure(phaseDir, blockId, opts) {
     await put("console.json", { consoleErrors, generatedAt: new Date().toISOString() });
 
     // VISUAL DIFF (child process — same CLI the docs name, artifacts identical)
-    const vd = runVisualDiff({ framePng, shotPng, specPath, block, resDir, acceptGlyph: opts.acceptGlyph });
+    const vd = runVisualDiff({ framePng, shotPng, specPath, block, resDir, acceptGlyph: opts.acceptGlyph, maskFrameOk });
 
     // ASSEMBLE the report entry from the artifacts (script-written end to end)
     if (!opts.noReport) {
@@ -203,10 +244,11 @@ async function measure(phaseDir, blockId, opts) {
   }
 }
 
-function runVisualDiff({ framePng, shotPng, specPath, block, resDir, acceptGlyph }) {
+function runVisualDiff({ framePng, shotPng, specPath, block, resDir, acceptGlyph, maskFrameOk = true }) {
   const args = [path.join(SCRIPTS, "visual-diff.mjs"), framePng, shotPng,
-    "--mask-text-from", specPath, "--mask-frame", block.figmaNodeId, "--min-fill", "0.05",
+    "--mask-text-from", specPath, "--min-fill", "0.05",
     "--out", path.join(resDir, "diff.png"), "--json-out", path.join(resDir, "visual.json")];
+  if (maskFrameOk) args.push("--mask-frame", block.figmaNodeId);   // only meaningful against a slice (frameIds restamped)
   if (block.frameRegion) args.push("--crop-ref", [block.frameRegion.x, block.frameRegion.y, block.frameRegion.w, block.frameRegion.h].join(","));
   if (acceptGlyph) args.push("--accept-glyph-residuals");
   const r = spawnSync("node", args, { encoding: "utf8" });

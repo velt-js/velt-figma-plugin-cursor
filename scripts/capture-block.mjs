@@ -64,15 +64,30 @@ async function main() {
     // never go idle; the explicit waitForSelector(liveSelector) below is the real readiness gate.
     await page.goto(url, { waitUntil: "domcontentloaded", timeout });
 
-    // optional: pick a user in a test harness (a <select> of users — NOT a credential login)
-    if (selectUser) await page.evaluate(async ({ u, toggleSel }) => {
-      const sel = document.querySelector("select"); if (sel) {
-        Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, "value").set.call(sel, u);
-        sel.dispatchEvent(new Event("change", { bubbles: true }));
-        await new Promise((r) => setTimeout(r, 600));
+    // optional: pick a user in a test harness (a <select> of users — NOT a credential login).
+    // HYDRATION-SAFE (BUG-2): wait for the select to be hydrated (present, enabled, app alive),
+    // set + dispatch, VERIFY the value stuck, retry up to 3x — the old fire-right-after-DCL version
+    // raced hydration and the selection sometimes silently didn't stick.
+    if (selectUser) {
+      await page.waitForFunction(() => {
+        const sel = document.querySelector("select");
+        const alive = !!window.Velt || [...document.querySelectorAll("*")].some((el) => el.tagName.toLowerCase().startsWith("velt-"));
+        return !!sel && !sel.disabled && alive;
+      }, { timeout });
+      let stuck = false;
+      for (let attempt = 1; attempt <= 3 && !stuck; attempt++) {
+        await page.evaluate((u) => {
+          const sel = document.querySelector("select");
+          Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, "value").set.call(sel, u);
+          sel.dispatchEvent(new Event("change", { bubbles: true }));
+        }, selectUser);
+        stuck = await page.waitForFunction((u) => document.querySelector("select")?.value === u, selectUser, { timeout: 5000 }).then(() => true, () => false);
+        if (!stuck) await page.waitForTimeout(500 * attempt);
       }
-      if (toggleSel) { document.querySelector(toggleSel)?.click(); await new Promise((r) => setTimeout(r, 1200)); }
-    }, { u: selectUser, toggleSel });
+      if (!stuck) throw new Error(`selectUser '${selectUser}' did not stick after 3 attempts (hydration race) — treat as BLOCKED (env)`);
+      await page.waitForTimeout(600);
+      if (toggleSel) { await page.evaluate(async (t) => { document.querySelector(t)?.click(); await new Promise((r) => setTimeout(r, 1200)); }, toggleSel); }
+    }
 
     // wait for the block's surface
     await page.waitForSelector(liveSelector, { timeout });
