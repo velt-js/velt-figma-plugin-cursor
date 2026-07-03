@@ -31,7 +31,12 @@ function sliceFor(spec, block) {
   if (nodes.length <= 2) {
     const frameNode = (spec.nodes || []).find((n) => n.id === frameId);
     if (frameNode && frameNode.box) {
-      const fb = frameNode.box, tol = 1;
+      // tol=3 (was 1): a TEXT child's line-height box routinely overflows its frame by
+      // (lineHeight-fontSize)/2 px (found live: the sidebar-header 'Comments' node sits at
+      // y-2/h+4 of its 20px frame) — tol=1 dropped it from the slice, which silently emptied
+      // its text mask and produced false glyph diffs. Frames in a State group sit ≥30px apart,
+      // so 3px cannot pull in a sibling frame's nodes.
+      const fb = frameNode.box, tol = 3;
       const inside = (b) => b && b.x >= fb.x - tol && b.y >= fb.y - tol
         && b.x + b.w <= fb.x + fb.w + tol && b.y + b.h <= fb.y + fb.h + tol;
       const contained = (spec.nodes || []).filter((n) => n.frameId === frameNode.frameId && n.id !== frameId && inside(n.box));
