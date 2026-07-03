@@ -20,7 +20,29 @@ import path from "node:path";
 
 function sliceFor(spec, block) {
   const frameId = block.figmaNodeId;
-  const nodes = (spec.nodes || []).filter((n) => n.frameId === frameId || n.id === frameId);
+  let nodes = (spec.nodes || []).filter((n) => n.frameId === frameId || n.id === frameId);
+  // GEOMETRIC FALLBACK — the normal path for a Loop template. figma-extract tags `frameId` with the
+  // extraction's TOP-LEVEL block frames (a SECTION's direct children — for a Loop that's just the
+  // `State`/`Flows` groups), never the per-block mockup frames two levels deeper. So the tag filter
+  // above finds only the block's own node (a 1-node slice = empty text masks = false visual diffs).
+  // Instead: find the block's node, then take every node in the SAME top-group whose box sits inside
+  // the block's box, REBASE boxes to the block-frame origin (so masks/icon boxes align with the
+  // block's frame PNG), and stamp frameId = the block's id (so --mask-frame keeps working downstream).
+  if (nodes.length <= 2) {
+    const frameNode = (spec.nodes || []).find((n) => n.id === frameId);
+    if (frameNode && frameNode.box) {
+      const fb = frameNode.box, tol = 1;
+      const inside = (b) => b && b.x >= fb.x - tol && b.y >= fb.y - tol
+        && b.x + b.w <= fb.x + fb.w + tol && b.y + b.h <= fb.y + fb.h + tol;
+      const contained = (spec.nodes || []).filter((n) => n.frameId === frameNode.frameId && n.id !== frameId && inside(n.box));
+      nodes = [frameNode, ...contained].map((n) => ({
+        ...n,
+        box: n.box ? { ...n.box, x: n.box.x - fb.x, y: n.box.y - fb.y } : n.box,
+        frameId,
+        _slicedBy: "geometry",
+      }));
+    }
+  }
   const nodeIds = new Set(nodes.map((n) => n.id));
   const iconAssignments = {};
   for (const [k, v] of Object.entries(spec.iconAssignments || {})) {
@@ -52,12 +74,16 @@ async function main() {
   const targets = only ? blocks.filter((b) => b.id === only) : blocks;
   if (!targets.length) { console.error(`✗ block '${only}' not found in ${blocksP}`); process.exit(1); }
   await fs.mkdir(outDir, { recursive: true });
+  let thin = 0;
   for (const b of targets) {
     const s = sliceFor(spec, b);
     const p = path.join(outDir, `${b.id}.spec.json`);
     await fs.writeFile(p, JSON.stringify(s, null, 2));
-    console.log(`✓ ${b.id}: ${s.nodeCount} nodes, ${Object.keys(s.iconAssignments).length} icon assignment(s) → ${path.relative(process.cwd(), p)}`);
+    const warn = s.nodeCount <= 2 ? "  ⚠ THIN SLICE — text masks will be empty; check the block's node exists in the designSpec" : "";
+    if (s.nodeCount <= 2) thin++;
+    console.log(`✓ ${b.id}: ${s.nodeCount} nodes, ${Object.keys(s.iconAssignments).length} icon assignment(s) → ${path.relative(process.cwd(), p)}${warn}`);
   }
+  if (thin) console.error(`⚠ ${thin}/${targets.length} slices are THIN (≤2 nodes) — masking/probes downstream will be degraded; investigate before building`);
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });
