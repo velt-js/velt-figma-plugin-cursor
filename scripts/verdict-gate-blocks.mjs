@@ -100,6 +100,31 @@ export async function auditReportArtifacts(blocks, report, phaseDir) {
   return problems;
 }
 
+// ---- family smoke check (R30 — fs layer, like the artifact audit). A family with at least one
+// MEASURED block must carry results/smoke/<familyId>.json with ok:true: the harvey run went fully
+// green on seeded fixtures while real interaction paths were broken (7 user defects, ~80 min of
+// post-loop fix passes). Missing smoke = INCOMPLETE (check skipped); ok:false = FAIL (real path broken).
+// Only applies when blocks.json carries `families` (older phases without them gate as before).
+export async function checkFamilySmoke(blocks, report, phaseDir) {
+  const missing = [], failures = [];
+  const families = (blocks && blocks.families) || [];
+  if (!families.length) return { missing, failures };
+  const reps = (report && report.blocks) || {};
+  for (const fam of families) {
+    const measured = (fam.blockIds || []).some((id) => {
+      const r = reps[id];
+      return r && r.built && !(typeof r.disposition === "string" && TERMINAL.has(r.disposition.toUpperCase()));
+    });
+    if (!measured) continue;   // fully terminal/unstarted family — smoke can't run against it
+    const p = path.join(phaseDir, "results", "smoke", `${fam.id}.json`);
+    const smoke = JSON.parse(await fs.readFile(p, "utf8").catch(() => "null"));
+    if (!smoke) { missing.push(`family '${fam.id}': real-path smoke suite not run (R30) — 'measure-block.mjs smoke ${path.basename(phaseDir)} ${fam.id} …' must produce results/smoke/${fam.id}.json`); continue; }
+    if (!smoke.ok) for (const s of (smoke.steps || []).filter((x) => !x.ok).slice(0, 6)) failures.push(`family '${fam.id}' smoke '${s.name}': ${s.error || (s.consoleErrors || []).join(" | ") || "failed"} (R30 — a fixture-green surface with a broken real path is NOT done)`);
+    if (!smoke.ok && !(smoke.steps || []).some((x) => !x.ok)) failures.push(`family '${fam.id}' smoke: console errors during real-path drive (R30)`);
+  }
+  return { missing, failures };
+}
+
 export function verdictGateBlocks(blocks, report, { maxRegionFill = 0.05 } = {}) {
   const missing = [];   // coverage / artifact gaps ⇒ INCOMPLETE (cannot terminate)
   const failures = [];  // built + measured but wrong ⇒ FAIL
@@ -176,6 +201,12 @@ async function main() {
   const audit = a.includes("--no-artifact-audit") ? [] : await auditReportArtifacts(blocks, report, path.dirname(path.resolve(rp)));
   if (audit.length && r.verdict !== "FAIL") { r.missing.push(...audit); r.verdict = "INCOMPLETE"; r.note = "artifact audit failed — evidence on disk doesn't back the report"; }
   else if (audit.length) r.missing.push(...audit);
+  // R30 — real-path smoke per family (skipped with --no-artifact-audit for offline/golden use).
+  // Escalates PASS only: a STOPPED phase is already handing off to the human — the smoke findings
+  // are appended to its lists for the handoff, but the stop stands (bounds beat re-looping).
+  const smoke = a.includes("--no-artifact-audit") ? { missing: [], failures: [] } : await checkFamilySmoke(blocks, report, path.dirname(path.resolve(rp)));
+  if (smoke.failures.length) { r.failures.push(...smoke.failures); if (r.verdict === "PASS") r.verdict = "FAIL"; }
+  if (smoke.missing.length) { r.missing.push(...smoke.missing); if (r.verdict === "PASS") { r.verdict = "INCOMPLETE"; r.note = "family real-path smoke missing (R30)"; } }
   console.log(`VERDICT: ${r.verdict}  (block coverage ${r.coverage}% of ${(blocks.blocks || []).length})`);
   if (r.missing.length) { console.log("  INCOMPLETE — not built / not driven / artifacts missing:"); for (const m of r.missing.slice(0, 24)) console.log("    · " + m); }
   if (r.failures.length) { console.log("  FAIL — built but does not match:"); for (const f of r.failures.slice(0, 24)) console.log("    · " + f); }

@@ -10,7 +10,9 @@
 //   * golden/ calibration imports compareDecls/verdictOf to prove the engine FAILs a known-bad
 //     render and PASSes a known-good one (vs the golden fixtures).
 //
-// Tolerances: lengths ±1px, colour ΔE(CIEDE2000) < 2, keywords exact, font-family by family name.
+// Tolerances: non-structural lengths ±2px, colour ΔE(CIEDE2000) < 2, keywords exact, font-family by
+// family name. (±1px on every length invited plateau spirals on sub-pixel rendering noise — both run
+// autopsies; structural geometry keeps its own compareBox/compareGap tolerances below.)
 
 // ---- colour ----
 export function parseColor(s) {
@@ -64,7 +66,7 @@ const LEN_PROPS = new Set(["gap", "padding", "margin", "border-radius", "font-si
 const nums = (s) => (String(s).match(/-?\d+(\.\d+)?/g) || []).map(Number);
 
 export function compareProp(prop, expected, rendered, tol = {}) {
-  const px = tol.px ?? 1, dE = tol.dE ?? 2;
+  const px = tol.px ?? 2, dE = tol.dE ?? 2;   // ±2px default on non-structural lengths (pass tol.px:1 to tighten)
   if (COLOR_PROPS.has(prop)) {
     const a = parseColor(expected), b = parseColor(rendered);
     if (!a || !b) return { pass: a === b, why: "unparseable colour" };

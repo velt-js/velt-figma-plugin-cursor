@@ -6,9 +6,26 @@
 // WRITES the STUCK disposition / phase.remaining into block-report.json ITSELF when bounds hit.
 // The orchestrator's only job is to call it every iteration and obey the exit code.
 //
+// v2 hardening (from the privado/harvey run autopsies):
+//  * The normalized diff hash is COMPUTED HERE from `git diff` of the customization dir — agents
+//    used to pass synthetic strings as --hash, which silently disabled repeat/oscillation detection
+//    (privado's attach-glyph A→B→A was never caught). --hash is now only a fallback when git is
+//    unavailable, and a warning says so.
+//  * ENV STALLS are excluded from every elapsed-minutes calculation. `pause`/`resume` bracket an
+//    environment outage (dev-server death, dead agent, session-limit pause); both runs charged
+//    ~1.5h of env dead-time against the build budget, tripping soft-caps on non-build time.
+//  * WINDOW RESET (B4): `start` on a block whose last activity is >20 min old opens a new work
+//    window — the minute budget restarts, attempt history survives. Harvey's block objects were
+//    never reset across passes, so STUCK notes reported garbage ("4 iterations / 370.7 min").
+//  * Minute caps rescaled so ITERATIONS are the primary bound: the old 8-min block cap was
+//    shorter than one builder round-trip (~13 min), stamping false-STUCK around clean work.
+//  * All timestamps are UTC ISO (B1). Agents never do time math — this script prints elapsed.
+//
 // Usage:
 //   block-iter.mjs start <phaseDir> <blockId> [--budget strict|balanced|thorough]
-//   block-iter.mjs record <phaseDir> <blockId> --diff-count N [--hash <normalizedDiffHash>]
+//   block-iter.mjs record <phaseDir> <blockId> --diff-count N [--hash <fallbackHash>] [--src <dir>]
+//   block-iter.mjs pause <phaseDir> [--reason "<env stall cause>"]
+//   block-iter.mjs resume <phaseDir>
 //   block-iter.mjs check-phase <phaseDir> [--remaining id1,id2,...]
 //   block-iter.mjs status <phaseDir> [blockId]
 //
@@ -22,16 +39,22 @@
 // State: <phaseDir>/loop-state.json (append-per-attempt; survives interruption/resume).
 // A retry is accepted only if the failing-diff count STRICTLY drops (forced improvement);
 // a non-dropping attempt is "no-progress". Two consecutive no-progress (or a repeated /
-// oscillating hash) = plateau. All caps come from --budget (default: balanced).
+// oscillating hash) = plateau. All caps come from --budget (default: strict — early STUCK +
+// the end-of-phase batched fix pass beats in-loop plateau chasing; measured 10-23 min vs hours).
 
 import { promises as fs } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import path from "node:path";
 
 const BUDGETS = {
-  strict:   { maxBlockIters: 6,  maxBlockMinutes: 6,  maxPhaseMinutes: 60, graceMinutes: 15 },
-  balanced: { maxBlockIters: 8,  maxBlockMinutes: 8,  maxPhaseMinutes: 75, graceMinutes: 15 },
-  thorough: { maxBlockIters: 12, maxBlockMinutes: 10, maxPhaseMinutes: 90, graceMinutes: 20 },
+  // maxBlockMinutes counts ACTIVE minutes (stalls excluded) and must exceed one full
+  // builder round-trip — iterations are the primary bound, minutes the backstop.
+  strict:   { maxBlockIters: 6,  maxBlockMinutes: 15, maxPhaseMinutes: 60,  graceMinutes: 15 },
+  balanced: { maxBlockIters: 8,  maxBlockMinutes: 20, maxPhaseMinutes: 90,  graceMinutes: 15 },
+  thorough: { maxBlockIters: 12, maxBlockMinutes: 30, maxPhaseMinutes: 120, graceMinutes: 20 },
 };
+const WINDOW_GAP_MINUTES = 20;   // start() on a block idle longer than this opens a fresh work window
 
 const statePath = (dir) => path.join(dir, "loop-state.json");
 const reportPath = (dir) => path.join(dir, "block-report.json");
@@ -41,7 +64,9 @@ async function saveJson(p, obj) { await fs.writeFile(p, JSON.stringify(obj, null
 
 async function loadState(dir) {
   const s = await loadJson(statePath(dir), null);
-  return s || { budget: "balanced", caps: BUDGETS.balanced, phaseStartedAt: null, blocks: {} };
+  const state = s || { budget: "strict", caps: BUDGETS.strict, phaseStartedAt: null, blocks: {}, stalls: [] };
+  state.stalls = state.stalls || [];
+  return state;
 }
 
 // merge a terminal disposition into block-report.json WITHOUT clobbering measured fields.
@@ -53,7 +78,47 @@ async function writeDisposition(dir, blockId, disposition, note) {
   await saveJson(rp, report);
 }
 
-function minutesSince(iso) { return (Date.now() - new Date(iso).getTime()) / 60000; }
+// ---- time (UTC everywhere; env stalls excluded) ----
+const nowIso = () => new Date().toISOString();
+function overlapMs(aFrom, aTo, bFrom, bTo) {
+  const from = Math.max(aFrom, bFrom), to = Math.min(aTo, bTo);
+  return Math.max(0, to - from);
+}
+// active minutes between startIso and now, minus every stall window's overlap.
+function activeMinutesSince(startIso, stalls) {
+  const start = new Date(startIso).getTime(), now = Date.now();
+  let stalled = 0;
+  for (const s of stalls || []) {
+    const from = new Date(s.from).getTime();
+    const to = s.to ? new Date(s.to).getTime() : now;   // open stall counts up to now
+    stalled += overlapMs(start, now, from, to);
+  }
+  return Math.max(0, (now - start - stalled)) / 60000;
+}
+const openStall = (state) => (state.stalls || []).find((s) => !s.to) || null;
+
+// ---- normalized diff hash, computed from the working tree (never trusted from an agent) ----
+// Take the changed hunk lines of the customization dir, strip whitespace/blank/comment-only noise,
+// sort (order-independent), sha256. Cosmetic churn hashes equal; a genuinely different patch differs.
+function computeNormalizedDiffHash(srcDir) {
+  const target = srcDir || "components/velt/ui-customization";
+  let out;
+  try {
+    out = execFileSync("git", ["diff", "HEAD", "--", target], { cwd: process.cwd(), stdio: ["ignore", "pipe", "pipe"], maxBuffer: 32 * 1024 * 1024 }).toString();
+    // include untracked files (a fresh *Wf.tsx is invisible to `git diff HEAD` alone)
+    const untracked = execFileSync("git", ["ls-files", "--others", "--exclude-standard", "--", target], { cwd: process.cwd(), stdio: ["ignore", "pipe", "pipe"] }).toString().trim();
+    for (const f of untracked.split("\n").filter(Boolean)) {
+      try { out += "\nNEWFILE:" + f + "\n" + execFileSync("cat", [f], { cwd: process.cwd() }).toString(); } catch { /* skip unreadable */ }
+    }
+  } catch { return null; }   // not a git repo / git missing → caller may fall back to --hash
+  const lines = out.split("\n")
+    .filter((l) => /^[+-]/.test(l) && !/^(\+\+\+|---)/.test(l) || l.startsWith("NEWFILE:"))
+    .map((l) => l.replace(/\s+/g, ""))
+    .filter((l) => l.length > 1 && !/^[+-]\/\//.test(l) && !/^[+-]\/?\*/.test(l))
+    .sort();
+  if (!lines.length) return "empty-diff";
+  return createHash("sha256").update(lines.join("\n")).digest("hex").slice(0, 16);
+}
 
 async function cmdStart(dir, blockId, budget) {
   const state = await loadState(dir);
@@ -61,39 +126,57 @@ async function cmdStart(dir, blockId, budget) {
     if (!BUDGETS[budget]) { console.error(`✗ unknown --budget '${budget}' (strict|balanced|thorough)`); process.exit(1); }
     state.budget = budget; state.caps = BUDGETS[budget];
   }
-  if (!state.phaseStartedAt) state.phaseStartedAt = new Date().toISOString();
-  if (!state.blocks[blockId]) state.blocks[blockId] = { startedAt: new Date().toISOString(), attempts: [], escalated: false, stuck: false };
+  if (!state.phaseStartedAt) state.phaseStartedAt = nowIso();
+  if (!state.blocks[blockId]) {
+    state.blocks[blockId] = { startedAt: nowIso(), windowStartedAt: nowIso(), windows: 1, attempts: [], escalated: false, stuck: false };
+  } else {
+    // WINDOW RESET (B4): re-entering a block after a long gap (new pass / after an outage) restarts
+    // the minute budget; attempts + escalation history survive. Cumulative wall across passes is
+    // exactly the corruption harvey's report showed ("4 iterations / 370.7 min").
+    const b = state.blocks[blockId];
+    const last = b.attempts.length ? b.attempts[b.attempts.length - 1].t : (b.windowStartedAt || b.startedAt);
+    if (activeMinutesSince(last, state.stalls) > WINDOW_GAP_MINUTES && !b.stuck) {
+      b.windowStartedAt = nowIso();
+      b.windows = (b.windows || 1) + 1;
+      console.log(`↻ block '${blockId}': idle > ${WINDOW_GAP_MINUTES} min — new work window (#${b.windows}); minute budget restarted, ${b.attempts.length} prior attempt(s) kept`);
+    }
+  }
   await saveJson(statePath(dir), state);
   const b = state.blocks[blockId];
-  console.log(`▶ block '${blockId}' — iteration ${b.attempts.length}/${state.caps.maxBlockIters}, budget=${state.budget} (≤${state.caps.maxBlockMinutes} min/block, phase soft-cap ${state.caps.maxPhaseMinutes} min)`);
+  console.log(`▶ block '${blockId}' — iteration ${b.attempts.length}/${state.caps.maxBlockIters}, budget=${state.budget} (≤${state.caps.maxBlockMinutes} active min/block window, phase soft-cap ${state.caps.maxPhaseMinutes} active min)`);
 }
 
-async function cmdRecord(dir, blockId, diffCount, hash) {
+async function cmdRecord(dir, blockId, diffCount, fallbackHash, srcDir) {
   if (!Number.isFinite(diffCount) || diffCount < 0) { console.error("✗ --diff-count <N≥0> is required (the failing-diff / significant-region count of THIS attempt)"); process.exit(1); }
   const state = await loadState(dir);
-  if (!state.blocks[blockId]) { console.error(`⚠ block '${blockId}' was never started — auto-starting now (call 'start' first next time)`); state.phaseStartedAt = state.phaseStartedAt || new Date().toISOString(); state.blocks[blockId] = { startedAt: new Date().toISOString(), attempts: [], escalated: false, stuck: false }; }
+  if (openStall(state)) console.error(`⚠ an env stall is OPEN (${openStall(state).reason || "no reason"}) — run 'block-iter.mjs resume ${dir}' once the environment is healthy; recording anyway`);
+  if (!state.blocks[blockId]) { console.error(`⚠ block '${blockId}' was never started — auto-starting now (call 'start' first next time)`); state.phaseStartedAt = state.phaseStartedAt || nowIso(); state.blocks[blockId] = { startedAt: nowIso(), windowStartedAt: nowIso(), windows: 1, attempts: [], escalated: false, stuck: false }; }
   const b = state.blocks[blockId];
   const prev = b.attempts[b.attempts.length - 1];
   const iter = b.attempts.length + 1;
-  const attempt = { iter, t: new Date().toISOString(), diffCount, hash: hash || null };
+
+  // hash is computed from the working tree; an agent-passed --hash is only a fallback.
+  let hash = computeNormalizedDiffHash(srcDir);
+  if (!hash && fallbackHash) { hash = fallbackHash; console.error("⚠ git diff unavailable — using the agent-supplied --hash fallback (repeat/oscillation detection is weaker)"); }
+  const attempt = { iter, t: nowIso(), diffCount, hash: hash || null };
 
   // ---- signals (computed BEFORE pushing, against history) ----
   const noProgress = prev ? diffCount >= prev.diffCount : false;   // strictly-drops rule
-  const repeatHash = !!hash && b.attempts.some((a) => a.hash && a.hash === hash);
-  const osc = !!hash && b.attempts.length >= 2 && b.attempts[b.attempts.length - 2].hash === hash; // A→B→A
+  const repeatHash = !!hash && hash !== "empty-diff" && b.attempts.some((a) => a.hash && a.hash === hash);
+  const osc = !!hash && hash !== "empty-diff" && b.attempts.length >= 2 && b.attempts[b.attempts.length - 2].hash === hash; // A→B→A
   attempt.signals = { noProgress, repeatHash, oscillation: osc };
   b.attempts.push(attempt);
 
   const prevNoProgress = prev && prev.signals ? prev.signals.noProgress || prev.signals.repeatHash : false;
   const plateau = osc || repeatHash || (noProgress && prevNoProgress); // oscillation/repeat is immediate; else 2 consecutive no-progress
-  const elapsedMin = minutesSince(b.startedAt);
+  const elapsedMin = activeMinutesSince(b.windowStartedAt || b.startedAt, state.stalls);
   const boundsHit = iter >= state.caps.maxBlockIters || elapsedMin >= state.caps.maxBlockMinutes;
   const best = Math.min(...b.attempts.map((a) => a.diffCount));
 
   let verdict = "CONTINUE", exit = 0;
   if (boundsHit) {
     b.stuck = true; verdict = "STUCK"; exit = 4;
-    await writeDisposition(dir, blockId, "STUCK", `harness bounds: ${iter} iterations / ${elapsedMin.toFixed(1)} min (caps ${state.caps.maxBlockIters}/${state.caps.maxBlockMinutes}); best residual diffCount=${best}; signals=${JSON.stringify(attempt.signals)}`);
+    await writeDisposition(dir, blockId, "STUCK", `harness bounds: ${iter} iterations / ${elapsedMin.toFixed(1)} active min this window (caps ${state.caps.maxBlockIters}/${state.caps.maxBlockMinutes}); best residual diffCount=${best}; signals=${JSON.stringify(attempt.signals)}`);
   } else if (plateau) {
     const sig = osc ? "oscillation (A→B→A hash)" : repeatHash ? "repeated normalized-diff hash" : "2 consecutive no-progress attempts";
     if (!b.escalated) { b.escalated = true; verdict = "ESCALATE"; exit = 5; }
@@ -104,19 +187,38 @@ async function cmdRecord(dir, blockId, diffCount, hash) {
   }
   await saveJson(statePath(dir), state);
 
-  const left = `${state.caps.maxBlockIters - iter} iters / ${(state.caps.maxBlockMinutes - elapsedMin).toFixed(1)} min left`;
-  if (verdict === "CONTINUE") console.log(`● ${blockId} iter ${iter}: diffCount=${diffCount}${noProgress ? " (NO-PROGRESS — must strictly drop)" : ""} — CONTINUE (${left})`);
+  const left = `${state.caps.maxBlockIters - iter} iters / ${(state.caps.maxBlockMinutes - elapsedMin).toFixed(1)} active min left`;
+  if (verdict === "CONTINUE") console.log(`● ${blockId} iter ${iter}: diffCount=${diffCount}${noProgress ? " (NO-PROGRESS — must strictly drop)" : ""} hash=${hash || "n/a"} — CONTINUE (${left})`);
   else if (verdict === "ESCALATE") console.log(`▲ ${blockId} iter ${iter}: PLATEAU — escalate the layer ONCE per guide/02-decision-tree.md, then keep iterating (retry budget continues; next plateau = STUCK)`);
   else console.log(`■ ${blockId} iter ${iter}: STUCK written to block-report.json — advance to the next block (do NOT keep iterating this one)`);
   process.exit(exit);
 }
 
+// ---- env stalls: pause/resume bracket an environment outage so it never burns build budget ----
+async function cmdPause(dir, reason) {
+  const state = await loadState(dir);
+  const open = openStall(state);
+  if (open) { console.log(`⏸ already paused since ${open.from} (${open.reason || "no reason"}) — nothing to do`); process.exit(0); }
+  state.stalls.push({ from: nowIso(), to: null, reason: reason || null });
+  await saveJson(statePath(dir), state);
+  console.log(`⏸ env stall OPEN (${reason || "no reason given"}) — elapsed-time budgets are frozen; run 'resume' when the environment is healthy`);
+}
+async function cmdResume(dir) {
+  const state = await loadState(dir);
+  const open = openStall(state);
+  if (!open) { console.log("▶ no open stall — nothing to resume"); process.exit(0); }
+  open.to = nowIso();
+  const min = ((new Date(open.to) - new Date(open.from)) / 60000).toFixed(1);
+  await saveJson(statePath(dir), state);
+  console.log(`▶ env stall CLOSED after ${min} min (${open.reason || "no reason"}) — excluded from all block/phase budgets`);
+}
+
 async function cmdCheckPhase(dir, remaining) {
   const state = await loadState(dir);
   if (!state.phaseStartedAt) { console.log("phase not started"); process.exit(0); }
-  const elapsed = minutesSince(state.phaseStartedAt);
+  const elapsed = activeMinutesSince(state.phaseStartedAt, state.stalls);
   if (elapsed < state.caps.maxPhaseMinutes) {
-    console.log(`phase ${elapsed.toFixed(0)}/${state.caps.maxPhaseMinutes} min — CONTINUE starting new blocks`);
+    console.log(`phase ${elapsed.toFixed(0)}/${state.caps.maxPhaseMinutes} active min — CONTINUE starting new blocks`);
     process.exit(0);
   }
   if (remaining && remaining.length) {
@@ -124,9 +226,9 @@ async function cmdCheckPhase(dir, remaining) {
     const report = await loadJson(rp, { blocks: {} });
     report.phase = { softCapReached: true, remaining };
     await saveJson(rp, report);
-    console.log(`■ phase soft-cap (${elapsed.toFixed(0)} ≥ ${state.caps.maxPhaseMinutes} min): ${remaining.length} un-started block(s) written to report.phase.remaining`);
+    console.log(`■ phase soft-cap (${elapsed.toFixed(0)} ≥ ${state.caps.maxPhaseMinutes} active min): ${remaining.length} un-started block(s) written to report.phase.remaining`);
   } else {
-    console.log(`■ phase soft-cap reached (${elapsed.toFixed(0)} ≥ ${state.caps.maxPhaseMinutes} min): finish the IN-FLIGHT block within the ~${state.caps.graceMinutes} min grace, do NOT start new blocks; re-run with --remaining <ids> to record un-started blocks`);
+    console.log(`■ phase soft-cap reached (${elapsed.toFixed(0)} ≥ ${state.caps.maxPhaseMinutes} active min): finish the IN-FLIGHT block within the ~${state.caps.graceMinutes} min grace, do NOT start new blocks; re-run with --remaining <ids> to record un-started blocks`);
   }
   process.exit(4);
 }
@@ -134,17 +236,21 @@ async function cmdCheckPhase(dir, remaining) {
 async function cmdStatus(dir, blockId) {
   const state = await loadState(dir);
   if (blockId) { console.log(JSON.stringify(state.blocks[blockId] || null, null, 2)); return; }
-  const rows = Object.entries(state.blocks).map(([id, b]) => `  ${id}: ${b.attempts.length} attempts, best=${b.attempts.length ? Math.min(...b.attempts.map((a) => a.diffCount)) : "-"}, escalated=${b.escalated}, stuck=${b.stuck}`);
-  console.log(`budget=${state.budget} phaseStarted=${state.phaseStartedAt} (${state.phaseStartedAt ? minutesSince(state.phaseStartedAt).toFixed(0) : "-"} min)\n${rows.join("\n") || "  (no blocks)"}`);
+  const stall = openStall(state);
+  const rows = Object.entries(state.blocks).map(([id, b]) => `  ${id}: ${b.attempts.length} attempts over ${b.windows || 1} window(s), best=${b.attempts.length ? Math.min(...b.attempts.map((a) => a.diffCount)) : "-"}, escalated=${b.escalated}, stuck=${b.stuck}`);
+  const stalledTotal = (state.stalls || []).reduce((s, x) => s + ((x.to ? new Date(x.to) : new Date()) - new Date(x.from)), 0) / 60000;
+  console.log(`budget=${state.budget} phaseStarted=${state.phaseStartedAt} (${state.phaseStartedAt ? activeMinutesSince(state.phaseStartedAt, state.stalls).toFixed(0) : "-"} active min; ${stalledTotal.toFixed(0)} min stalled across ${(state.stalls || []).length} stall(s)${stall ? "; ⏸ STALL OPEN: " + (stall.reason || "?") : ""})\n${rows.join("\n") || "  (no blocks)"}`);
 }
 
 async function main() {
   const [cmd, dir, ...rest] = process.argv.slice(2);
   const flag = (k, d) => { const i = rest.indexOf(k); return i >= 0 ? rest[i + 1] : d; };
-  if (!cmd || !dir) { console.error("usage: block-iter.mjs start|record|check-phase|status <phaseDir> [blockId] [flags]"); process.exit(1); }
+  if (!cmd || !dir) { console.error("usage: block-iter.mjs start|record|pause|resume|check-phase|status <phaseDir> [blockId] [flags]"); process.exit(1); }
   await fs.mkdir(dir, { recursive: true });
   if (cmd === "start") await cmdStart(dir, rest[0], flag("--budget"));
-  else if (cmd === "record") await cmdRecord(dir, rest[0], +flag("--diff-count", "NaN"), flag("--hash"));
+  else if (cmd === "record") await cmdRecord(dir, rest[0], +flag("--diff-count", "NaN"), flag("--hash"), flag("--src"));
+  else if (cmd === "pause") await cmdPause(dir, flag("--reason"));
+  else if (cmd === "resume") await cmdResume(dir);
   else if (cmd === "check-phase") await cmdCheckPhase(dir, (flag("--remaining", "") || "").split(",").map((s) => s.trim()).filter(Boolean));
   else if (cmd === "status") await cmdStatus(dir, rest[0]);
   else { console.error(`✗ unknown command '${cmd}'`); process.exit(1); }

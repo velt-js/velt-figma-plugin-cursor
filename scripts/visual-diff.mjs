@@ -154,6 +154,40 @@ export function textMasksFromSpec(spec, { scale = 2, pad = 3, frameId = null } =
   ]);
 }
 
+// Icon/glyph boxes from a designSpec: nodes whose name marks them as an icon/vector glyph (the
+// exported-asset naming convention: "16 send", "icon-…", "Vector", …). Used by the accepted-residual
+// classifier below — NOT as masks (icons are chrome and stay in the diff; only their sub-pixel
+// residue can be accepted, and only under the strict conditions of classifyAcceptedResiduals).
+const IS_ICON = (n) => /^(\d{1,3}[-_ ]|icon\b|ic[-_ ]|vector\b|glyph\b)/i.test((n.name || "").trim());
+export function iconBoxesFromSpec(spec, { scale = 2, frameId = null } = {}) {
+  const nodes = (spec.nodes || spec).filter((n) => !frameId || n.frameId === frameId);
+  return nodes.filter((n) => IS_ICON(n) && !n.text && n.box && n.box.w).map((n) => [
+    Math.round(n.box.x * scale), Math.round(n.box.y * scale),
+    Math.round(n.box.w * scale), Math.round(n.box.h * scale),
+  ]);
+}
+
+// ACCEPTED-RESIDUAL classifier (R29). Both runs burned ~35–40 min chasing byte-identical glyphs off
+// by <1 device pixel (Chrome snaps SVG placement to whole CSS px; Figma doesn't) — irreducible
+// rasterizer noise, not a build defect. A region is auto-accepted ONLY when ALL hold:
+//   * its fill is BELOW maxFill (default 0.10) — sparse anti-aliasing residue, never a solid block;
+//   * it INTERSECTS a known icon/glyph box from the designSpec;
+//   * its area is ≤ areaFactor × that icon's own box — confined to the glyph, not sprawling.
+// Callers gate the flag further: the Judge passes --accept-glyph-residuals ONLY after the block's
+// icon-identity check proved the rendered asset matches the exported SVG (byte/shape-identical).
+// Accepted regions move to `acceptedResiduals` (kept in the JSON for audit) and stop counting as FAIL.
+const intersects = (r, [x, y, w, h]) => r.x < x + w && x < r.x + r.w && r.y < y + h && y < r.y + r.h;
+export function classifyAcceptedResiduals(regions, iconBoxes, { maxFill = 0.10, areaFactor = 3 } = {}) {
+  const kept = [], accepted = [];
+  for (const r of regions) {
+    const box = iconBoxes.find((b) => intersects(r, b));
+    if (box && r.fill < maxFill && r.w * r.h <= areaFactor * box[2] * box[3]) {
+      accepted.push({ ...r, residualClass: "subpixel-glyph", acceptedNote: `fill ${r.fill} < ${maxFill}, confined to icon box ${box.join(",")} — rasterizer noise (R29), asset identity verified separately` });
+    } else kept.push(r);
+  }
+  return { regions: kept, acceptedResiduals: accepted };
+}
+
 // Core: returns {canvas, changedPixels, diffPct, regions, diffPNG}. scale = device/css for cssBox reporting.
 export function visualDiff(refImg, liveImg, { masks = [], threshold = 0.1, cell = 24, scale = 2, minChanged = 0, minFill = 0 } = {}) {
   const w = Math.max(refImg.width, liveImg.width), h = Math.max(refImg.height, liveImg.height);
@@ -175,7 +209,7 @@ export function visualDiff(refImg, liveImg, { masks = [], threshold = 0.1, cell 
 async function main() {
   const [refP, liveP, ...rest] = process.argv.slice(2);
   if (!refP || !liveP) { console.error("usage: visual-diff.mjs <refPng> <livePng> [--mask x,y,w,h ...] [--masks-json f] [--out diff.png] [--threshold 0.1] [--scale 2]"); process.exit(1); }
-  const masks = []; let outP = null, jsonOutP = null, threshold = 0.1, cell = 24, scale = 2, minChanged = 0, minFill = 0, textSpecPath = null, maskPad = 3, cropRef = null, cropLive = null, maskFrame = null;
+  const masks = []; let outP = null, jsonOutP = null, threshold = 0.1, cell = 24, scale = 2, minChanged = 0, minFill = 0, textSpecPath = null, maskPad = 3, cropRef = null, cropLive = null, maskFrame = null, acceptGlyph = false, acceptFill = 0.10;
   for (let i = 0; i < rest.length; i++) {
     if (rest[i] === "--mask") masks.push(rest[++i].split(",").map(Number));
     else if (rest[i] === "--masks-json") masks.push(...JSON.parse(await fs.readFile(rest[++i], "utf8")));
@@ -191,6 +225,8 @@ async function main() {
     else if (rest[i] === "--scale") scale = +rest[++i];
     else if (rest[i] === "--min-region") minChanged = +rest[++i];
     else if (rest[i] === "--min-fill") minFill = +rest[++i];
+    else if (rest[i] === "--accept-glyph-residuals") acceptGlyph = true;   // R29 — pass ONLY after icon identity verified
+    else if (rest[i] === "--accept-fill") acceptFill = +rest[++i];
   }
   if (textSpecPath) masks.push(...textMasksFromSpec(JSON.parse(await fs.readFile(textSpecPath, "utf8")), { scale, pad: maskPad, frameId: maskFrame }));
   let refImg = decodePNG(await fs.readFile(refP)); let liveImg = decodePNG(await fs.readFile(liveP));
@@ -199,7 +235,17 @@ async function main() {
   const r = visualDiff(refImg, liveImg, { masks, threshold, cell, scale, minChanged, minFill });
   if (outP) await fs.writeFile(outP, encodePNG(r._w, r._h, r._diff));
   const { _diff, _w, _h, ...pub } = r;
-  const result = { ref: path.basename(refP), live: path.basename(liveP), masks: masks.length, ...pub, diffMask: outP || null, generatedAt: new Date().toISOString() };
+  // R29: accepted-residual classification — requires the designSpec (icon boxes) via --mask-text-from.
+  let acceptedResiduals = [];
+  if (acceptGlyph && textSpecPath) {
+    const iconBoxes = iconBoxesFromSpec(JSON.parse(await fs.readFile(textSpecPath, "utf8")), { scale, frameId: maskFrame });
+    if (cropRef) for (const b of iconBoxes) { b[0] -= cropRef[0]; b[1] -= cropRef[1]; }   // re-base into the cropped frame, like masks
+    const c = classifyAcceptedResiduals(pub.regions, iconBoxes, { maxFill: acceptFill });
+    pub.regions = c.regions; acceptedResiduals = c.acceptedResiduals;
+  } else if (acceptGlyph) {
+    console.error("⚠ --accept-glyph-residuals needs --mask-text-from <designSpec> for icon boxes — flag ignored");
+  }
+  const result = { ref: path.basename(refP), live: path.basename(liveP), masks: masks.length, ...pub, acceptedResiduals, diffMask: outP || null, generatedAt: new Date().toISOString() };
   if (jsonOutP) await fs.writeFile(jsonOutP, JSON.stringify(result, null, 2));
   console.log(JSON.stringify(result, null, 2));
 }

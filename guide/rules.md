@@ -102,8 +102,8 @@ A flex column that should scroll needs `min-height: 0` (and `flex: 1 1 auto`) or
 **R15 — Verify after each surface.**
 Don't customize five surfaces half‑way. Finish one, confirm it renders and behaves (compare against Velt's default by temporarily removing your customization), then move on. Use the step‑ordered flow in [`verifying-a-customization.md`](./verifying-a-customization.md) — drive the surface's states, confirm Velt's behavior is intact, run the static rules scan, then reach a verdict.
 
-**R16 — One component at a time. Never all at once.**
-Customize **step by step, a single component per step** — register one wireframe (or compose one primitive), get it rendering correctly, verify it, *then* start the next. Do **not** write a big batch of wireframes/primitives across many surfaces in one pass and debug them together: when something doesn't render you won't know which piece broke, and wireframe gotchas (wrong nesting, container slots dropping children, shadow‑DOM) compound. Build → verify → next. (This pairs with R15.)
+**R16 — Build one component FAMILY at a time; verify per block. Never the whole design at once.**
+The unit of **build** is the **component family** — the set of design blocks sharing one wireframe subtree + stylesheet region (a composer's default/focused/typing states; a thread card's default/hover/selected/reply variants). Register that family's wireframe **once**, covering all its states, get it rendering, then verify **block by block** (each state/frame is still its own verified block — verification granularity never changes). Do **not** write wireframes/primitives across many *unrelated* surfaces in one pass and debug them together — when something doesn't render you won't know which piece broke, and wireframe gotchas (wrong nesting, container slots dropping children, shadow‑DOM) compound. And do **not** regress to one *block* at a time within a family: its states share one markup + stylesheet, so building them separately re-derives the same structure N times (measured: one family pass covered 6 blocks in the time a block-by-block run spent per ~1.5 blocks). Families with a shared component build sequentially; **flow (acceptance) blocks come last** — they compose already-verified states. Build family → verify its blocks → next family. (This pairs with R15.)
 
 **R17 — Icons/assets come from the design, never hand‑drawn.**
 If the design has an icon, glyph, or illustration, **use the design's own exported asset** (the SVG from Figma). Do **not** approximate it with hand‑written CSS shapes, Unicode glyphs, or a different icon from the app — a CSS‑drawn arrow that "looks close" is not a match and is a defect. Extract the asset during recognition and reference it; only fall back to an existing app icon when the design genuinely reuses that exact one.
@@ -154,6 +154,19 @@ Spreading or writing `velt-if="…"` / `velt-class="…"` onto a native `<div>`/
 - **Toggle a class by state** → put `velt-class` on a **Velt wireframe element**, or key your CSS off **Velt's own state classes / attributes** on the live DOM (e.g. `velt-composer-open`, `:has(button.velt-composer--submit-button:not([disabled]))`) — see [`reference/css-classes.md`](./reference/css-classes.md).
 Helper spreads like `{...veltIf("…")}` on HTML elements are the same defect in disguise — a reviewer must treat any `velt-if`/`velt-class` attribute on a non-Velt element as dead code.
 
+**R29 — Sub-pixel glyph residue with a verified-identical asset is ACCEPTED-with-note, never retried.**
+Figma and Chrome rasterize differently: Chrome snaps SVG placement to whole CSS pixels, so a glyph whose exported SVG is **byte/shape-identical** to the design's asset can still leave a sparse <1-device-px diff residue that **no CSS change can remove** (measured: two blocks spent ~35 min and one *regression* chasing exactly this). The rule cuts both ways:
+- **Accept it, mechanically.** A diff region qualifies as an accepted residual ONLY when ALL hold: its fill is sparse (< ~0.10 — anti-aliasing residue, never a solid block), it is **confined to an icon/glyph box** from the designSpec, AND the rendered asset's **identity is verified** (exact exported-SVG file/shape match — R17's check). `visual-diff.mjs --accept-glyph-residuals` classifies these into `acceptedResiduals` (kept in the artifact for audit); they stop counting toward FAIL. The verifier passes that flag **only after** the icon-identity check passed for the block.
+- **Never stretch it.** A solid-fill region, a region outside a glyph box, a wrong glyph (identity check failed), or any delta-table row is a REAL diff — this rule accepts rasterizer noise, never build defects. Widening tolerances anywhere else to escape a FAIL is a defect (R0).
+
+**R30 — Every component family passes a REAL-PATH smoke suite; fixture-green is not done.**
+Seeded fixtures verify appearance, not reality: a run went fully green while **real interaction paths were broken** — the fixture typed full-width text (masking a flex-end alignment bug), never opened the POPOVER dialog context (its CSS leaked, twice), and a `min-height` pinned to a 2-line fixture dead-banded 1-line real text; seven user-found defects and ~80 min of post-loop fixes followed. So per **family** (after its blocks pass), a scripted real-path suite must run and pass:
+- type a **short** message AND a **max-length** message (not just the canonical fixture text);
+- exercise the surface in **every dialog context it appears in** (sidebar card, popover/open dialog, hover preview — shared classes leak across contexts);
+- click **every affordance once** (reply, resolve, edit, options) asserting no layout shift, no dead band, and the action's outcome;
+- one **viewport resize** sanity pass; **zero console errors** throughout.
+The suite is machine-executed (`measure-block.mjs smoke`) from a Planner-authored spec, its result is a gate artifact (`results/smoke/<family>.json`), and the verdict gate treats a missing suite as INCOMPLETE and a failing one as FAIL. Never pin a layout value (like `min-height`) to a multi-line fixture measurement — derive it from the design's single-line state and let content grow it.
+
 ---
 
 ## Quick gate before shipping
@@ -178,3 +191,6 @@ Helper spreads like `{...veltIf("…")}` on HTML elements are the same defect in
 - [ ] Termination is mechanical — `block-report.json` covers **every** block in the **generated** `blocks.json` (no sampling) + the visual artifact per state; `verdict-gate-blocks.mjs` returns PASS/STOPPED (INCOMPLETE ≠ done) (R26).
 - [ ] Interaction-state visibility/layout keyed on a **stable** anchor (a persistent open/selected condition), never `:focus`/`:hover`/`:active`; `STABILITY_PROBE` shows each interactive target moves 0px through the transition; the real action verified end-to-end (R27).
 - [ ] No `velt-if`/`velt-class` attribute on a plain HTML element (dead code — they fire only on Velt elements); custom HTML gated with `<VeltIf>`, classes toggled on Velt elements or via Velt's own state classes (R28).
+- [ ] Built family-by-family (shared wireframe subtree in one pass), verified block-by-block, flows last (R16).
+- [ ] Sub-pixel glyph residue accepted ONLY via the mechanical classifier with asset identity verified; no tolerance-stretching anywhere else (R29).
+- [ ] Every family's real-path smoke suite ran and passed — short/long text, every dialog context, every affordance, resize, zero console errors (R30).

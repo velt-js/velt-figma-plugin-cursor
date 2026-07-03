@@ -71,7 +71,10 @@ if (a[0] === "--watch") {
   const [dir, ...rest] = a;
   const msg = rest.join(" ").trim();
   if (!dir || !msg) { console.error('usage: progress.mjs <phaseDir> "<message>"  |  --watch <phaseDir>'); process.exit(1); }
-  const t = new Date().toTimeString().slice(0, 8);          // HH:MM:SS (node has Date via the shell)
+  // UTC, marked with a Z (B1): a prior run mixed local-TZ heartbeat lines with UTC loop-state and the
+  // orchestrator's phase-clock math corrupted. Every plugin timestamp is UTC; agents never do time
+  // math — block-iter.mjs prints elapsed minutes itself.
+  const t = new Date().toISOString().slice(11, 19) + "Z";   // HH:MM:SSZ
   const line = `[${t}] ${msg}`;
   try { mkdirSync(dir, { recursive: true }); appendFileSync(path.join(dir, "progress.log"), line + "\n"); } catch { /* best-effort; never block the run on logging */ }
   console.log(line);

@@ -19,14 +19,23 @@
 //  - Fingerprint = { guideHash, manifestHash, veltPackageVersion }. guide/manifest come from the PLUGIN
 //    (this repo); the Velt package version comes from the TARGET repo's package.json (an SDK bump can
 //    rename slots → silently stale every mapping).
-//  - Promotion happens ONLY at "phase N complete" (confidence:"confirmed"); a machine PASS alone does not.
+//  - TWO-TIER PROMOTION (v2 — the old single tier meant zero learning ever persisted: promotion was
+//    gated on the user literally typing "phase N complete", which never happened, so 14h of runs left
+//    every array empty and the next run re-derived everything). Now:
+//      * at EVERY phase stop (gate exit 0 or 4) the orchestrator runs `promote --tier tentative` —
+//        journaled learnings land immediately as confidence:"tentative";
+//      * the user's "phase N complete" runs `confirm --phase <id>` (or `promote --tier confirmed`),
+//        upgrading that phase's tentative entries to "confirmed";
+//      * `load` returns confirmed entries by default; `--include-tentative` adds tentative ones
+//        (flagged) — the Planner treats tentative as a weaker prior it must re-verify.
 //
 // Usage:
 //   node scripts/memory.mjs show        [--dir <repo>]
 //   node scripts/memory.mjs fingerprint [--dir <repo>]
 //   node scripts/memory.mjs load        [--dir <repo>] [--include-tentative]   # advisory JSON for the Planner
-//   node scripts/memory.mjs promote      --dir <repo> --phase <id> --from <learnings.json>
+//   node scripts/memory.mjs promote      --dir <repo> --phase <id> --from <learnings.json> [--tier tentative|confirmed]
 //        # learnings.json: { mode?, node?, tokens?, mappings?, naming?, corrections?, gaps? }
+//   node scripts/memory.mjs confirm      --dir <repo> --phase <id>   # tentative → confirmed for that phase
 
 import { promises as fs } from "node:fs";
 import { createHash } from "node:crypto";
@@ -121,7 +130,8 @@ const keyOf = {
   corrections: (e) => (e.fact || "").toLowerCase().trim() || null,
   gaps: (e) => (e.gap || "").toLowerCase().trim() || null,
 };
-export async function promote(dir, { phaseId, mode, node, learnings }) {
+export async function promote(dir, { phaseId, mode, node, learnings, tier = "confirmed" }) {
+  if (!["confirmed", "tentative"].includes(tier)) throw new Error(`invalid tier '${tier}' (confirmed|tentative)`);
   const mem = await readRaw(dir);
   const fp = await fingerprint(dir);
   let added = 0;
@@ -129,19 +139,35 @@ export async function promote(dir, { phaseId, mode, node, learnings }) {
     const incoming = learnings[kind] || [];
     const byKey = new Map((mem[kind] || []).map((e) => [keyOf[kind](e), e]));
     for (const raw of incoming) {
-      const e = { ...raw, confidence: "confirmed", phase: phaseId, addedAt: nowIso(), fingerprintAtWrite: fp };
-      const k = keyOf[kind](e);
-      if (!k) continue;
-      byKey.set(k, { ...(byKey.get(k) || {}), ...e });   // last write wins, refreshes fingerprint
+      const k0 = keyOf[kind]({ ...raw });
+      if (!k0) continue;
+      const existing = byKey.get(k0);
+      // a tentative write never DOWNGRADES an already-confirmed entry
+      const confidence = tier === "tentative" && existing?.confidence === "confirmed" ? "confirmed" : tier;
+      const e = { ...raw, confidence, phase: phaseId, addedAt: nowIso(), fingerprintAtWrite: fp };
+      byKey.set(k0, { ...(existing || {}), ...e });   // last write wins, refreshes fingerprint
       added++;
     }
     mem[kind] = [...byKey.values()];
   }
   mem.phases = (mem.phases || []).filter((p) => p.phaseId !== phaseId);
-  mem.phases.push({ phaseId, mode: mode || null, node: node || null, status: "user_complete", completedAt: nowIso() });
+  mem.phases.push({ phaseId, mode: mode || null, node: node || null, status: tier === "confirmed" ? "user_complete" : "machine_complete", completedAt: nowIso() });
   mem.fingerprint = fp;
   await writeRaw(dir, mem);
-  return { added, phases: mem.phases.length };
+  return { added, phases: mem.phases.length, tier };
+}
+
+// confirm() = the user's "phase N complete": upgrade that phase's tentative entries to confirmed.
+export async function confirmPhase(dir, phaseId) {
+  const mem = await readRaw(dir);
+  let upgraded = 0;
+  for (const kind of KINDS) for (const e of mem[kind] || []) {
+    if (e.phase === phaseId && e.confidence === "tentative") { e.confidence = "confirmed"; e.confirmedAt = nowIso(); upgraded++; }
+  }
+  const ph = (mem.phases || []).find((p) => p.phaseId === phaseId);
+  if (ph) { ph.status = "user_complete"; ph.completedAt = nowIso(); }
+  await writeRaw(dir, mem);
+  return { upgraded };
 }
 
 // ---- CLI ----
@@ -164,14 +190,21 @@ async function main() {
     return;
   }
   if (cmd === "promote") {
-    const from = argv("--from"), phaseId = argv("--phase");
-    if (!from || !phaseId) { console.error("usage: memory.mjs promote --dir <repo> --phase <id> --from <learnings.json>"); process.exit(1); }
+    const from = argv("--from"), phaseId = argv("--phase"), tier = argv("--tier", "confirmed");
+    if (!from || !phaseId) { console.error("usage: memory.mjs promote --dir <repo> --phase <id> --from <learnings.json> [--tier tentative|confirmed]"); process.exit(1); }
     const l = JSON.parse(await fs.readFile(from, "utf8"));
-    const r = await promote(dir, { phaseId, mode: l.mode, node: l.node, learnings: l });
-    console.log(`✓ promoted ${r.added} entries for ${phaseId} → ${path.relative(process.cwd(), memPath(dir))} (${r.phases} phases recorded)`);
+    const r = await promote(dir, { phaseId, mode: l.mode, node: l.node, learnings: l, tier });
+    console.log(`✓ promoted ${r.added} ${r.tier} entries for ${phaseId} → ${path.relative(process.cwd(), memPath(dir))} (${r.phases} phases recorded)`);
     return;
   }
-  console.error("usage: memory.mjs show|fingerprint|load|promote [--dir <repo>] …");
+  if (cmd === "confirm") {
+    const phaseId = argv("--phase");
+    if (!phaseId) { console.error("usage: memory.mjs confirm --dir <repo> --phase <id>"); process.exit(1); }
+    const r = await confirmPhase(dir, phaseId);
+    console.log(`✓ confirmed ${r.upgraded} tentative entr${r.upgraded === 1 ? "y" : "ies"} for ${phaseId}`);
+    return;
+  }
+  console.error("usage: memory.mjs show|fingerprint|load|promote|confirm [--dir <repo>] …");
   process.exit(1);
 }
 if (import.meta.url === pathToFileURL(process.argv[1]).href) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });

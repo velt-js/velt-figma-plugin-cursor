@@ -103,11 +103,11 @@ function roleFiles({ role, approaches, feature, surface }) {
     add("reference/css-variables.md", "token mapping (Figma vars → --velt-*) — sections only");
     add("reference/data-models.md", "ONLY when judging primitives/headless feasibility — sections only");
     add("edge-cases-and-limitations.md", "coverage-matrix achievability");
-    add("rules.md", "R0–R28 — the constraints the plan must encode");
+    add("rules.md", "R0–R30 — the constraints the plan must encode");
   } else if (role === "build") {
     add("build-methodology.md", "Step 2 — structure, then small pixel-perfect patches");
     add("build-gotchas.md", "the traps — read BEFORE building");
-    add("rules.md", "R0–R28 (the item's ruleIds if stamped)");
+    add("rules.md", "R0–R30 (the item's ruleIds if stamped)");
     for (const ap of approaches) for (const [rel, why] of APPROACH_FILES[ap] || []) add(rel, why);
     if (approaches.length > 1) add("approaches/combining-approaches.md", "mixing layers on one surface");
     if (surface && SURFACE_BEHAVIORS[surface]) add(SURFACE_BEHAVIORS[surface], "what the surface's props do at runtime");
@@ -136,9 +136,9 @@ const RULE_INDEX = {
     headless: ["R13"],
   },
   role: {
-    plan: ["R3", "R12", "R21", "R24"],
+    plan: ["R3", "R12", "R21", "R24", "R30"],          // R30: the Planner authors each family's smoke spec
     build: ["R21", "R24"],
-    judge: ["R25", "R26", "R27"],
+    judge: ["R25", "R26", "R27", "R29", "R30"],        // R29: accepted glyph residue · R30: family smoke gate
   },
 };
 

@@ -63,21 +63,31 @@ Pick **one surface** (dialog or sidebar — dialog first is usually easiest). Th
 
 ---
 
-## The loop is BLOCK BY BLOCK — one Figma frame/state perfected before the next
+## The loop: BUILD by FAMILY, VERIFY by BLOCK — flows last (R16)
 
-The completeness oracle is `blocks.json` (`scripts/enumerate-blocks.mjs`): **every Figma frame/state is one block** — the design's frames ARE the checklist, so "stopped at the happy path" is impossible (an unbuilt frame = INCOMPLETE). The unit of work is the **block**, and a block is finished to a true match before the next starts:
+The completeness oracle is `blocks.json` (`scripts/enumerate-blocks.mjs`): **every Figma frame/state is one block** — the design's frames ARE the checklist, so "stopped at the happy path" is impossible (an unbuilt frame = INCOMPLETE). Blocks group into **families** (`blocks.json families[]` — the states sharing one component/wireframe subtree: a composer's default/focused/typing, a thread card's 6 variants). The unit of **build** is the family (its states share one markup + one stylesheet region — building them separately re-derives the same structure N times); the unit of **verification** is still the block. `flow` blocks form the LAST family — they compose already-verified states and typically pass in 0–1 iterations.
 
 ```
-for each block (composer-default first, then states):
-   build/patch the block's elements  (Step 2 above: structure → supply slots → reconcile → exact numbers)
-   SEED + DRIVE the block's state in-app  (block.drive/fixture: type/click/hover/resolve; wait for drive.assert)
-   CAPTURE device-res  (capture-block.mjs → frame-width × 2 @DPR2 PNG)
-   MEASURE:  visual-diff.mjs --mask-text-from <designSpec>  (chrome-only; region fill ≥ ~0.05 ⇒ FAIL)
-           + delta-compare BROWSER_PROBE  (exact style ΔE<2/±1px + layout box/gap/relation)
-           + LAYER_PROBE (R22/R23) + CONTRACT_PROBE (R25)
-   iterate until: no significant visual region ∧ delta tables empty ∧ contract ok  → block PASS
-   advance only on PASS
-terminate only when verdict-gate-blocks.mjs exits 0 for ALL blocks
+run first-shot-css.mjs <connect-map> --out styles.css     (deterministic: the Connect Map's exact
+                                                           cssDecls become the stylesheet BEFORE any
+                                                           model turn — you wire selectors, never
+                                                           re-derive values)
+for each family (state families first, flows last):
+   build the family's wireframe subtree ONCE — every state it lists, in the design's order
+   (Step 2 above: structure → supply slots → reconcile layers → wire the first-shot selectors)
+   for each of the family's blocks:
+      MEASURE-BLOCK  (scripts/measure-block.mjs — the whole pipeline in one command:
+         reset → drive the block's state from its probe brief (briefs/<id>.probes.json)
+         → CAPTURE device-res element PNG
+         → visual-diff.mjs --mask-text-from <spec slice>  (chrome-only; region fill ≥ ~0.05 ⇒ FAIL;
+           --accept-glyph-residuals per R29 only after icon identity passed)
+         → delta-compare BROWSER_PROBE (exact style + layout box/gap/relation)
+           + LAYER_PROBE (R22/R23) + CONTRACT_PROBE (R25) + STABILITY_PROBE (R27)
+         → report-block.mjs assembles the entry from the persisted artifacts)
+      patch the named diffs, re-measure — until diffCount 0 (or the controller stops you)
+   run the family's REAL-PATH SMOKE suite  (measure-block.mjs smoke — R30: short/long text, every
+   dialog context, every affordance, resize, zero console errors)
+terminate only when verdict-gate-blocks.mjs exits 0 for ALL blocks (+ smoke per family)
 ```
 
-Why mechanical: text has a ~4% Figma-vs-Chrome glyph-rendering floor, so the visual diff masks text and checks **chrome** (which the design-derived frame-width match aligns to ~0%) for missing/extra/wrong elements; **delta-compare owns exact colour/size/position** (font-render-immune). Neither alone is enough — both must be clean. The Judge writes per-block dispositions to `block-report.json`; it never declares done — `verdict-gate-blocks.mjs`'s exit code does (NOT `/goal`, which let prior runs stop early). A retry is accepted only if the significant-region / failing-diff count strictly drops. (See the traps in [`build-gotchas.md`](./build-gotchas.md).)
+Why mechanical: text has a ~4% Figma-vs-Chrome glyph-rendering floor, so the visual diff masks text and checks **chrome** (which the design-derived frame-width match aligns to ~0%) for missing/extra/wrong elements; **delta-compare owns exact colour/size/position** (font-render-immune). Neither alone is enough — both must be clean. Because the builder's self-probe IS `measure-block.mjs` — the same pipeline the verifier runs — a PASS-candidate is already a measured PASS, not a guess (the prior split, ad-hoc self-probes vs a separate judge pipeline, made every block need ~1.8 verify visits). Dispositions land in `block-report.json` via scripts only; nobody declares done — `verdict-gate-blocks.mjs`'s exit code does (NOT `/goal`, which let prior runs stop early). A retry is accepted only if the significant-region / failing-diff count strictly drops (`block-iter.mjs` computes the normalized diff hash itself). (See the traps in [`build-gotchas.md`](./build-gotchas.md).)

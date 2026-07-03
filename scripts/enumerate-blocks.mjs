@@ -193,7 +193,25 @@ export function enumerateBlocks(rootDoc, { width, scale = 2, forceWidth } = {}) 
     };
   });
 
-  return { mode, loopId, scale, count: blocks.length, blocks };
+  // FAMILIES — the unit of BUILD (verification stays per block). The harvey run proved the win:
+  // its builder covered the 6-block thread-card family in ONE 36-min pass (shared wireframe subtree
+  // + stylesheet region), while the strictly block-by-block sibling run averaged ~60-90 min/block.
+  // `state` blocks group by their owning component; `flow` blocks form the LAST family — flows
+  // compose already-verified states (harvey's flow-2 passed with 0 iterations because of this).
+  const famMap = new Map();
+  for (const b of blocks) {
+    const famId = b.role === "flow" ? "flows" : `fam-${slug(b.component || "misc")}`;
+    b.familyId = famId;
+    if (!famMap.has(famId)) famMap.set(famId, { id: famId, role: b.role, component: b.component || null, blockIds: [], minOrder: b.order });
+    const fam = famMap.get(famId);
+    fam.blockIds.push(b.id);
+    fam.minOrder = Math.min(fam.minOrder, b.order);
+  }
+  const families = [...famMap.values()]
+    .sort((a, b) => (a.id === "flows") - (b.id === "flows") || a.minOrder - b.minOrder)   // flows LAST
+    .map(({ minOrder, ...f }, i) => ({ ...f, buildOrder: i }));
+
+  return { mode, loopId, scale, count: blocks.length, blocks, families };
 }
 
 function dominantWidth(frames) {
@@ -290,6 +308,7 @@ function report(result, outDir) {
   console.log(`✓ ${result.count} blocks (${result.mode}) → ${path.relative(process.cwd(), path.join(outDir, "blocks.json"))}`);
   for (const b of result.blocks)
     console.log(`  ${String(b.order).padStart(2)}. ${b.id.padEnd(28)} role=${b.role.padEnd(5)} state=${b.state.padEnd(18)} ${b.component ? "[" + b.component + "]" : ""}`);
+  console.log(`  families (BUILD units — verify stays per block): ${(result.families || []).map((f) => `${f.id}(${f.blockIds.length})`).join(" → ")}`);
   console.log("  The verdict gate requires a PASS for EVERY block — a run that builds fewer is INCOMPLETE.");
 }
 
