@@ -60,7 +60,12 @@ const statePath = (dir) => path.join(dir, "loop-state.json");
 const reportPath = (dir) => path.join(dir, "block-report.json");
 
 async function loadJson(p, fallback) { try { return JSON.parse(await fs.readFile(p, "utf8")); } catch { return fallback; } }
-async function saveJson(p, obj) { await fs.writeFile(p, JSON.stringify(obj, null, 2)); }
+// atomic write (tmp + rename) so a concurrent reader never sees a torn file
+async function saveJson(p, obj) {
+  const tmp = `${p}.${process.pid}.tmp`;
+  await fs.writeFile(tmp, JSON.stringify(obj, null, 2));
+  await fs.rename(tmp, p);
+}
 
 async function loadState(dir) {
   const s = await loadJson(statePath(dir), null);
@@ -70,12 +75,22 @@ async function loadState(dir) {
 }
 
 // merge a terminal disposition into block-report.json WITHOUT clobbering measured fields.
+// block-report.json is also written by report-block.mjs — serialize the read-modify-write with
+// the same mkdir lock (atomic on every platform) so the two writers never clobber each other.
 async function writeDisposition(dir, blockId, disposition, note) {
-  const rp = reportPath(dir);
-  const report = await loadJson(rp, { blocks: {} });
-  report.blocks = report.blocks || {};
-  report.blocks[blockId] = { ...(report.blocks[blockId] || {}), disposition, note, evidence: "loop-state.json" };
-  await saveJson(rp, report);
+  const lock = path.join(dir, ".block-report.lock");
+  const deadline = Date.now() + 15000;
+  for (;;) {
+    try { await fs.mkdir(lock); break; }
+    catch { if (Date.now() > deadline) throw new Error("timed out waiting for block-report.json lock"); await new Promise((r) => setTimeout(r, 120)); }
+  }
+  try {
+    const rp = reportPath(dir);
+    const report = await loadJson(rp, { blocks: {} });
+    report.blocks = report.blocks || {};
+    report.blocks[blockId] = { ...(report.blocks[blockId] || {}), disposition, note, evidence: "loop-state.json" };
+    await saveJson(rp, report);
+  } finally { await fs.rmdir(lock).catch(() => {}); }
 }
 
 // ---- time (UTC everywhere; env stalls excluded) ----
