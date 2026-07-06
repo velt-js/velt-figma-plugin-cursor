@@ -11,5 +11,8 @@
     "golden": "node golden/run-golden.mjs",
     "all": "npm run check-guide && npm run validate && npm run deploy"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "playwright-core": "^1.61.1"
+  }
 }

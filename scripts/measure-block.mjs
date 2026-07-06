@@ -80,13 +80,19 @@ async function selectUserRobust(page, user, timeout = 20000) {
   for (let attempt = 1; attempt <= 3; attempt++) {
     await page.evaluate((u) => {
       const sel = document.querySelector("select");
+      if (!sel) return;   // already consumed by a successful sign-in (see below)
       Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, "value").set.call(sel, u);
       sel.dispatchEvent(new Event("change", { bubbles: true }));
     }, user);
     const stuck = await page.waitForFunction((u) => {
       const sel = document.querySelector("select");
       const alive = !!window.Velt || [...document.querySelectorAll("*")].some((el) => el.tagName.toLowerCase().startsWith("velt-"));
-      return !!sel && sel.value === u && alive;
+      if (!alive) return false;
+      // Some hosts REPLACE the select with signed-in UI on success (BUG-3, found live on the
+      // harvey app): a vanished select right after our dispatched change IS the success signal —
+      // the old `sel.value === u` predicate timed out on it, then attempt 2 crashed calling the
+      // native value setter on null ("Illegal invocation").
+      return sel ? sel.value === u : true;
     }, user, { timeout: 5000 }).then(() => true, () => false);
     if (stuck) { await page.waitForTimeout(600); return; }
     await page.waitForTimeout(500 * attempt);
@@ -115,7 +121,9 @@ async function openPage(browser, url, { scale = 2, selectUser = null, timeout = 
   const ctx = await browser.newContext({ viewport: { width: 1512, height: 900 }, deviceScaleFactor: scale });
   const page = await ctx.newPage();
   const consoleErrors = [];
-  page.on("console", (m) => { if (m.type() === "error") consoleErrors.push(m.text().slice(0, 300)); });
+  // keep the source URL: network-noise errors ("Failed to load resource") are only
+  // attributable/filterable by origin (see allowedConsoleErrorPatterns in smoke()).
+  page.on("console", (m) => { const loc = m.location && m.location(); consoleErrors.push(...(m.type() === "error" ? [(m.text().slice(0, 300)) + (loc && loc.url ? ` [${loc.url.slice(0, 120)}]` : "")] : [])); });
   page.on("pageerror", (e) => consoleErrors.push(String(e).slice(0, 300)));
   await page.goto(url, { waitUntil: "domcontentloaded", timeout });
   if (selectUser) await runSteps(page, [{ action: "selectUser", text: selectUser }]);
@@ -165,7 +173,12 @@ async function measure(phaseDir, blockId, opts) {
   try {
     const o = await openPage(browser, opts.url, { scale: opts.scale, selectUser: opts.selectUser, timeout: opts.timeout });
     const page = o.page; consoleErrors = o.consoleErrors;
-    await page.waitForSelector(liveSelector, { timeout: opts.timeout });
+    // Pre-drive boot wait: state 'attached', NOT the default 'visible' (BUG-4, found live): a
+    // wireframe liveSelector's FIRST DOM match is the hidden 0-size registry twin under
+    // <velt-wireframe>, and the visible clone often only renders after the drive signs in /
+    // opens the surface — the visible-wait deadlocked here. The drive's own `assert` is the
+    // real driven-state gate; the capture below resolves visible-first.
+    await page.waitForSelector(liveSelector, { timeout: opts.timeout, state: "attached" });
     await resetState(page);
     // DRIVE to the block's state, then prove it (a blank/default capture is the classic false-pass)
     try {
@@ -266,6 +279,11 @@ async function smoke(phaseDir, familyId, opts) {
   const specPath = opts.specFile || path.join(phaseDir, "briefs", `${familyId}.smoke.json`);
   const spec = JSON.parse(await fs.readFile(specPath, "utf8").catch(() => "null"));
   if (!spec) { console.error(`✗ smoke spec missing: ${specPath} — the Planner authors one per family (R30)`); process.exit(3); }
+  // spec.allowedConsoleErrorPatterns: regex strings for KNOWN environment noise that no build can
+  // fix (e.g. the Velt SDK's own Firestore Listen channel intermittently answers 400 on this demo
+  // key — pre-exists the customization, live-verified against the DEFAULT UI). Anything else fails.
+  const allowed = (spec.allowedConsoleErrorPatterns || []).map((p) => new RegExp(p));
+  const isAllowed = (e) => allowed.some((re) => re.test(e));
   const outDir = path.join(phaseDir, "results", "smoke");
   await fs.mkdir(outDir, { recursive: true });
   const chromium = await loadChromium();
@@ -284,7 +302,7 @@ async function smoke(phaseDir, familyId, opts) {
           const still = await page.locator(`${step.assertAbsent} >> visible=true`).count();
           if (still) throw new Error(`'${step.assertAbsent}' still visible (${still})`);
         }
-        const newErr = consoleErrors.slice(before);
+        const newErr = consoleErrors.slice(before).filter((e) => !isAllowed(e));
         results.push({ name: step.name, ok: newErr.length === 0 || !(spec.forbidConsoleErrors ?? true), consoleErrors: newErr });
       } catch (e) {
         results.push({ name: step.name, ok: false, error: String(e.message).slice(0, 300) });
@@ -303,8 +321,10 @@ async function smoke(phaseDir, familyId, opts) {
     if (opts.connect) await browser.close().catch(() => {});
     else await browser.close();
   }
-  const ok = results.every((r) => r.ok) && (!(spec.forbidConsoleErrors ?? true) || consoleErrors.length === 0);
-  const out = { familyId, ok, steps: results, consoleErrors, spec: path.basename(specPath), generatedAt: new Date().toISOString() };
+  const disallowed = consoleErrors.filter((e) => !isAllowed(e));
+  const allowedSeen = consoleErrors.filter(isAllowed);
+  const ok = results.every((r) => r.ok) && (!(spec.forbidConsoleErrors ?? true) || disallowed.length === 0);
+  const out = { familyId, ok, steps: results, consoleErrors: disallowed, allowedConsoleErrors: allowedSeen, spec: path.basename(specPath), generatedAt: new Date().toISOString() };
   const p = path.join(outDir, `${familyId}.json`);
   await fs.writeFile(p, JSON.stringify(out, null, 2));
   console.log(`${ok ? "✓" : "✗"} smoke '${familyId}': ${results.filter((r) => r.ok).length}/${results.length} steps ok, ${consoleErrors.length} console error(s) → ${path.relative(process.cwd(), p)}`);
