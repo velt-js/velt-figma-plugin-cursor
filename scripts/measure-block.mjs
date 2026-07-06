@@ -192,8 +192,39 @@ async function measure(phaseDir, blockId, opts) {
     }
     await page.waitForTimeout(500);
 
+    // FIXTURE CONTENT CHECK (found live: a fixture comment seeded 1-line where the design frame
+    // shows 2 lines shifted everything below by 18px — false diffs until traced). The brief's
+    // fixture.expectedTexts are the design's own strings; missing ones mean the FIXTURE is wrong:
+    // the fix is RESEED, never fudging layout to compensate (R0).
+    let fixtureCheck = null;
+    const expectedTexts = probes.fixture?.expectedTexts || [];
+    if (expectedTexts.length) {
+      const surfaceText = await page.evaluate((sel) => {
+        const roots = [...document.querySelectorAll(sel)];
+        const text = roots.map((r) => r.innerText || r.textContent || "").join("\n");
+        return text.trim() ? text : (document.body?.innerText || "");
+      }, liveSelector).catch(() => "");
+      const missing = expectedTexts.filter((t) => !surfaceText.includes(t));
+      fixtureCheck = { ok: !missing.length, expected: expectedTexts.length, missing };
+      await fs.writeFile(path.join(resDir, "fixture.json"), JSON.stringify(fixtureCheck, null, 2));
+      if (missing.length) console.error(`⚠ FIXTURE MISMATCH: ${missing.length}/${expectedTexts.length} design string(s) absent from the live surface (first: ${JSON.stringify(missing[0]).slice(0, 80)}). RESEED the fixture to match the design content — do NOT patch layout around wrong content (R0). Visual diffs below are unreliable until the fixture is right.`);
+    }
+
     // CAPTURE (device-res element PNG)
     const el = vis(page, liveSelector);
+    // LAYOUT-ANOMALY GUARD: an element grossly beyond the viewport is an immediate defect (a
+    // sidebar once rendered 34,000px wide from an unconstrained max-content rule and was only
+    // found via a smoke-click timeout). Fail fast with the named defect — never screenshot it
+    // (a 34k-px capture is its own hazard) or let smoke discover it the expensive way.
+    const vp = page.viewportSize() || { width: 1512, height: 900 };
+    const bb = await el.boundingBox().catch(() => null);
+    if (bb && (bb.width > vp.width * 3 || bb.height > vp.height * 5)) {
+      const anomaly = { blockId, layoutAnomaly: { width: Math.round(bb.width), height: Math.round(bb.height), viewport: vp }, hint: "an unconstrained rule (max-content / missing width) — pin the design's real dimension" };
+      await fs.writeFile(path.join(resDir, "triage.json"), JSON.stringify({ ...anomaly, consoleErrors, at: new Date().toISOString() }, null, 2));
+      console.error(`✗ LAYOUT ANOMALY: '${liveSelector}' measures ${Math.round(bb.width)}×${Math.round(bb.height)}px against a ${vp.width}×${vp.height} viewport — fix the runaway dimension before any visual measurement.`);
+      console.log(JSON.stringify(anomaly));
+      process.exit(2);
+    }
     await el.screenshot({ path: shotPng });
 
     if (opts.structureOnly) {
@@ -249,6 +280,7 @@ async function measure(phaseDir, blockId, opts) {
       delta: { ok: delta.ok, diffs: (delta.diffs || []).length },
       contract: contract ? { ok: contract.ok, violations: (contract.violations || []).length } : null,
       stability: { ok: stability.ok }, consoleErrors: consoleErrors.length,
+      ...(fixtureCheck ? { fixture: fixtureCheck } : {}),
     }, null, 2));
     process.exit(diffCount === 0 && driven && consoleErrors.length === 0 ? 0 : 2);
   } finally {

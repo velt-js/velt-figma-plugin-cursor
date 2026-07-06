@@ -15,6 +15,14 @@ A fast, ordered playbook for the things that actually go wrong. Find your sympto
 
 ## Symptom → cause → fix
 
+### "Velt never boots in a sandboxed/cloud environment — but curl to cdn.velt.dev works"
+Seen independently in TWO cloud environments (Cursor background agents and claude.ai/code), different symptoms, same root class: **the sandbox's egress proxy breaks Chromium's TLS handshake inside the CONNECT tunnel while curl/Node fetch succeed** — so every command-line network check passes and the browser still can't load `cdn.velt.dev` (Velt SDK) or reach Velt's backend.
+- **Signature:** `verify-app.mjs` reports `veltPresent` tags but `veltBooted:false` ("present but not booted"); browser network log shows TLS resets/`ERR_` on `cdn.velt.dev`; `curl -sI https://cdn.velt.dev` from the same box is fine.
+- **Fix A (self-provisioned local proxy — proven live):** stand up a local `mitmproxy` chained in front of the sandbox's own proxy (`mitmdump --mode upstream:<sandbox-proxy> --listen-port 8081`), import the mitmproxy CA into the browser's trust store (NSS: `certutil -d sql:$HOME/.pki/nssdb -A -t C -n mitmproxy -i ~/.mitmproxy/mitmproxy-ca-cert.pem`), and launch the headless browser with `--proxy-server=127.0.0.1:8081`.
+- **Fix B (request interception):** route the SDK fetches through Node (which the proxy tolerates) via Playwright request interception, serving the responses to the page.
+- Also check the mundane cause first: `/etc/hosts` hijacking `*.velt.dev` (`preflight-env.mjs` flags this) and whether the Velt **backend** the app points at is actually running.
+Neither fix repairs the sandbox proxy itself — journal the workaround you used so a resume can rebuild it.
+
 ### "My CSS does nothing"
 - **Shadow DOM is on.** Variables cross it, but class/selector CSS doesn't → either set `shadowDom={false}`, or keep it on and push your CSS into the shadow root with `client.injectCustomCss({ type:'styles', value:'…' })` (R6).
 - **Specificity.** Velt injects high‑specificity styles → add `!important` (R9b). Inspect → target the `velt-*` class → `!important`.

@@ -81,10 +81,21 @@ export function scaffoldProbes(block, sliceNodes, comp) {
   const stabilityTargets = (comp?.slots || [])
     .filter((s) => INTERACTIVE_ROLES.has(s.role))
     .map((s) => ({ name: slug(s.reactPath.split(".").pop()), selector: s.tag }));
+  // FIXTURE CONTENT CONTRACT (auto-derived, no _todo): the design's own text nodes. A fixture
+  // seeded with different content produces false layout diffs (a 1-line comment where the design
+  // shows 2 lines shifted everything below by 18px in a live run) — measure-block verifies these
+  // strings are present post-drive and says "reseed the fixture", never "fudge the layout" (R0).
+  const expectedTexts = [...new Set((sliceNodes || [])
+    .filter((n) => n.id !== block.figmaNodeId && typeof n.text === "string" && n.text.trim().length > 1)
+    .map((n) => n.text.trim()))];
   return {
     blockId: block.id,
     liveSelector,
     ...(liveSelector ? {} : { _todo_liveSelector: "the element that DEFINES this block, verified live" }),
+    fixture: {
+      expectedTexts,
+      note: "seeded fixture content must SHOW these design strings (timestamps/user-variable strings may be pruned by the Planner; adding entries is better than deleting)",
+    },
     drive: {
       steps: [],
       _todo_steps: `machine actions to reach state '${block.state}' (vocabulary: click|dblclick|hover|type|press|waitFor|sleep|eval|clear|selectUser). Prose hints from enumeration: ${JSON.stringify((block.drive && block.drive.steps) || [])}`,
@@ -153,6 +164,36 @@ async function main() {
       const todos = findTodos(await loadJson(p));
       if (todos.length) { console.log(`✗ family ${f.id}: ${todos.length} unfilled _todo field(s)`); dirty++; }
     }
+    // CROSS-FRAME EXPECTATION CONFLICTS (OBS-R2-1) — same selector, different expected values
+    // across blocks. Often legitimate (states differ!), but the Builder must know which value is
+    // the shared wireframe base; discovered late this costs a measure iteration. WARNINGS only —
+    // they never change the exit code; the Planner resolves intentionally (state-scope the
+    // selector or confirm the divergence).
+    const bySel = new Map();
+    for (const b of blocks.blocks || []) {
+      const brief = await loadJson(path.join(briefsDir, `${b.id}.probes.json`)).catch(() => null);
+      for (const el of brief?.browser?.elements || []) {
+        if (!el.selector) continue;
+        const rec = bySel.get(el.selector) || [];
+        rec.push({ block: b.id, expected: el.expected || {} });
+        bySel.set(el.selector, rec);
+      }
+    }
+    let conflicts = 0;
+    for (const [sel, recs] of bySel) {
+      if (recs.length < 2) continue;
+      const props = new Map();
+      for (const r of recs) for (const [prop, val] of Object.entries(r.expected)) {
+        const m = props.get(prop) || new Map();
+        (m.get(String(val)) || m.set(String(val), []).get(String(val))).push(r.block);
+        props.set(prop, m);
+      }
+      for (const [prop, vals] of props) if (vals.size > 1) {
+        conflicts++;
+        console.log(`⚠ cross-frame conflict: '${sel}' expects ${prop} = ${[...vals.entries()].map(([v, ids]) => `${v} [${ids.join(", ")}]`).join("  vs  ")}`);
+      }
+    }
+    if (conflicts) console.log(`⚠ ${conflicts} cross-frame expectation conflict(s) — resolve intentionally (state-scope the selector or confirm the divergence); left ambiguous they surface as measure iterations`);
     console.log(dirty ? `✗ ${dirty} brief(s) incomplete — the Planner must fill every _todo before the build loop starts` : `✓ all briefs complete (${checked} blocks + ${(blocks.families || []).length} families, zero _todo leftovers)`);
     process.exit(dirty ? 2 : 0);
   }

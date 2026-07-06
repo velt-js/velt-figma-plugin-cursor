@@ -3,7 +3,9 @@
 // that *something* answered on :3000, not that it was THIS project's app — harvey judged the
 // privado project for ~35 min before the Judge caught it. This script verifies, mechanically:
 //   1. the URL answers (HTTP-level);
-//   2. the page is a VELT app (a `velt-*` element or window.Velt appears within the timeout);
+//   2. Velt actually BOOTED — window.Velt or a velt-* custom element DEFINED in the registry
+//      (a velt-* tag merely present in the DOM is NOT boot evidence: React renders the JSX tags
+//      even when the SDK script never loads — a cloud run's preflight false-positived on this);
 //   3. (optional) the page matches THIS repo — --expect <substring> against title+body, and/or
 //      --marker <selector> that must exist.
 // Run it at preflight when pinning `appUrl`, and again before every judge/measure session — a URL
@@ -53,21 +55,34 @@ async function main() {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
     const page = await ctx.newPage();
     await page.goto(url, { waitUntil: "domcontentloaded", timeout });
-    // Velt presence: any custom element whose tag starts with velt-, or the client global.
-    const veltPresent = await page.waitForFunction(
-      () => !!document.querySelector("*") && ([...document.querySelectorAll("*")].some((el) => el.tagName.toLowerCase().startsWith("velt-")) || !!window.Velt),
+    // Velt BOOT evidence, not mere presence. A cloud run's preflight passed on `veltPresent:true`
+    // while Velt had never booted: React renders <velt-*> JSX tags into the DOM even when the SDK
+    // script never loads (backend down / CDN TLS blocked in the BROWSER), so "a velt-* tag exists"
+    // is a false positive. Booted means the custom elements are DEFINED (the SDK's JS actually ran)
+    // or window.Velt exists — waited for, then broken down for the diagnosis.
+    await page.waitForFunction(
+      () => !!window.Velt || [...document.querySelectorAll("*")].some((el) => { const t = el.tagName.toLowerCase(); return t.startsWith("velt-") && !!customElements.get(t); }),
       { timeout }
-    ).then(() => true, () => false);
+    ).catch(() => {});
+    const velt = await page.evaluate(() => {
+      const tags = [...new Set([...document.querySelectorAll("*")].map((el) => el.tagName.toLowerCase()).filter((t) => t.startsWith("velt-")))];
+      const defined = tags.filter((t) => !!customElements.get(t));
+      const rendered = defined.filter((t) => [...document.querySelectorAll(t)].some((el) => (el.shadowRoot && el.shadowRoot.childElementCount) || el.childElementCount));
+      return { tags, defined, rendered, global: !!window.Velt };
+    });
+    const veltPresent = velt.tags.length > 0 || velt.global;
+    const veltBooted = velt.global || velt.defined.length > 0;
     const title = await page.title();
     const bodyText = (await page.evaluate(() => document.body?.innerText?.slice(0, 4000) || "")).toLowerCase();
     const expectOk = !expect || title.toLowerCase().includes(expect.toLowerCase()) || bodyText.includes(expect.toLowerCase());
     const markerOk = !marker || !!(await page.$(marker));
-    const ok = veltPresent && expectOk && markerOk;
+    const ok = veltBooted && expectOk && markerOk;
     const why = ok ? null
       : !veltPresent ? "no velt-* element / window.Velt appeared — Velt is not rendering here"
+      : !veltBooted ? `velt-* tags exist (${velt.tags.slice(0, 3).join(", ")}) but the SDK never DEFINED them — PRESENT BUT NOT BOOTED: Velt's script never loaded/initialized. Check the Velt backend is running and that the BROWSER can reach cdn.velt.dev (an egress proxy can break Chromium's TLS while curl succeeds — see guide/debugging.md)`
       : !expectOk ? `--expect '${expect}' not found in title/body — a DIFFERENT app is answering on this URL (port squatter?)`
       : `--marker '${marker}' not found in the DOM`;
-    console.log(JSON.stringify({ ok, url, reachable: true, title, veltPresent, expectOk, markerOk, why }));
+    console.log(JSON.stringify({ ok, url, reachable: true, title, veltPresent, veltBooted, veltTags: velt.tags.length, veltDefined: velt.defined.length, veltRendered: velt.rendered.length, expectOk, markerOk, why }));
     if (!ok && !quiet) console.error(`✗ ${why}\n  Fix: confirm the dev server for THIS repo (read its startup output for the real port — ports auto-bump), re-pin appUrl, re-run.`);
     process.exit(ok ? 0 : 2);
   } finally {

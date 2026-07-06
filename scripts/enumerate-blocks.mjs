@@ -262,6 +262,21 @@ async function exportFrames(fileKey, ids, scale, token, outDir) {
   return images;
 }
 
+// WRITE-ONCE (resume clobber guard): once blocks.json exists it is FINALIZED state — the Planner
+// annotates it (drive/fixture/liveSelector) and the loop keys everything to it. A resumed cloud
+// run once re-enumerated over it, clobbering the annotations + fixture URLs on a phase that was
+// one audit from done (~40 min of redundant work + a manual git-restore). Re-enumeration is only
+// ever intentional: pass --force.
+async function guardExistingBlocks(outDir, force) {
+  const p = path.join(outDir, "blocks.json");
+  if (!(await fs.access(p).then(() => true, () => false))) return;
+  if (force) { console.error("⚠ --force: overwriting the existing blocks.json (prior annotations are LOST)"); return; }
+  console.error(`✗ blocks.json already exists in ${outDir} — this phase is already enumerated.`);
+  console.error("  A resumed run must NOT re-enumerate (it clobbers planner annotations + fixture URLs).");
+  console.error("  Run `node scripts/resume-check.mjs check <phaseDir>` and obey its verdict, or pass --force to intentionally re-enumerate.");
+  process.exit(5);
+}
+
 async function main() {
   const [mode, ...a] = process.argv.slice(2);
   const argv = (k, d) => { const i = a.indexOf(k); return i >= 0 ? a[i + 1] : d; };
@@ -272,6 +287,7 @@ async function main() {
   const autoSplitFlag = a.includes("--auto-split");        // --auto runs: split instead of halting
   const allowLarge = a.includes("--allow-large") || autoSplitFlag;
   await fs.mkdir(outDir, { recursive: true });
+  await guardExistingBlocks(outDir, a.includes("--force"));
 
   let rootDoc, fileKey;
   if (mode === "rest") {

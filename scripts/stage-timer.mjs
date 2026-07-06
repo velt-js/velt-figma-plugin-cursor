@@ -66,6 +66,15 @@ async function main() {
       console.log(`▶ stage '${stage}' already running since ${existing.startedAt} (cap ${existing.capMin} active min) — clock NOT reset`);
       process.exit(0);
     }
+    // WRITE-ONCE (resume clobber guard): a COMPLETED stage is finalized state — a resumed run once
+    // reset the plan clock and re-dispatched a planner whose work was already done. Redoing a
+    // finished stage is only ever intentional: pass --force.
+    if (existing && existing.endedAt && !rest.includes("--force")) {
+      console.error(`✗ stage '${stage}' already COMPLETED (${existing.durationMin} min, ended ${existing.endedAt}) — a resumed run must not redo it.`);
+      console.error("  Run `node scripts/resume-check.mjs check <phaseDir>` and obey its verdict, or pass --force to intentionally re-run this stage.");
+      process.exit(5);
+    }
+    if (existing && existing.endedAt) console.error(`⚠ --force: re-running completed stage '${stage}' (prior duration ${existing.durationMin} min is overwritten)`);
     state.stages[stage] = { startedAt: nowIso(), capMin: cap, endedAt: null, stoppedByTimer: false };
     await save(dir, state);
     console.log(`▶ stage '${stage}' started — cap ${cap} active min (env stalls excluded). Poll: stage-timer.mjs check ${dir} ${stage}`);

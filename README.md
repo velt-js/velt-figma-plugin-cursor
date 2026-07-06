@@ -73,6 +73,10 @@ Run a customization from the target app's directory with:
 
 Other commands: `/velt-customize-fix "<mismatch>"`, `/velt-customize-clear`, `/velt-customize-memory`.
 
+## Running headless in a cloud sandbox
+
+The hard-won launch recipe (stdin prompt delivery, sandbox flags, background-wait ceiling, proxy/TLS workarounds) is documented in the claude plugin's README — [`velt-figma-plugin-claude` → "Running headless / in claude.ai/code cloud"](https://github.com/velt-js/velt-figma-plugin-claude#running-headless--in-claudeaicode-cloud-the-recipe-a-live-run-spent-2h-rediscovering). The principles transfer to any sandboxed host: deliver the run command via stdin (never as a CLI argument a `ps` scan can misread), trust `resume-check.mjs` for resume + duplicate detection, and see `guide/debugging.md` for the egress-proxy/Chromium TLS class.
+
 ## Prerequisites (the run preflights all of these and HALTs with a fix if any is missing)
 
 - **A Figma token** (`FIGMA_TOKEN` env var or the OS keychain) — design intake is **REST-only** (`api.figma.com`); there is no Figma desktop/MCP dependency.

@@ -24,7 +24,9 @@
 // Usage:
 //   block-iter.mjs start <phaseDir> <blockId> [--budget strict|balanced|thorough]
 //   block-iter.mjs record <phaseDir> <blockId> --diff-count N [--hash <fallbackHash>] [--src <dir>]
-//   block-iter.mjs pause <phaseDir> [--reason "<env stall cause>"]
+//   block-iter.mjs pause <phaseDir> [--reason "<cause>"]   # env outage OR script/pipeline repair —
+//        BOTH freeze every budget. Bracket measure-script fixes with pause/resume too: unbracketed
+//        repair time false-STUCKed healthy blocks in two runs.
 //   block-iter.mjs resume <phaseDir>
 //   block-iter.mjs check-phase <phaseDir> [--remaining id1,id2,...]
 //   block-iter.mjs status <phaseDir> [blockId]
@@ -194,13 +196,29 @@ async function cmdRecord(dir, blockId, diffCount, fallbackHash, srcDir) {
   const prevNoProgress = prev && prev.signals ? prev.signals.noProgress || prev.signals.repeatHash : false;
   const plateau = osc || repeatHash || (noProgress && prevNoProgress); // oscillation/repeat is immediate; else 2 consecutive no-progress
   const elapsedMin = activeMinutesSince(b.windowStartedAt || b.startedAt, state.stalls);
-  const boundsHit = iter >= state.caps.maxBlockIters || elapsedMin >= state.caps.maxBlockMinutes;
+  const itersExhausted = iter >= state.caps.maxBlockIters;
+  const minutesExhausted = elapsedMin >= state.caps.maxBlockMinutes;
   const best = Math.min(...b.attempts.map((a) => a.diffCount));
+
+  // STUCK means BUILD CHURN hit its bounds — it requires genuine attempts, never wall-clock alone.
+  // Two runs false-STUCKed healthy blocks whose window was eaten by script/env repair that nobody
+  // bracketed with pause/resume (run 2 family 1; the claude-cloud 28-min idle gap). Minutes
+  // exhausted with <2 attempts = the time went elsewhere: restart the window ONCE automatically
+  // (logged), and remind the caller that repair time belongs inside `pause --reason "script-repair:…"`.
+  let boundsHit = itersExhausted || minutesExhausted;
+  if (minutesExhausted && !itersExhausted && iter < 2 && !(b.windowAutoRestarts >= 1)) {
+    b.windowAutoRestarts = (b.windowAutoRestarts || 0) + 1;
+    b.windowStartedAt = nowIso();
+    b.windows = (b.windows || 1) + 1;
+    boundsHit = false;
+    console.error(`⚠ minute budget exhausted with only ${iter} attempt(s) — the window was eaten by non-build time, NOT churn. Window auto-restarted ONCE (#${b.windows}). Bracket env/script repair with 'block-iter.mjs pause ${dir} --reason "script-repair: <what>"' so it never burns block budget.`);
+  }
 
   let verdict = "CONTINUE", exit = 0;
   if (boundsHit) {
+    const bound = itersExhausted ? `${iter} iterations (cap ${state.caps.maxBlockIters})` : `${elapsedMin.toFixed(1)} active min this window (cap ${state.caps.maxBlockMinutes})`;
     b.stuck = true; verdict = "STUCK"; exit = 4;
-    await writeDisposition(dir, blockId, "STUCK", `harness bounds: ${iter} iterations / ${elapsedMin.toFixed(1)} active min this window (caps ${state.caps.maxBlockIters}/${state.caps.maxBlockMinutes}); best residual diffCount=${best}; signals=${JSON.stringify(attempt.signals)}`);
+    await writeDisposition(dir, blockId, "STUCK", `harness bound hit: ${bound}; ${iter} attempt(s), best residual diffCount=${best}; signals=${JSON.stringify(attempt.signals)}${!itersExhausted && iter < 2 ? "; NOTE: <2 attempts — window likely consumed by unbracketed env/script repair, triage before treating as a build failure" : ""}`);
   } else if (plateau) {
     const sig = osc ? "oscillation (A→B→A hash)" : repeatHash ? "repeated normalized-diff hash" : "2 consecutive no-progress attempts";
     if (!b.escalated) { b.escalated = true; verdict = "ESCALATE"; exit = 5; }

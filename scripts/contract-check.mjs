@@ -30,7 +30,7 @@ import { execFile } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { firstShotCss } from "./first-shot-css.mjs";
+import { firstShotCss, normalizeEntries } from "./first-shot-css.mjs";
 
 const SCRIPTS = path.dirname(fileURLToPath(import.meta.url));
 const run = (args, cwd) => new Promise((res) => execFile("node", args, { cwd }, (err, stdout, stderr) => res({ code: err ? (err.code ?? 1) : 0, stdout, stderr })));
@@ -46,6 +46,20 @@ const FIXTURE_CONNECT_MAP = {
     { element: "ThreadCard", slot: "thread-card", cssDecls: { root: "gap:8px; border:1px solid #e5e5e5" } },
   ],
   paddingResets: [{ selector: ".velt-comment-dialog--body", decls: "padding:0", why: "wrapper neutralization" }],
+};
+// the run-2 planner shape: families{} + prop-object cssDecls (the drift that silently no-opped)
+const FIXTURE_CONNECT_MAP_FAMILIES = {
+  tokenMap: { "--velt-accent": "#6c5ce7" },
+  families: {
+    "fam-composer": {
+      entries: [
+        { element: "Composer", slot: "composer", cssDecls: { root: { padding: "12px 16px", "border-radius": "8px" }, button: { background: "#6c5ce7" } } },
+      ],
+    },
+    "fam-thread": [
+      { element: "ThreadCard", slot: "thread-card", cssDecls: { gap: "8px", border: "1px solid #e5e5e5" } },
+    ],
+  },
 };
 const FIXTURE_DESIGN_SPEC = {
   source: "contract-fixture", fileKey: "FIX", nodeId: "1:1", boxSpace: "frame-relative",
@@ -77,6 +91,17 @@ async function selftest() {
       if (rules < 5) problems.push(`first-shot-css.mjs emitted ${rules} rule(s) for a fixture that must yield 5 — schema drift between the Connect Map shape and the generator (run 2 burned 50+ min on exactly this)`);
       if (!css.includes(":root")) problems.push("first-shot-css.mjs dropped the tokenMap → :root block — token contract broken");
       if (!css.includes("!important")) problems.push("first-shot-css.mjs no longer applies !important (R9b) — overrides will lose to Velt defaults");
+    }
+    // 1b. first-shot-css: the FAMILIES shape (run-2 planner output) must also yield rules.
+    const cmFamP = path.join(tmp, "connect-map-families.json");
+    const cssFamP = path.join(tmp, "first-shot-families.css");
+    await fs.writeFile(cmFamP, JSON.stringify(FIXTURE_CONNECT_MAP_FAMILIES, null, 2));
+    const fscFam = await run([path.join(SCRIPTS, "first-shot-css.mjs"), cmFamP, "--out", cssFamP], tmp);
+    if (fscFam.code !== 0) problems.push(`first-shot-css.mjs CLI failed on the FAMILIES-shape golden map (exit ${fscFam.code}): ${fscFam.stderr.trim() || fscFam.stdout.trim()} — the run-2 planner shape regressed`);
+    else {
+      const cssFam = await fs.readFile(cssFamP, "utf8").catch(() => "");
+      // fixture: :root + 3 entry sub-rules (composer root+button, thread-card root) = 4 rule blocks
+      if (countRules(cssFam) < 4) problems.push(`first-shot-css.mjs emitted ${countRules(cssFam)} rule(s) for the FAMILIES fixture that must yield 4 — families{}/prop-object normalization regressed (the run-2 silent 0-rule failure)`);
     }
     // 2. spec-slice: the designSpec/blocks contract — every block must get a NON-THIN brief.
     const specP = path.join(tmp, "designSpec.json");
@@ -115,12 +140,14 @@ async function check(phaseDir) {
     const cm = await loadJson(cmP, null);
     if (!cm) problems.push("connect-map.json exists but is not valid JSON");
     else {
-      const entries = cm.entries || [];
-      const withDecls = entries.filter((e) => e && e.cssDecls && (typeof e.cssDecls === "string" ? e.cssDecls.trim() : Object.keys(e.cssDecls).length));
-      if (entries.length && !withDecls.length) problems.push("connect-map.json: no entry carries cssDecls — first-shot will be empty and the builder will re-discover every value (the run-2 failure); fix the Planner's map");
-      const rules = countRules(firstShotCss(cm));
-      if (!rules) problems.push("first-shot-css over this connect-map.json yields 0 rules — schema drift or an empty map; HALT and fix before dispatching any builder");
-      else console.log(`✓ first-shot over connect-map.json: ${rules} rule(s) from ${entries.length} entries`);
+      // normalizeEntries flattens BOTH shapes (entries[] and families{}) — count what the generator sees
+      const entries = normalizeEntries(cm);
+      const withDecls = entries.filter((e) => Object.values(e._groups).some((d) => String(d).trim()));
+      if (entries.length && !withDecls.length) problems.push("connect-map.json: no entry carries usable cssDecls — first-shot will be empty and the builder will re-discover every value (the run-2 failure); fix the Planner's map");
+      const stats = {};
+      const rules = countRules(firstShotCss(cm, {}, stats));
+      if (!rules || (stats.entries > 0 && stats.entryRules === 0)) problems.push("first-shot-css over this connect-map.json yields 0 entry rules — schema drift or an empty map; HALT and fix before dispatching any builder");
+      else console.log(`✓ first-shot over connect-map.json: ${rules} rule(s) (${stats.entryRules} entry rule(s)) from ${entries.length} entries`);
     }
   }
   return problems;

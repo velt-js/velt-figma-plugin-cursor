@@ -47,3 +47,11 @@ Probe briefs and drive steps are authored at PLAN time, against the app's **pre-
 - or the Builder's own **`.vc-*` classes** from the first-shot stylesheet (the Builder controls that markup, so those classes are guaranteed post-build).
 
 Never a pre-build class, a default-slot structure the design replaces, or a host wrapper the reconciliation may neutralize. Content-anchored selectors (`:has-text("…")`) are fine **only** on top of a stable base selector — fixture text survives; structure doesn't.
+
+## Wireframe-host semantics FLIP at registration (selectors AND CSS)
+The moment a family's wireframe **registers**, the live DOM's shape changes — not just its content (this bit a run's family-2 CSS wiring; the builder needed a live DOM dump to see why rules that "were working" went dead):
+- The **live card itself starts carrying `--wireframe-host`**, and the live inner elements render as **`*-internal` tags** (e.g. `velt-comment-dialog-header-internal`), not the tag names you saw pre-registration.
+- The **hidden 0-size registry twins disappear** — the pre-registration DOM had every wireframe tag twice (a hidden registry copy under `<velt-wireframe>` plus the live clone); post-registration there is one live tree.
+- Consequently **any `:not(--wireframe-host)` selector written pre-registration silently stops matching** — it was excluding the live element's own new class. The same applies to selectors assuming the twin structure (`velt-wireframe > *`), and to drive/probe `waitFor`s keyed to a pre-registration tag.
+
+**Author selectors against the POST-registration DOM**: contract wireframe tags, `*-internal` live tags, stable `velt-*` classes, or your own `.vc-*` classes — and after the FIRST registration of each family, re-verify any selector written before it (one `querySelectorAll` dump of the live card is cheap; a dead selector discovered inside a measure loop is not).
