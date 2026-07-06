@@ -1,0 +1,55 @@
+{
+  "runId": "WYAWuEm8DrIk-177-10853-2026-07-06T18-12-59Z",
+  "phaseId": "WYAWuEm8DrIk-177-10853",
+  "app": "ai-harvey-implementation",
+  "mode": "strictly wireframe",
+  "node": "177-10853",
+  "pluginSha": "7bc405a",
+  "publishedAt": "2026-07-06T18:12:59.548Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "corrections",
+      "fact": "uniform -16px box.w across all card rows = classic scrollbar on velt-comment-dialog-threads-internal, not a sizing bug; fix the child overflow (overflow:hidden on the fixed-size icon box), never widen the rows",
+      "evidence": "results/state-comment-thread-components-single-comment-dialog/stuck-evidence.md",
+      "scope": "general",
+      "destination": "guide",
+      "note": "generalizes: icon nudges via margin OR transform both extend the scrollable overflow area; clip at the icon's fixed design box instead"
+    },
+    {
+      "kind": "corrections",
+      "fact": "first-shot-css.mjs emits property-less rules (e.g. '{ 24px !important; }') when a connect-map entry nests state-keyed cssDecls objects (enabled/disabled); invalid CSS 500s the Next build",
+      "evidence": "fam-sidebar-header build round 1; repaired in-place keeping values verbatim",
+      "scope": "general",
+      "destination": "script"
+    },
+    {
+      "kind": "corrections",
+      "fact": "measure-block.mjs's report-assembly step does not forward --force, so a re-measure of a FINALIZED (STUCK) block updates artifacts but refuses the report entry; use report-block.mjs measure --force (sanctioned) and then block-iter record to restore the disposition",
+      "evidence": "batched fix pass of state-comment-thread-components-single-comment-dialog",
+      "scope": "general",
+      "destination": "script"
+    },
+    {
+      "kind": "corrections",
+      "fact": "R29 --accept-glyph-residuals does not auto-accept a verified-identical glyph whose region fill exceeds the sparse threshold (0.103 > cap at 24x24); such residuals plateau the block — record STUCK with icon-lint identity evidence for human eyeball instead of pixel-nudging",
+      "evidence": "stuck-evidence.md; the nudge attempt caused the scrollbar regression",
+      "scope": "general",
+      "destination": "guide"
+    },
+    {
+      "kind": "corrections",
+      "fact": "frame exports of component-state frames can carry content margins (card at 24,16) — frameRegion must be pixel-scanned/trued or the visual diff mis-aligns by the margin",
+      "evidence": "composer collapsed/typing blocks window 4",
+      "scope": "general",
+      "destination": "script"
+    },
+    {
+      "kind": "corrections",
+      "fact": "scaffolded drive evals that seed comments must be passive/idempotent — a guard eval racing the async list double-submits on every measure",
+      "evidence": "flow-2 double-submission fix",
+      "scope": "general",
+      "destination": "guide"
+    }
+  ]
+}
