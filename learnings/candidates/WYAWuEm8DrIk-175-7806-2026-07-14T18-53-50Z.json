@@ -1,0 +1,59 @@
+{
+  "runId": "WYAWuEm8DrIk-175-7806-2026-07-14T18-53-50Z",
+  "phaseId": "WYAWuEm8DrIk-175-7806",
+  "app": "ai-privado-implementation",
+  "mode": "strictly primitives",
+  "node": "WYAWuEm8DrIkAyx03e8fG9/175:7806",
+  "pluginSha": "2edab38",
+  "publishedAt": "2026-07-14T18:53:50.307Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "general",
+      "statement": "In strictly-primitives, an @mention autocomplete picker can be composed from useContactList() + your own dropdown state/UI without Velt's VeltAutocomplete, and measures pixel-clean against the design.",
+      "evidence": "Loop 2 privado: 6/6 buildable blocks delta-clean, gate PASS exit 0",
+      "destination": "guide",
+      "scope": "general"
+    },
+    {
+      "kind": "mappings",
+      "intent": "@mention autocomplete picker (composer)",
+      "component": "custom dropdown composed from useContactList + own state",
+      "scope": "general",
+      "evidence": "6/6 blocks delta-clean; useContactList supplies organizationUsers/documentUsers/updatedContactList",
+      "destination": "guide"
+    },
+    {
+      "kind": "corrections",
+      "statement": "delta-compare coverage-floor isRepeating regex (/comment|thread|list|feed/ on familyId+component) treats composer sub-row family 'fam-comment-input-mention' as a list surface, so EVERY composer-row block requires a passing compareGap even though it is not a list — author an adjacent 0px (row-to-row) or checkbox-to-label gap.",
+      "scope": "general",
+      "category": "pipeline",
+      "evidence": "gate INCOMPLETE until a gap was added to assign-row/body blocks; familyId contained 'comment'",
+      "destination": "guide"
+    },
+    {
+      "kind": "corrections",
+      "statement": "For a custom autocomplete/search dropdown sourced from live data, cap visible rows to the design frame's row count (6 default / 3 search here) so the panel height is content-independent and matches the frame; Velt itself virtual-scrolls past ~6.",
+      "scope": "general",
+      "category": "component-difficulty",
+      "evidence": "search-content gross content-height 246 vs 142 until results capped to 3",
+      "destination": "guide"
+    },
+    {
+      "kind": "corrections",
+      "statement": "A frontend-only run (Django/host backend intentionally not started) produces pre-existing host-app console errors (ERR_CONNECTION_REFUSED to its own backend, 'Failed to fetch' in saveUserToDatabase). These are environmental, not customization defects — add them to smoke allowedConsoleErrorPatterns.",
+      "scope": "general",
+      "category": "pipeline",
+      "evidence": "127.0.0.1:8000/api/host-app/users/save refused; [Host App] Error saving user",
+      "destination": "guide"
+    },
+    {
+      "kind": "gaps",
+      "statement": "A design node set visible:false (hidden) is NOT an SDK gap — it is design intent to omit that surface. Verify via Figma REST and account the block GAP with the REST evidence, not mode_blocked.",
+      "scope": "general",
+      "category": "pipeline",
+      "evidence": "both Mention Dropdown Footer instances (I175:7816/7817;7901:13314) are visible:false",
+      "destination": "guide"
+    }
+  ]
+}
