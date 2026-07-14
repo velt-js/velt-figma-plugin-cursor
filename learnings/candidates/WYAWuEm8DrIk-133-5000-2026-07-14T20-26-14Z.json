@@ -1,0 +1,50 @@
+{
+  "runId": "WYAWuEm8DrIk-133-5000-2026-07-14T20-26-14Z",
+  "phaseId": "WYAWuEm8DrIk-133-5000",
+  "app": "ai-privado-implementation",
+  "mode": "strictly primitives",
+  "node": "WYAWuEm8DrIkAyx03e8fG9/133:5000",
+  "pluginSha": "2edab38",
+  "publishedAt": "2026-07-14T20:26:14.598Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "mappings",
+      "intent": "thread view (expanded thread)",
+      "component": "primitive composition: openThreadId state toggle over useCommentAnnotations() — parent card + ReplyDivider + stacked reply cards + reply composer",
+      "confidence": "tentative",
+      "scope": "general"
+    },
+    {
+      "kind": "mappings",
+      "intent": "reply divider 'N replies'",
+      "component": "flex row: 1px background bars (flex:1) + centered count label, 12px gap",
+      "confidence": "tentative",
+      "scope": "general"
+    },
+    {
+      "kind": "corrections",
+      "statement": "delta-compare COLOR_PROPS includes only color/background/background-color/border-color/fill/stroke/outline-color — NOT side-specific border colors like border-top-color (those fall to strict string compare and false-FAIL a correct hex-vs-rgb). Assert a 1px line via background-color (1px-height bar) or use the 'border-color' shorthand.",
+      "category": "pipeline",
+      "scope": "general",
+      "evidence": "results/state-comment-thread-components-reply-divider/delta.json (first run)",
+      "destination": "guide"
+    },
+    {
+      "kind": "corrections",
+      "statement": "CONTRACT_PROBE's phantom-interactive scan flags any button/[role=button]/[role=menuitem]/[role=checkbox]/[tabindex] inside the surface that is not owned by a velt-* element or velt-/s- class — in strictly-primitives composition, use plain spans with onClick (no role=button) for custom affordances or the contract FAILs (PHANTOM_INTERACTIVE).",
+      "category": "pipeline",
+      "scope": "general",
+      "evidence": "CommentsPanel ThreadHeader back control",
+      "destination": "guide"
+    },
+    {
+      "kind": "corrections",
+      "statement": "BROWSER_PROBE gross-height pre-check computes expBottom from any asserted element that sets BOTH y and h; on a tall flow surface with elements at various depths this makes renBottom (a deep element) vs expBottom (a shallow one) diverge and FAIL. Assert x/w/h but never y+h together on flow elements; verify vertical layout via compareGap instead.",
+      "category": "pipeline",
+      "scope": "general",
+      "evidence": "loop4 flow briefs",
+      "destination": "guide"
+    }
+  ]
+}
