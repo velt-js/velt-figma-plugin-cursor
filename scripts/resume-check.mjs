@@ -112,9 +112,17 @@ async function verdict(dir) {
   const report = await loadJson(path.join(dir, "block-report.json"), { blocks: {} });
   const accounted = (id) => { const e = (report.blocks || {})[id]; return !!(e && (e.built || e.disposition)); };
   const remaining = blocks.map((b) => b.id).filter((id) => !accounted(id));
+  // IN-FLIGHT ORPHAN detection (#5b): a block `start`ed in loop-state.json but never accounted in
+  // block-report AND not marked stuck = its builder/judge died mid-flight (process killed on a
+  // usage-limit, or a prior orchestrator ended its turn mid-dispatch). These must be RE-DISPATCHED
+  // fresh, not merely "re-entered" — a prior run left a builder orphaned 75 min because resume
+  // restored state but never relaunched the worker.
+  const loopState = await loadJson(path.join(dir, "loop-state.json"), { blocks: {} });
+  const inflightOrphans = Object.keys(loopState.blocks || {}).filter(
+    (id) => !accounted(id) && !(loopState.blocks[id] && loopState.blocks[id].stuck));
   if (remaining.length) {
-    return { verdict: "RESUME", stage: "build", remainingBlocks: remaining,
-      instruction: `restore env services, then re-enter the build loop at the ${remaining.length} unaccounted block(s) — everything already built/measured/dispositioned in block-report.json is FINAL (write-once)`,
+    return { verdict: "RESUME", stage: "build", remainingBlocks: remaining, inflightOrphans,
+      instruction: `restore env services, then re-enter the build loop at the ${remaining.length} unaccounted block(s) — everything already built/measured/dispositioned in block-report.json is FINAL (write-once).${inflightOrphans.length ? ` RE-DISPATCH the ${inflightOrphans.length} IN-FLIGHT ORPHAN(s) [${inflightOrphans.join(", ")}] FRESH from the journal (their worker died mid-flight) — do NOT just wait.` : ""}`,
       doNotRedo: [...doNotRedo, "re-plan or refill briefs (lint is clean)", "rebuild/re-measure blocks already accounted in block-report.json"] };
   }
   return { verdict: "RESUME", stage: "audit", blocks: blocks.length,

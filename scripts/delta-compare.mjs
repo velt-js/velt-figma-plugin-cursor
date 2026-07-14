@@ -163,7 +163,17 @@ export function verdictOf(elements, opts = {}) {
     const res = compareGap(byName[g.a] && byName[g.a].box, byName[g.b] && byName[g.b].box, g.axis || "y", g.expected, opts.tol);
     if (!res.pass) diffs.push({ element: g.a + "↔" + g.b, property: "gap." + (g.axis || "y"), spec: g.expected + "px", rendered: res.rendered, note: res.note });
   }
-  return { verdict: diffs.length === 0 ? "PASS" : "FAIL", diffs };
+  // COVERAGE — what this spec actually asserted (element names + gap checks), pass OR fail. This is the
+  // content-INDEPENDENT proof that the check was substantive: the gate rejects a block whose delta spec
+  // covered too little (the RUN-3 failure — delta passed only because the spec never checked the gap /
+  // reactions, while whole-surface pixel-diff drowned in real-vs-dummy DATA noise). A spec can't certify
+  // a surface by checking nothing.
+  return {
+    verdict: diffs.length === 0 ? "PASS" : "FAIL",
+    diffs,
+    checked: elements.map((e) => e.name),
+    gaps: (opts.gaps || []).map((g) => ({ a: g.a, b: g.b, axis: g.axis || "y", expected: g.expected })),
+  };
 }
 
 // ---- layer reconciliation (Figma node = ONE rect; DOM = N nested layers) ----

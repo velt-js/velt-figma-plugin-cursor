@@ -356,7 +356,7 @@ function calibrateStabilityGate() {
     problems.push(`the moved target must report its 18px dy; got ${JSON.stringify(moves.targets[0])}`);
 
   // --- (B) verdict-gate-blocks: EVERY block needs a stability result; a moved target FAILs (general) ---
-  const base = (extra) => ({ built: true, driven: true, visualDiff: { diffPct: 0, regions: [] }, deltaCompare: { ok: true, diffs: [] }, ...extra });
+  const base = (extra) => ({ built: true, driven: true, visualDiff: { diffPct: 0, regions: [] }, deltaCompare: { ok: true, diffs: [], checked: ["name", "message"], gaps: [] }, ...extra });
   const okStab = { stability: { ok: true, targets: [] } };                                  // surface with no affordance
   const movedStab = { stability: { ok: false, targets: [{ name: "Send", shift: { dx: 0, dy: 18 }, ok: false }] } };
   const blocks = { blocks: [{ id: "a", state: "default" }, { id: "b", state: "hover" }] };
@@ -437,6 +437,46 @@ function calibrateVerdictGate() {
   return true;
 }
 
+// Content-independent verification (the design is DUMMY data, the app is REAL data — 2 vs 11 cards,
+// different text/names/times): verdictGateBlocks must (a) NOT fail on whole-surface pixel regions (they
+// reflect data, not defects) while deltaCompare stays the AUTHORITY; (b) reject a delta spec that covered
+// too little (checked<2, or no inter-card gap on a list surface) as INCOMPLETE — "certify by checking
+// nothing" is structurally unreachable; (c) still honour a dataMatched capture as a valid pixel compare.
+function calibrateContentIndependentGate() {
+  const problems = [];
+  const listBlocks = { blocks: [{ id: "b1", state: "default", role: "flow", familyId: "flows", component: "Sidebar" }] };
+  const mk = (over = {}) => ({ built: true, driven: true, capturePng: "c.png", framePng: "f.png",
+    visualDiff: { diffPct: 2.0, regions: [{ cssBox: "x", fill: 0.6 }] },  // big pixel region = live data ≠ design mock
+    deltaCompare: { ok: true, diffs: [], checked: ["name", "time", "msg"], gaps: [{ a: "c1", b: "c2", axis: "y", expected: 12 }] },
+    stability: { ok: true, targets: [] }, artifacts: {}, ...over });
+
+  // (1) big pixel region but delta covered + gap ⇒ PASS (pixel-diff is advisory vs dummy data) — the RUN-3 false-fail
+  const advisory = verdictGateBlocks(listBlocks, { blocks: { b1: mk() } });
+  if (advisory.verdict !== "PASS") problems.push(`a big pixel region with delta covered+gap must PASS (pixel advisory); got ${advisory.verdict}`);
+  if (!(advisory.advisories || []).length) problems.push(`the pixel region must be surfaced as an advisory`);
+
+  // (2) thin delta spec (checked<2) ⇒ INCOMPLETE (a surface can't certify by checking nothing)
+  const thin = verdictGateBlocks(listBlocks, { blocks: { b1: mk({ deltaCompare: { ok: true, diffs: [], checked: ["name"], gaps: [] } }) } });
+  if (thin.verdict !== "INCOMPLETE" || !thin.missing.some((m) => /too thin/.test(m))) problems.push(`a thin delta spec (checked<2) must be INCOMPLETE (named); got ${thin.verdict}`);
+
+  // (3) list surface with covered elements but NO inter-card gap ⇒ INCOMPLETE (the 2-vs-11 blind spot)
+  const noGap = verdictGateBlocks(listBlocks, { blocks: { b1: mk({ deltaCompare: { ok: true, diffs: [], checked: ["name", "time", "msg"], gaps: [] } }) } });
+  if (noGap.verdict !== "INCOMPLETE" || !noGap.missing.some((m) => /gap/.test(m))) problems.push(`a list surface with no inter-card gap must be INCOMPLETE (named); got ${noGap.verdict}`);
+
+  // (4) a real style defect (delta FAIL) still FAILs — the content-independent authority bites
+  const deltaFail = verdictGateBlocks(listBlocks, { blocks: { b1: mk({ deltaCompare: { ok: false, diffs: [{ element: "reactions", property: "icon", note: "thumbsup missing" }], checked: ["name", "time", "msg", "reactions"], gaps: [{ a: "c1", b: "c2", axis: "y", expected: 12 }] } }) } });
+  if (deltaFail.verdict !== "FAIL") problems.push(`a delta-compare failure must FAIL (authority); got ${deltaFail.verdict}`);
+
+  // (5) a dataMatched capture re-enables pixel gating (valid comparison against matched fixture data)
+  const dmBlocks = { blocks: [{ id: "b1", state: "default", role: "state", familyId: "fam", component: "Card", dataMatched: true }] };
+  const dm = verdictGateBlocks(dmBlocks, { blocks: { b1: mk({ deltaCompare: { ok: true, diffs: [], checked: ["a", "b"], gaps: [] } }) } });
+  if (dm.verdict !== "FAIL") problems.push(`a dataMatched capture with a pixel region must FAIL (valid pixel compare); got ${dm.verdict}`);
+
+  if (problems.length) { for (const p of problems) console.error("  ✗ content-independent-gate: " + p); return false; }
+  console.log(`✓ Content-independent gate calibrated — pixel-diff advisory (data≠design), deltaCompare authority, thin spec / missing inter-card gap ⇒ INCOMPLETE, dataMatched re-enables pixel gating`);
+  return true;
+}
+
 async function guideText() {
   // concatenate all guide/reference + key guide pages once, for fast substring checks
   const files = [];
@@ -504,6 +544,8 @@ async function main() {
   if (!contractCalibrated) failed++;
   const verdictCalibrated = calibrateVerdictGate();
   if (!verdictCalibrated) failed++;
+  const contentIndepCalibrated = calibrateContentIndependentGate();
+  if (!contentIndepCalibrated) failed++;
   const stabilityCalibrated = calibrateStabilityGate();
   if (!stabilityCalibrated) failed++;
 

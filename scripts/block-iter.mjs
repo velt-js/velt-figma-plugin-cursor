@@ -41,8 +41,9 @@
 // State: <phaseDir>/loop-state.json (append-per-attempt; survives interruption/resume).
 // A retry is accepted only if the failing-diff count STRICTLY drops (forced improvement);
 // a non-dropping attempt is "no-progress". Two consecutive no-progress (or a repeated /
-// oscillating hash) = plateau. All caps come from --budget (default: strict — early STUCK +
-// the end-of-phase batched fix pass beats in-loop plateau chasing; measured 10-23 min vs hours).
+// oscillating hash) = plateau. All caps come from --budget (DEFAULT: thorough — grind each block
+// until it measures CLEAN or genuinely plateaus, the STRICT polish behavior the user wants; pass
+// --budget strict|balanced for a faster/rougher pass that STUCKs early).
 
 import { promises as fs } from "node:fs";
 import { execFileSync } from "node:child_process";
@@ -71,7 +72,7 @@ async function saveJson(p, obj) {
 
 async function loadState(dir) {
   const s = await loadJson(statePath(dir), null);
-  const state = s || { budget: "strict", caps: BUDGETS.strict, phaseStartedAt: null, blocks: {}, stalls: [] };
+  const state = s || { budget: "thorough", caps: BUDGETS.thorough, phaseStartedAt: null, blocks: {}, stalls: [] };
   state.stalls = state.stalls || [];
   return state;
 }
@@ -172,8 +173,11 @@ async function cmdStart(dir, blockId, budget) {
   console.log(`▶ block '${blockId}' — iteration ${b.attempts.length}/${state.caps.maxBlockIters}, budget=${state.budget} (≤${state.caps.maxBlockMinutes} active min/block window, phase soft-cap ${state.caps.maxPhaseMinutes} active min)`);
 }
 
-async function cmdRecord(dir, blockId, diffCount, fallbackHash, srcDir) {
+async function cmdRecord(dir, blockId, diffCount, fallbackHash, srcDir, maxAttemptsRaw) {
   if (!Number.isFinite(diffCount) || diffCount < 0) { console.error("✗ --diff-count <N≥0> is required (the failing-diff / significant-region count of THIS attempt)"); process.exit(1); }
+  // --max-attempts N: the BOUNDED-FIX cap (new one-shot→judge→fix flow). When set and hit, the block
+  // is BLOCKER-listed (disposition BLOCKED) rather than STUCK, and NO layer-escalation happens — 2 tries, then blocker.
+  const maxAttempts = maxAttemptsRaw != null && Number.isFinite(+maxAttemptsRaw) && +maxAttemptsRaw > 0 ? +maxAttemptsRaw : null;
   const state = await loadState(dir);
   if (openStall(state)) console.error(`⚠ an env stall is OPEN (${openStall(state).reason || "no reason"}) — run 'block-iter.mjs resume ${dir}' once the environment is healthy; recording anyway`);
   if (!state.blocks[blockId]) { console.error(`⚠ block '${blockId}' was never started — auto-starting now (call 'start' first next time)`); state.phaseStartedAt = state.phaseStartedAt || nowIso(); state.blocks[blockId] = { startedAt: nowIso(), windowStartedAt: nowIso(), windows: 1, attempts: [], escalated: false, stuck: false }; }
@@ -196,7 +200,9 @@ async function cmdRecord(dir, blockId, diffCount, fallbackHash, srcDir) {
   const prevNoProgress = prev && prev.signals ? prev.signals.noProgress || prev.signals.repeatHash : false;
   const plateau = osc || repeatHash || (noProgress && prevNoProgress); // oscillation/repeat is immediate; else 2 consecutive no-progress
   const elapsedMin = activeMinutesSince(b.windowStartedAt || b.startedAt, state.stalls);
-  const itersExhausted = iter >= state.caps.maxBlockIters;
+  const effectiveMaxIters = maxAttempts != null ? Math.min(state.caps.maxBlockIters, maxAttempts) : state.caps.maxBlockIters;
+  const itersExhausted = iter >= effectiveMaxIters;
+  const fixCapHit = maxAttempts != null && iter >= maxAttempts;   // bounded-fix cap → BLOCKED, not STUCK
   const minutesExhausted = elapsedMin >= state.caps.maxBlockMinutes;
   const best = Math.min(...b.attempts.map((a) => a.diffCount));
 
@@ -215,8 +221,12 @@ async function cmdRecord(dir, blockId, diffCount, fallbackHash, srcDir) {
   }
 
   let verdict = "CONTINUE", exit = 0;
-  if (boundsHit) {
-    const bound = itersExhausted ? `${iter} iterations (cap ${state.caps.maxBlockIters})` : `${elapsedMin.toFixed(1)} active min this window (cap ${state.caps.maxBlockMinutes})`;
+  if (boundsHit && fixCapHit) {
+    // BOUNDED-FIX cap reached → blocker-list this block (BLOCKED), never STUCK, and never escalate.
+    b.stuck = true; verdict = "BLOCKED"; exit = 4;
+    await writeDisposition(dir, blockId, "BLOCKED", `bounded-fix cap reached: ${iter} attempt(s) (max ${maxAttempts}), best residual diffCount=${best}; signals=${JSON.stringify(attempt.signals)} — blocker-listed, no further fix attempts (evidence: loop-state.json)`);
+  } else if (boundsHit) {
+    const bound = itersExhausted ? `${iter} iterations (cap ${effectiveMaxIters})` : `${elapsedMin.toFixed(1)} active min this window (cap ${state.caps.maxBlockMinutes})`;
     b.stuck = true; verdict = "STUCK"; exit = 4;
     await writeDisposition(dir, blockId, "STUCK", `harness bound hit: ${bound}; ${iter} attempt(s), best residual diffCount=${best}; signals=${JSON.stringify(attempt.signals)}${!itersExhausted && iter < 2 ? "; NOTE: <2 attempts — window likely consumed by unbracketed env/script repair, triage before treating as a build failure" : ""}`);
   } else if (plateau) {
@@ -232,6 +242,7 @@ async function cmdRecord(dir, blockId, diffCount, fallbackHash, srcDir) {
   const left = `${state.caps.maxBlockIters - iter} iters / ${(state.caps.maxBlockMinutes - elapsedMin).toFixed(1)} active min left`;
   if (verdict === "CONTINUE") console.log(`● ${blockId} iter ${iter}: diffCount=${diffCount}${noProgress ? " (NO-PROGRESS — must strictly drop)" : ""} hash=${hash || "n/a"} — CONTINUE (${left})`);
   else if (verdict === "ESCALATE") console.log(`▲ ${blockId} iter ${iter}: PLATEAU — escalate the layer ONCE per guide/02-decision-tree.md, then keep iterating (retry budget continues; next plateau = STUCK)`);
+  else if (verdict === "BLOCKED") console.log(`■ ${blockId} iter ${iter}: bounded-fix cap (max ${maxAttempts}) reached — BLOCKED written to block-report.json; orchestrator blocker-lists it, advance (do NOT keep fixing)`);
   else console.log(`■ ${blockId} iter ${iter}: STUCK written to block-report.json — advance to the next block (do NOT keep iterating this one)`);
   process.exit(exit);
 }
@@ -290,7 +301,7 @@ async function main() {
   if (!cmd || !dir) { console.error("usage: block-iter.mjs start|record|pause|resume|check-phase|status <phaseDir> [blockId] [flags]"); process.exit(1); }
   await fs.mkdir(dir, { recursive: true });
   if (cmd === "start") await cmdStart(dir, rest[0], flag("--budget"));
-  else if (cmd === "record") await cmdRecord(dir, rest[0], +flag("--diff-count", "NaN"), flag("--hash"), flag("--src"));
+  else if (cmd === "record") await cmdRecord(dir, rest[0], +flag("--diff-count", "NaN"), flag("--hash"), flag("--src"), flag("--max-attempts"));
   else if (cmd === "pause") await cmdPause(dir, flag("--reason"));
   else if (cmd === "resume") await cmdResume(dir);
   else if (cmd === "check-phase") await cmdCheckPhase(dir, (flag("--remaining", "") || "").split(",").map((s) => s.trim()).filter(Boolean));

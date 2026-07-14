@@ -28,6 +28,7 @@
 import { promises as fs } from "node:fs";
 import { pathToFileURL } from "node:url";
 import path from "node:path";
+import { cssFixBlock } from "./knowledge.mjs";   // plugin knowledge base: bake known SDK gotcha fixes into first-shot
 
 const slug = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
@@ -122,10 +123,17 @@ async function main() {
   if (!cmP) { console.error("usage: first-shot-css.mjs <connect-map.json> [--out <styles.css>] [--selector-map <map.json>] [--append]"); process.exit(1); }
   const argv = (k, d) => { const i = rest.indexOf(k); return i >= 0 ? rest[i + 1] : d; };
   const outP = argv("--out", null), mapP = argv("--selector-map", null), append = rest.includes("--append");
+  const veltVersion = argv("--velt-version", null), noKnowledge = rest.includes("--no-knowledge");
   const cm = JSON.parse(await fs.readFile(cmP, "utf8"));
   const selMap = mapP ? JSON.parse(await fs.readFile(mapP, "utf8")) : {};
   const stats = {};
-  const css = firstShotCss(cm, selMap, stats);
+  let css = firstShotCss(cm, selMap, stats);
+  // KNOWLEDGE BASE: inject confirmed SDK gotcha CSS fixes (send-button opacity, scrollbar clip, …)
+  // BEFORE the "builder patches below" marker so they're part of first-shot, not builder churn.
+  if (!noKnowledge) {
+    const kb = await cssFixBlock(veltVersion);
+    if (kb) css = css.replace("\n/* ---- end first-shot", kb + "\n/* ---- end first-shot");
+  }
   // HARD-FAIL, never a silent no-op: a non-empty map that yields 0 entry rules IS the run-2
   // failure (schema drift) — exit ≠0 so no caller can mistake it for success.
   if (stats.entries > 0 && stats.entryRules === 0) {

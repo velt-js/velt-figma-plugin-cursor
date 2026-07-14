@@ -1,0 +1,17 @@
+{
+  "_doc": "Observations about agent/model reliability. Advisory: the current user directive pins ALL agents to Opus 4.8 at max effort (see agent frontmatter). These notes record observed wedge patterns so the orchestrator's anti-wedge handling (firm kill+respawn) knows where to be vigilant. NOT a model override — the directive is Opus everywhere.",
+  "observations": [
+    {
+      "agent": "velt-planner",
+      "observation": "Observed planner wedging (zero writes / zero heartbeats for 8+ min, repeated across two attempts) in an earlier configuration. Under the current Opus-max directive (all agents run Opus at max effort), treat any planner silence past the dead-agent threshold as a wedge and invoke the dead-planner fallback (assumed fills) + ONE firm respawn — do NOT wait out two full stage windows.",
+      "confidence": "tentative",
+      "seenOn": ["privado-run2"]
+    },
+    {
+      "agent": "velt-builder",
+      "observation": "Builders wedge most often on the comment-thread/comment-dialog family (the known-hard block). Combine with component-difficulty: build that family MINIMAL and enforce the firm kill+respawn on a heartbeat-silence past the hard budget so one wedged builder can't stall the whole run.",
+      "confidence": "confirmed",
+      "seenOn": ["privado", "privado-run2", "harvey"]
+    }
+  ]
+}

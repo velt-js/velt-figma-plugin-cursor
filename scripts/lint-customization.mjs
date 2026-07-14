@@ -75,6 +75,28 @@ async function main() {
       err("R4", f, line, `interactive React inside a wireframe file — cloned to inert DOM, does nothing: ${text}`);
   }
 
+  // STRUCTURAL wireframe guards (build-defect prevention — these shipped as real defects):
+  for (const f of tsx) {
+    const src = await fs.readFile(f, "utf8");
+    if (!/Wireframe[\s.>]/.test(src)) continue;
+    // (c) DUPLICATE add-reaction: ThreadCard.Reactions (the composite row that ALREADY carries the
+    // add-reaction tool) declared ALONGSIDE ThreadCard.ReactionTool (the standalone add button) → the
+    // smiley+ renders TWICE. Use Reactions OR (ReactionTool + ReactionPin), never both.
+    const hasReactionsRow = /(ThreadCard\.)?Reactions[\s.>/}]/.test(src) || /reactions-wireframe/.test(src);
+    const hasReactionTool = /ReactionTool[\s.>/}]/.test(src) || /reaction-tool-wireframe/.test(src);
+    if (hasReactionsRow && hasReactionTool) {
+      const ln = (findLines(src, /ReactionTool/)[0] || {}).line || 0;
+      err("R-REACT2X", f, ln, "ThreadCard.Reactions (composite row — already contains the add-reaction tool) is declared ALONGSIDE ThreadCard.ReactionTool (standalone add button) → the add-reaction affordance renders TWICE. Use Reactions OR (ReactionTool + ReactionPin), not both.");
+    }
+    // (b) DIALOG dropped its composer: a comment-dialog container root registered with NO Composer child.
+    // Undeclared children of a container wireframe DISAPPEAR (no Velt default) — the reply composer vanishes.
+    const declaresDialog = /(VeltCommentDialog|comment-dialog)[\w-]*Wireframe|<VeltCommentDialog/i.test(src);
+    if (declaresDialog && !/Composer[\s.>/}]|composer-wireframe/i.test(src)) {
+      const ln = (findLines(src, /CommentDialog/i)[0] || {}).line || 0;
+      warn("R-DLGCOMPOSER", f, ln, "comment-dialog wireframe declared with NO Composer child — undeclared children of a container wireframe DISAPPEAR (no Velt fallback). Declare the Composer (+ Body→Threads→ThreadCard) subtree, or confirm this dialog is intentionally read-only.");
+    }
+  }
+
   for (const f of css) {
     const src = await fs.readFile(f, "utf8");
     // R7 — display:none (warn: legit for empty-state gaps, a defect for feature removal)

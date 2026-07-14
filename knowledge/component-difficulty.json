@@ -1,0 +1,83 @@
+{
+  "_doc": "Per-component difficulty priors. The orchestrator matches each block's id/role against 'match' substrings and applies the entry: hard blocks build MINIMAL, cap fixes at maxFixAttempts, and blocker-fast \u2014 NEVER let a builder grind or wedge on a known-hard block. This is the primary defense against the run getting stuck at the same place every time.",
+  "components": [
+    {
+      "match": [
+        "comment-dialog",
+        "comment-master",
+        "thread-card",
+        "comment-thread",
+        "threadcard"
+      ],
+      "difficulty": "medium",
+      "maxFixAttempts": null,
+      "buildMinimal": false,
+      "hardBudgetMinutes": 25,
+      "note": "Was HARD under STYLED Velt (default *-internal ThreadCard + heavy default styling to fight). UNSTYLED-VELT EXPERIMENT (local SDK build v1.1.1 via Requestly \u2014 comment-dialog + sidebar rendered UNSTYLED): the default-styling fight is removed, so ATTEMPT IT FULLY (buildMinimal:false) to fairly test whether unstyled makes it achievable \u2014 do NOT under-build the exact thing we're testing. STRICTNESS RESTORED: iterate the fix until it measures clean or plateaus (--budget governs, no hard 2-cap). Keep hardBudgetMinutes (firm wedge guard) \u2014 reliability risk is separate from difficulty. Revert difficulty\u2192'hard' + buildMinimal\u2192true if unstyled does NOT solve it.",
+      "confidence": "tentative",
+      "seenOn": [
+        "privado",
+        "privado-run2",
+        "harvey",
+        "testbed-a1",
+        "testbed-a2",
+        "testbed-a3",
+        "testbed-a4",
+        "cloud"
+      ]
+    },
+    {
+      "match": [
+        "composer",
+        "composer-states",
+        "input-active",
+        "input-default",
+        "input-typing"
+      ],
+      "difficulty": "medium",
+      "maxFixAttempts": 2,
+      "buildMinimal": false,
+      "note": "Composer states are achievable clean but carry the send-button opacity gotcha (see sdk-gotchas composer-send-opacity, applied automatically by first-shot-css) and sub-pixel residuals that are R29-acceptable. Don't chase sub-pixel glyph noise.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "privado",
+        "harvey",
+        "testbed"
+      ]
+    },
+    {
+      "match": [
+        "sidebar-header",
+        "panel-tabs",
+        "sidebar-components"
+      ],
+      "difficulty": "easy",
+      "maxFixAttempts": 2,
+      "buildMinimal": false,
+      "note": "Sidebar header / panel-tabs typically measures clean quickly (0.16% diff observed). Low risk.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "privado",
+        "harvey",
+        "testbed"
+      ]
+    },
+    {
+      "match": [
+        "flow-",
+        "flows",
+        "empty-state"
+      ],
+      "difficulty": "medium",
+      "maxFixAttempts": 2,
+      "buildMinimal": false,
+      "note": "Flows compose already-built states (build LAST). Their full-surface captures are sensitive to seeded-comment DEBRIS \u2014 measure against a CLEAN, run-unique documentId, or they falsely GAP on stray comments.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "privado",
+        "harvey",
+        "testbed"
+      ]
+    }
+  ]
+}

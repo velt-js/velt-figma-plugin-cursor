@@ -101,8 +101,13 @@ async function measure(phaseDir, blockId, f) {
       built: true,
       driven: !!f.driven,
       capturePng: f.capture, framePng: f.frame,
+      // visualDiff is ADVISORY (pixel-diff vs the dummy-data design frame) unless the block was captured
+      // against matched fixture data — the gate honours `dataMatched` from blocks.json; by default it does
+      // not FAIL on these regions (real-vs-dummy data would false-fail every content-bearing surface).
       visualDiff: { diffPct: visual.diffPct, regions: visual.regions },
-      deltaCompare: { ok: deltaOk, diffs: deltaDiffs },
+      // deltaCompare is the AUTHORITY: per-element style/box/gap, content-independent. `checked`/`gaps`
+      // are the COVERAGE the gate audits — a block whose delta spec covered too little cannot certify clean.
+      deltaCompare: { ok: deltaOk, diffs: deltaDiffs, checked: Array.isArray(delta.checked) ? delta.checked : [], gaps: Array.isArray(delta.gaps) ? delta.gaps : [] },
       ...(reconciliation ? { reconciliation } : {}),
       ...(contract ? { contract } : {}),
       stability: { ok: stability.ok, targets: stability.targets },

@@ -1,15 +1,12 @@
 ---
-description: Model policy for velt-customize — Claude models only, TIERED by role (deep thinking where judgment lives, fast tiers for mechanical work).
+description: Model policy for velt-customize — Claude Opus, max effort, for every role (user directive).
 alwaysApply: true
 ---
 
-# velt-customize — Claude models only, tiered by role
+# velt-customize — Claude Opus everywhere, maximum effort
 
 When executing any velt-customize work (`/velt-customize-run`, `/velt-customize-fix`, `/velt-customize-clear`, `/velt-customize-memory`, or any dispatch of the `velt-orchestrator`, `velt-planner`, `velt-builder`, or `velt-judge` agents):
 
-- **Always run the work on Claude models.** Never re-route a velt-customize step to a generic subagent with a non-Claude model.
-- **The tiers are deliberate — speed is a quality feature** (a phase must fit ~60 min; the deterministic scripts, not the model, are the fidelity gate):
-  - **`velt-planner` → `claude-fable-5-thinking`** (deepest tier). Recognition + the Connect Map is the one step where judgment quality compounds into everything downstream — never downgrade it.
-  - **`velt-orchestrator`, `velt-builder`, `velt-judge` → `claude-sonnet-5-thinking`** (fast tier). Their work is mechanical by design: the orchestrator obeys script exit codes, the Builder executes the Connect Map + `first-shot.css` verbatim, the Judge runs a fixed measurement pipeline whose verdict comes from `delta-compare`/`visual-diff`/`verdict-gate-blocks`, not from model opinion. **Exception:** the Builder's FIRST structural build of a NEW component family may be dispatched on `claude-fable-5-thinking` when the orchestrator judges the shell non-trivial; subsequent patch iterations stay on the fast tier.
-- **Never override upward-only in reverse:** upgrading a fast-tier agent to Fable for a hard case is allowed; downgrading the Planner is not.
-- If a pinned slug is unavailable in this environment, substitute **the nearest available Claude model of the same tier** (thinking preferred; for the planner: Fable, then Opus, then Sonnet). If no Claude model is available at all, HALT and tell the user instead of silently switching model families.
+- **Every agent runs on `claude-opus-4-8-thinking` (Opus 4.8) with maximum reasoning effort.** No tiering, no fast/slow split, no downgrades — this is a deliberate user directive (quality over speed; the recurring failures were reliability + a missing knowledge base, not model tier).
+- **Always Claude.** Never re-route a velt-customize step to a generic subagent with a non-Claude model.
+- If `claude-opus-4-8-thinking` is unavailable in this environment, substitute **the nearest available Claude Opus / thinking model** (never Sonnet/Fable as a silent downgrade unless Opus is truly unavailable). If no Claude model is available at all, HALT and tell the user instead of silently switching model families.

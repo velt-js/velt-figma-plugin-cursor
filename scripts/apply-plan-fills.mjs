@@ -14,9 +14,12 @@
 // --assume-remaining  DEAD-PLANNER FALLBACK: after applying whatever fills exist (pass an empty
 //   `{}` file if the planner returned nothing usable), clear every remaining `_todo` with the
 //   scaffold's conservative default and tag the brief `"assumedFills": [paths]` so the Judge sees
-//   exactly what was never decided. This lets `brief-scaffold.mjs --lint` pass and the build loop
-//   start — the loop's gates catch what the assumed fills got wrong (the alternative, waiting on
-//   a wedged planner, catches nothing).
+//   exactly what was never decided. NOTE: this NO LONGER blanket-passes lint — a surface that must be
+//   OPENED (sidebar/dialog/flow) with an empty/prose drive still FAILS `brief-scaffold.mjs --lint`
+//   (validateDriveSteps), and such briefs are tagged `"assumedUndriven": true`. That's deliberate: an
+//   un-authored open can't be silently certified; it surfaces by name so the human/planner provides it
+//   (or the block is accounted BLOCKED). Everything else the assumed defaults get wrong, the loop's
+//   downstream gates catch — the alternative (waiting on a wedged planner) catches nothing.
 //
 // Fills JSON shape (all keys optional):
 //   {
@@ -31,8 +34,10 @@
 import { promises as fs } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
+import { validateDriveSteps } from "./measure-block.mjs";   // reject a prose/empty drive fill at persist time
 
 const readJson = async (p) => JSON.parse(await fs.readFile(p, "utf8"));
+const mustOpenBlock = (blk) => !!(blk && (blk.role === "flow" || /sidebar|comments-sidebar|dialog|panel|thread|comment-list|feed/i.test(`${blk.component || ""} ${blk.surface || ""} ${blk.state || ""} ${blk.familyId || ""}`)));
 // atomic: a crash mid-write must never leave a truncated brief for the build loop to trip on
 async function writeJson(p, o) {
   const tmp = `${p}.tmp-${process.pid}`;
@@ -114,6 +119,15 @@ async function main() {
     probe.layer = patch.layer ?? probe.layer ?? [];
     if (probe.layer === null) probe.layer = [];
     stripTodos(probe);
+    // POST-FILL GUARD: a prose/empty drive fill (the RUN-4 failure) must NOT slip through as lint-clean
+    // just because stripTodos removed the _todo guard key. Re-validate and re-inject a _todo if the drive
+    // isn't machine-executable, so brief-scaffold --lint fails BY NAME (sub-second) rather than
+    // measure-block discovering it after a full browser boot.
+    {
+      const blk = (blocks.blocks || []).find((b) => b.id === id);
+      const dprob = validateDriveSteps(probe.drive, { requireSteps: mustOpenBlock(blk), label: "drive" });
+      if (dprob.length) probe._todo_drive = `drive not machine-executable: ${dprob.slice(0, 3).join(" · ")}`;
+    }
     await writeJson(p, probe);
   }
   out.wrote.push(`probes x${Object.keys(fills.probesPatch || {}).length}`);
@@ -145,10 +159,14 @@ async function main() {
     const todos = findTodos(brief);
     if (!todos.length) continue;
     if (assumeRemaining) {
-      // conservative defaults: empty steps stay empty, null asserts/selectors stay null —
-      // the loop's gates (lint passes, measure fails loudly) surface each one by name.
+      // conservative defaults: empty steps stay empty, null asserts/selectors stay null. NOTE: for a
+      // surface that must be OPENED (sidebar/dialog/flow), brief-scaffold --lint now FAILS on an empty
+      // drive (validateDriveSteps requireSteps) — an assumed-empty drive can NOT sail through as clean;
+      // it surfaces by name so the human/planner authors the open, or the block is accounted BLOCKED.
+      const hadDriveTodo = todos.some((t) => /drive|steps|assert/i.test(t));
       stripTodos(brief);
       brief.assumedFills = todos;
+      if (hadDriveTodo && !(brief.drive && brief.drive.steps && brief.drive.steps.length)) brief.assumedUndriven = true;
       await writeJson(p, brief);
       out.assumed.push(`${f}: ${todos.length} field(s) assumed (${todos.slice(0, 3).join(", ")}${todos.length > 3 ? ", …" : ""})`);
     } else {

@@ -19,7 +19,7 @@
 
 ## Measured fidelity (final delta tables)
 
-Per surface × state, the Judge's delta table (empty = matched; tolerances ΔE<2 / ±1px). Any residual row is a remaining diff, not a pass.
+Per surface × state, the Judge's delta table. **An empty table means MATCHED only when the measurement actually ran — ≥2 elements were freshly asserted this run (cite the checked count).** An empty table because nothing was measured (surface never opened, 0 elements checked) is **UNVERIFIED, never a pass** — a zero/absent checked-count is a measurement failure, not a clean result. Tolerances ΔE<2 / ±2px; any residual row is a remaining diff, not a pass.
 
 | Surface · state | Element | Property | Spec | Rendered | Pass |
 |---|---|---|---|---|---|

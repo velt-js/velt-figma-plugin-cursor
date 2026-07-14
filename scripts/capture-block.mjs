@@ -35,8 +35,16 @@ async function loadChromium() {
 // Acquire a browser: launch a fresh headless one, or REUSE an existing browser via --connect. A real
 // Chrome (what the Judge drives) exposes a CDP endpoint (http://host:port or ws …/devtools/browser/…);
 // a Playwright `launchServer` exposes a plain ws endpoint. Try the likely form first, then the other.
-async function acquireBrowser(chromium, connectWs) {
-  if (!connectWs) return chromium.launch({ headless: true });
+async function acquireBrowser(chromium, connectWs, { requireConnect = false } = {}) {
+  if (!connectWs) {
+    // Fail loud, never a silent blank headless capture (it can't open the Velt sidebar → captures an
+    // empty surface → false-pass). Bare headless is for golden/offline calibration only.
+    if (requireConnect) {
+      console.error("✗ --require-connect set but no --connect <ws> given — refusing to capture in a blank headless browser.\n  Resolve a real browser via scripts/browser-endpoint.mjs, then pass --connect <ws>.");
+      process.exit(3);
+    }
+    return chromium.launch({ headless: true });
+  }
   const looksCdp = /^https?:|\/devtools\//.test(connectWs);
   const cdp = () => chromium.connectOverCDP(connectWs);
   const pw = () => chromium.connect({ wsEndpoint: connectWs });
@@ -54,9 +62,10 @@ async function main() {
   const scale = +argv("--scale", "2"), timeout = +argv("--timeout", "30000");
   const selectUser = argv("--select-user", null), assertSel = argv("--assert", null), driveJs = argv("--eval", null);
   const toggleSel = argv("--toggle", null), connectWs = argv("--connect", null);
+  const requireConnect = rest.includes("--require-connect");
 
   const chromium = await loadChromium();
-  const browser = await acquireBrowser(chromium, connectWs);
+  const browser = await acquireBrowser(chromium, connectWs, { requireConnect });
   try {
     const ctx = await browser.newContext({ viewport: { width: 1512, height: 900 }, deviceScaleFactor: scale });
     const page = await ctx.newPage();

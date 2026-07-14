@@ -59,7 +59,7 @@ async function main() {
   if (!phaseDir || !appUrl) { console.error('usage: env-watchdog.mjs <phaseDir> <appUrl> [--interval 30] [--dead-after 6] [--expect "<s>"] [--restart-cmd "npm run dev"] [--restart-cwd <dir>] [--max-restarts 3]'); process.exit(1); }
   const argv = (k, d) => { const i = rest.indexOf(k); return i >= 0 ? rest[i + 1] : d; };
   const interval = +argv("--interval", "30") * 1000;
-  const deadAfter = +argv("--dead-after", "6");
+  const deadAfter = +argv("--dead-after", "12");   // raised from 6: shorter windows false-fired on normal model "thinking" gaps and buried real wedges in noise (still confirmed over 2 ticks before acting)
   const expect = argv("--expect", null);
   const restartCmd = argv("--restart-cmd", null);
   const restartCwd = path.resolve(argv("--restart-cwd", "."));

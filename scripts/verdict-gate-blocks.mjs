@@ -128,12 +128,13 @@ export async function checkFamilySmoke(blocks, report, phaseDir) {
 export function verdictGateBlocks(blocks, report, { maxRegionFill = 0.05 } = {}) {
   const missing = [];   // coverage / artifact gaps ⇒ INCOMPLETE (cannot terminate)
   const failures = [];  // built + measured but wrong ⇒ FAIL
+  const advisories = []; // pixel-diff regions vs the dummy-data design — reported, NOT gated (data≠design)
   const accounted = { blocked: [], gap: [], stuck: [], remaining: [] };  // explicitly-stopped, with evidence
   const reps = (report && report.blocks) || {};
   const list = (blocks && blocks.blocks) || [];
   const remainingSet = new Set((report && report.phase && report.phase.remaining) || []);
   // an empty oracle is never a pass — zero blocks means enumeration failed / the wrong node was passed.
-  if (!list.length) return { verdict: "INCOMPLETE", coverage: 0, missing: ["blocks.json has zero blocks — the completeness oracle is empty (extraction failed or the node isn't a Loop?)"], failures: [], accounted: { blocked: [], gap: [], stuck: [], remaining: [] } };
+  if (!list.length) return { verdict: "INCOMPLETE", coverage: 0, missing: ["blocks.json has zero blocks — the completeness oracle is empty (extraction failed or the node isn't a Loop?)"], failures: [], advisories: [], accounted: { blocked: [], gap: [], stuck: [], remaining: [] } };
 
   for (const b of list) {
     const r = reps[b.id];
@@ -157,10 +158,24 @@ export function verdictGateBlocks(blocks, report, { maxRegionFill = 0.05 } = {})
     // records {ok:true, targets:[]}); a missing result means the check was skipped, not that it passed.
     if (!r.stability || typeof r.stability.ok !== "boolean") { missing.push(`block '${b.id}' has no interaction-stability result (R27)`); continue; }
 
-    // measured-but-wrong → FAIL. Visual: any SIGNIFICANT region (fill >= threshold = a real structural
-    // diff, not 1px drift). Delta: the exact style/box/colour gate must be ok. Stability: no target moved.
+    // COVERAGE FLOOR — deltaCompare is the AUTHORITY (content-independent style/box/gap), so a thin spec
+    // must not certify a surface by checking nothing. This is the RUN-3 hole: delta reported 'clean' while
+    // the inter-card gap and the reaction icons were never in the spec, and whole-surface pixel-diff (the
+    // only thing that would have caught them) drowned in real-vs-dummy DATA noise and got waved off.
+    const checkedN = Array.isArray(r.deltaCompare.checked) ? r.deltaCompare.checked.length : 0;
+    const gapsN = Array.isArray(r.deltaCompare.gaps) ? r.deltaCompare.gaps.length : 0;
+    if (checkedN < 2) { missing.push(`block '${b.id}' delta-compare spec too thin (asserted ${checkedN} element(s)) — enumerate every visible slot's style + box; a surface cannot be certified by checking nothing`); continue; }
+    const isRepeating = /flow/i.test(b.role || "") || /comment|thread|list|feed/i.test(String(b.familyId || "") + String(b.component || ""));
+    if (isRepeating && gapsN < 1) { missing.push(`block '${b.id}' is a repeating/list surface but delta-compare asserted no inter-card gap — add a compareGap between consecutive cards (the '2 vs 11' blind spot: the count varies, the gap does not)`); continue; }
+
+    // measured-but-wrong → FAIL. deltaCompare (exact style/box/gap) is the authority; stability: no target
+    // moved. visualDiff is ADVISORY — pixel-diff vs the DUMMY-data design frame lights up on real-vs-dummy
+    // DATA (2 vs 11 cards, different text/names/times) that is NOT a defect, so it does not FAIL on its own;
+    // a genuine styling issue a region hints at must be confirmed as a delta-compare assertion (which DOES
+    // FAIL). Exception: a capture taken against MATCHED fixture data (dataMatched) is a valid pixel compare.
     const sig = (r.visualDiff.regions || []).filter((reg) => (reg.fill ?? 1) >= maxRegionFill);
-    for (const reg of sig) failures.push(`block '${b.id}': visual diff at ${reg.cssBox || JSON.stringify(reg)} (fill ${reg.fill})`);
+    if (b.dataMatched) for (const reg of sig) failures.push(`block '${b.id}': visual diff at ${reg.cssBox || JSON.stringify(reg)} (fill ${reg.fill}) [dataMatched]`);
+    else for (const reg of sig) advisories.push(`block '${b.id}': pixel region at ${reg.cssBox || JSON.stringify(reg)} (fill ${reg.fill}) — advisory only (live data ≠ design mock); confirm via delta-compare to gate it`);
     // deltaCompare.ok === false ALWAYS FAILs, even if diffs[] is empty (a summary-only failure must not slip through).
     if (!r.deltaCompare.ok) {
       const ds = (r.deltaCompare.diffs && r.deltaCompare.diffs.length) ? r.deltaCompare.diffs.slice(0, 6) : [{ note: "delta-compare FAIL (no diff detail provided)" }];
@@ -179,11 +194,11 @@ export function verdictGateBlocks(blocks, report, { maxRegionFill = 0.05 } = {})
   const stoppedCount = accounted.stuck.length + accounted.remaining.length;
 
   // M5 guard first: any block neither measured nor explicitly accounted ⇒ INCOMPLETE, keep looping.
-  if (missing.length) return { verdict: "INCOMPLETE", coverage, missing, failures, accounted, note: "coverage/artifacts incomplete — a partial build is NOT a pass" };
-  if (failures.length) return { verdict: "FAIL", coverage: 100, missing: [], failures, accounted };
+  if (missing.length) return { verdict: "INCOMPLETE", coverage, missing, failures, advisories, accounted, note: "coverage/artifacts incomplete — a partial build is NOT a pass" };
+  if (failures.length) return { verdict: "FAIL", coverage: 100, missing: [], failures, advisories, accounted };
   // all blocks accounted, none failing:
-  if (stoppedCount) return { verdict: "STOPPED", coverage: 100, missing: [], failures: [], accounted, note: "hit the bounds / soft-cap — hand off to the human with the remaining/stuck list, do NOT keep looping" };
-  return { verdict: "PASS", coverage: 100, missing: [], failures: [], accounted };
+  if (stoppedCount) return { verdict: "STOPPED", coverage: 100, missing: [], failures: [], advisories, accounted, note: "hit the bounds / soft-cap — hand off to the human with the remaining/stuck list, do NOT keep looping" };
+  return { verdict: "PASS", coverage: 100, missing: [], failures: [], advisories, accounted };
 }
 
 async function main() {
@@ -210,6 +225,7 @@ async function main() {
   console.log(`VERDICT: ${r.verdict}  (block coverage ${r.coverage}% of ${(blocks.blocks || []).length})`);
   if (r.missing.length) { console.log("  INCOMPLETE — not built / not driven / artifacts missing:"); for (const m of r.missing.slice(0, 24)) console.log("    · " + m); }
   if (r.failures.length) { console.log("  FAIL — built but does not match:"); for (const f of r.failures.slice(0, 24)) console.log("    · " + f); }
+  if (r.advisories && r.advisories.length) { console.log("  advisory (pixel regions vs dummy-data design — NOT gated; investigate + confirm via delta-compare):"); for (const m of r.advisories.slice(0, 12)) console.log("    · " + m); }
   const acc = r.accounted || {};
   for (const [k, label] of [["stuck", "STUCK (hit bounds — hand to human)"], ["remaining", "REMAINING (soft-cap reached — not started)"], ["blocked", "BLOCKED (env can't reach)"], ["gap", "GAP (verified SDK gap)"]])
     if (acc[k] && acc[k].length) { console.log(`  ${label}:`); for (const m of acc[k].slice(0, 24)) console.log("    · " + m); }

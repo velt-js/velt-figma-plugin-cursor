@@ -1,0 +1,186 @@
+{
+  "_doc": "Velt SDK/component bugs + fixes, keyed by veltVersion. first-shot-css.mjs bakes 'confirmed' css-fix entries into the first-shot stylesheet; the judge pre-checks 'behavior' entries. Only entries whose veltVersion matches the target repo's @veltdev/react are applied.",
+  "gotchas": [
+    {
+      "id": "composer-send-opacity",
+      "veltVersion": "6.x",
+      "component": "composer / VeltComments send button",
+      "kind": "css-fix",
+      "selectorHints": [
+        ".vc-send .velt-composer--input-button",
+        ".vc-send svg",
+        ".velt-composer--input-button"
+      ],
+      "symptom": "Send triangle renders pale/greyed. Velt's own .velt-composer--input-button carries opacity:.4 in a state that blends the white glyph into the grey background.",
+      "cssFix": ".vc-send .velt-composer--input-button, .vc-send svg { opacity: 1 !important; }",
+      "confidence": "confirmed",
+      "seenOn": [
+        "privado",
+        "harvey"
+      ]
+    },
+    {
+      "id": "classlist-space-separated-invalidchar",
+      "veltVersion": "6.x",
+      "component": "any injected Velt slot (Composer / ReactionPin / ReactionTool)",
+      "kind": "behavior",
+      "symptom": "37+ InvalidCharacterError thrown from classList.add when a space-separated className string is put on an injected Velt slot element.",
+      "fix": "Never assign multi-class space-separated strings directly to injected slot elements; apply classes individually or via the wireframe markup you control.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "privado-cloud",
+        "harvey",
+        "testbed"
+      ]
+    },
+    {
+      "id": "frame-export-margin",
+      "veltVersion": "n/a (Figma export)",
+      "component": "measurement harness / frame PNGs",
+      "kind": "measurement",
+      "symptom": "Figma frame exports carry a baked-in N-px margin on all sides (seen 10px on privado composer states), so a frameRegion of {0,0,w,h} includes the margin as content and inflates diffPct.",
+      "fix": "At frame import, compare PNG IHDR dims to the designSpec region; if larger by 2M on each axis, set frameRegion.x/y = M (the margin). Auto-check, don't let the judge re-discover it forensically.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "privado",
+        "harvey"
+      ]
+    },
+    {
+      "id": "scrollbar-steals-16px",
+      "veltVersion": "6.x",
+      "component": "sidebar / thread list (Velt internal scroller)",
+      "kind": "css-fix",
+      "symptom": "A 2px icon-nudge (margin/translate) overflows a card, which grows a 16px classic scrollbar on Velt's internal .velt-sidebar-content / threads scroller, skewing ALL measured widths by -16px.",
+      "cssFix": "/* clip the nudged icon so it can't overflow: */ .vc-reply-icon { overflow: hidden !important; }",
+      "fix": "When a uniform -16px width regression appears across rows, suspect a transient scrollbar from an overflowing nudge; clip the offending element rather than growing margins.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "harvey",
+        "privado"
+      ]
+    },
+    {
+      "id": "composer-open-one-way-state",
+      "veltVersion": "6.x",
+      "component": "composer / velt-composer-open",
+      "kind": "behavior",
+      "symptom": "velt-composer-open is a one-way SDK state with no revert prop \u2014 once opened it cannot be programmatically reverted, so a flow that needs the collapsed state after opening can't reach it.",
+      "fix": "Anchor collapsed-state layout/visibility on a STABLE selector, not on toggling velt-composer-open back off (R27). Treat 'return to collapsed' as unreachable and blocker it rather than grinding.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "privado",
+        "harvey"
+      ]
+    },
+    {
+      "id": "wireframe-template-clone-drops-tag",
+      "veltVersion": "6.x",
+      "component": "any VeltWireframe registration",
+      "kind": "behavior",
+      "symptom": "Velt clones wireframe TEMPLATES into the plain DOM carrying the .vc-* classes but DROPS the velt-*-wireframe tag \u2014 so a probe/selector keyed to the wireframe tag dies at runtime.",
+      "fix": "Key every runtime selector to a stable velt-* class or your own .vc-* class, never the velt-*-wireframe registry tag (which exists only in the 0-size registry twin).",
+      "confidence": "confirmed",
+      "seenOn": [
+        "privado",
+        "harvey"
+      ]
+    },
+    {
+      "id": "verify-style-not-screenshot",
+      "veltVersion": "n/a",
+      "component": "measurement harness / any content-bearing surface (comments, notifications, lists)",
+      "kind": "measurement",
+      "symptom": "Whole-surface pixel-diff of a LIVE list against the Figma frame is invalid: the design is DUMMY data (e.g. 2 example comments, made-up names/timestamps) and the app is REAL data (e.g. 11 comments, real text/users). The count/text/avatars/times NEVER match, so pixel-diff either false-FAILs every content-bearing surface (regions everywhere) or gets waved off as 'artifact' \u2014 which hides real style defects (the RUN-3 hole: a missing inter-card gap + wrong reaction icons shipped while delta-compare passed on a spec that never checked them).",
+      "fix": "Verify CONTENT-INDEPENDENT style, not screenshots. deltaCompare (per-element computed style + box + inter-card GAP) is the AUTHORITY \u2014 it checks the look of ONE card template, identical whether the app shows 2 cards or 200. Whole-surface visualDiff is ADVISORY only: spot a region, then confirm it as a concrete delta assertion (which gates). NEVER flag content (comment count, message text, names, timestamps, reaction counts). The gate rejects a delta spec that covered too little as INCOMPLETE: brief-scaffold auto-derives the inter-card gap + per-slot style elements from the design slice; reaction/action icon identity is icon-lint. A data-controlled single-card capture may set dataMatched to re-enable pixel gating.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "privado",
+        "privado-run3"
+      ]
+    },
+    {
+      "id": "mention-default-highlight",
+      "veltVersion": "n/a",
+      "component": "comment message / velt-mention",
+      "kind": "css-fix",
+      "selectorHints": [
+        ".velt-thread-card--message .velt-mention",
+        ".velt-mention",
+        "[class*='velt-mention']"
+      ],
+      "symptom": "@mentions render with Velt's DEFAULT marker/highlighter background (a yellow/tinted block behind the name) because the design's mention style was never asserted into the Connect Map, so first-shot emitted no rule and the default shipped.",
+      "cssFix": "/* mention: remove Velt's default highlighter bg; the design's own mention COLOR still comes from the Connect Map cssDecls */\n.velt-thread-card--message .velt-mention, [class*='velt-mention'] { background: transparent !important; background-color: transparent !important; }",
+      "confidence": "confirmed",
+      "seenOn": [
+        "privado"
+      ]
+    },
+    {
+      "id": "composer-raw-and-stateless",
+      "veltVersion": "n/a",
+      "component": "composer (VeltCommentComposer / comment-input states)",
+      "kind": "behavior",
+      "selectorHints": [
+        ".velt-composer",
+        ".velt-composer-open",
+        "velt-composer-input-focused"
+      ],
+      "symptom": "The composer renders as a raw blue-outlined <textarea> with a misaligned @/send, and has no collapsed\u2192active\u2192typing states. TWO causes: (1) the custom CSS never reached the input \u2014 the surface is missing shadowDom={false} (or injectCustomCss) so selector CSS can't override Velt's shadow-DOM defaults; (2) the 3 states were never wired \u2014 'active' keys off the .velt-composer-open ancestor class and 'typing' off velt-composer-input-focused, not authored markup.",
+      "fix": "Set shadowDom={false} (or injectCustomCss) on the surface so .velt-composer* selector CSS applies (R6). Build a composer SKELETON (rounded pill container + action row with attach/mention left + circular send right) and wire the 3 states to the real Velt classes: collapsed = default, active = .velt-composer-open ancestor, typing = velt-composer-input-focused. The Judge must DRIVE focus\u2192type and assert all three (a static default capture false-passes the state work).",
+      "confidence": "confirmed",
+      "seenOn": [
+        "privado"
+      ]
+    },
+    {
+      "id": "reaction-pin-unsized-giant",
+      "veltVersion": "n/a",
+      "component": "reactions (VeltReactionPin on a comment card)",
+      "kind": "behavior",
+      "selectorHints": [
+        "velt-reaction-pin",
+        ".velt-reaction-pin-emoji",
+        "[class*='reaction-pin']"
+      ],
+      "symptom": "On-card reactions render as GIANT stacked emoji IMAGES instead of small inline pills with counts \u2014 the pin emoji (VeltReactionPin \u2192 Emoji/Count) has no width/height and no inline-pill layout, so it paints at the image's natural size. (Also easy to mis-wire the big picker VeltReactionsPanel Item\u2192Emoji in place of the on-card pin.)",
+      "fix": "Lay velt-reaction-pin out as an inline-flex PILL (emoji + count, small gap) and SIZE the pin emoji to the design (velt-reaction-pin-emoji ~16-20px, never natural image size). Distinguish the on-CARD pin (small) from the PICKER panel emoji (larger). brief-scaffold must auto-derive a reaction-pill element so the Judge asserts its box and a giant emoji FAILS as a delta row (the RUN-3 blind spot the KB named but the scaffold never emitted).",
+      "confidence": "confirmed",
+      "seenOn": [
+        "privado"
+      ]
+    },
+    {
+      "id": "reactions-double-declare",
+      "veltVersion": "n/a",
+      "component": "ThreadCard reactions wireframe",
+      "kind": "behavior",
+      "selectorHints": [
+        "velt-comment-dialog-thread-card-reactions-wireframe",
+        "velt-comment-dialog-thread-card-reaction-tool-wireframe"
+      ],
+      "symptom": "TWO identical 'add reaction' (smiley+) buttons render on a comment because BOTH ThreadCard.Reactions AND ThreadCard.ReactionTool were declared. Reactions is the composite row that ALREADY contains the add-reaction trigger; ReactionTool is the STANDALONE add button \u2014 declaring both renders the add affordance twice.",
+      "fix": "Use ThreadCard.Reactions (full row: pills + add-reaction tool) OR (ReactionTool + ReactionPin) \u2014 never Reactions alongside ReactionTool. lint-customization flags co-declaration of thread-card-reactions AND thread-card-reaction-tool; icon-lint flags two identical reaction-tool glyphs.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "privado"
+      ]
+    },
+    {
+      "id": "dialog-composer-dropped",
+      "veltVersion": "n/a",
+      "component": "VeltCommentDialog wireframe",
+      "kind": "behavior",
+      "selectorHints": [
+        "velt-comment-dialog-wireframe",
+        "velt-comment-composer-wireframe"
+      ],
+      "symptom": "The comment dialog renders with NO composer at all. The dialog root was registered as a container wireframe but the Composer subtree was not DECLARED \u2014 undeclared children of a container wireframe DISAPPEAR (they do NOT fall back to Velt's default). Easy to miss because an unselected dialog legitimately hides the composer until a pin is selected.",
+      "fix": "Declare the Composer (and Body\u2192Threads\u2192ThreadCard) subtree inside the dialog wireframe. Put Composer in the dialog manifest mustSupply so first-shot + the gate flag its absence. lint-customization's container-completeness check requires declared children when a container root is registered. Judge smoke must drive pin SELECTION and assert the reply composer renders in the dialog.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "privado"
+      ]
+    }
+  ]
+}

@@ -22,8 +22,30 @@
 import { promises as fs } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
+import { DRIVE_VOCAB, validateDriveSteps } from "./measure-block.mjs";   // shared drive contract + validator
 
 const PLUGIN_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const DRIVE_VERBS = Object.keys(DRIVE_VOCAB).join("|");
+
+// A surface that must be OPENED before it can be measured (sidebar / dialog / any flow). For these an
+// empty drive is a false-pass (a closed sidebar renders nothing), so we pre-fill a deterministic open:
+// Velt's own toggleCommentSidebar() API + a real panel assert. The Planner may refine (a custom toggle
+// button, a specific state), but it must never be left empty. Returns a drive object, or null (the block
+// is an always-visible surface whose open the Planner must author, still gated by validateDriveSteps).
+function defaultDriveFor(block, liveSelector) {
+  const surf = `${block.component || ""} ${block.surface || ""} ${block.state || ""} ${liveSelector || ""}`.toLowerCase();
+  const isSidebar = block.role === "flow" || /sidebar|comments-sidebar|comment-list|feed/.test(surf);
+  if (!isSidebar) return null;
+  const assert = "velt-comments-sidebar, velt-comments-sidebar-v2, [class*='velt-sidebar'], [class*='comment-sidebar']";
+  return {
+    steps: [
+      { action: "eval", js: "try{window.Velt?.getCommentElement?.()?.toggleCommentSidebar?.(true);}catch(e){}" },
+      { action: "waitFor", selector: assert, ms: 8000 },
+    ],
+    assert,
+    _auto_open: "sidebar opened via Velt toggleCommentSidebar() (deterministic default). Refine ONLY if this app uses a custom toggle; NEVER leave drive.steps empty — an empty drive on a closed sidebar is a false-pass.",
+  };
+}
 const slug = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 async function loadJson(p) { return JSON.parse(await fs.readFile(p, "utf8")); }
@@ -60,9 +82,34 @@ function componentFor(manifest, block) {
 
 const INTERACTIVE_ROLES = new Set(["trigger", "action", "item", "button"]);
 
+// AUTO-DERIVE the inter-card gap for repeating/list surfaces — closes the "2 vs 11" blind spot. The
+// NUMBER of cards varies with real data; the GAP between them is a fixed style property, so we assert the
+// gap (content-independent) instead of pixel-diffing the whole list against a dummy-data design frame.
+// Group boxed elements by shared left edge + width (cards line up and share a width), take the tallest
+// such stack, and emit a compareGap between its first two cards. Identical whether the app shows 2 or 200.
+export function deriveCardGaps(els, isRepeating) {
+  if (!isRepeating) return [];
+  const boxed = (els || []).filter((e) => e.box && e.box.w >= 120 && e.box.h >= 40 && e.box.y != null);
+  const groups = new Map();
+  for (const e of boxed) {
+    const key = `${Math.round(e.box.x / 8)}:${Math.round(e.box.w / 24)}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(e);
+  }
+  let stack = [];
+  for (const g of groups.values()) if (g.length > stack.length) stack = g;
+  if (stack.length < 2) return [];
+  stack.sort((a, b) => a.box.y - b.box.y);
+  const [a, b] = stack;
+  const gap = Math.round(b.box.y - (a.box.y + a.box.h));
+  if (!Number.isFinite(gap) || gap < 0 || gap > 80) return [];
+  return [{ a: a.name, b: b.name, axis: "y", expected: gap, _auto: "inter-card gap (content-independent; refine the pair if the slice mis-grouped)" }];
+}
+
 export function scaffoldProbes(block, sliceNodes, comp) {
   const rootTag = comp?.rootWireframe || null;
   const liveSelector = block.liveSelector || rootTag || null;
+  const isRepeating = /flow/i.test(block.role || "") || /comment|thread|list|feed/i.test(String(block.familyId || "") + String(block.component || ""));
   const elements = (sliceNodes || [])
     .filter((n) => n.id !== block.figmaNodeId && n.cssDecls && Object.keys(n.cssDecls).length)
     .map((n) => ({
@@ -88,6 +135,7 @@ export function scaffoldProbes(block, sliceNodes, comp) {
   const expectedTexts = [...new Set((sliceNodes || [])
     .filter((n) => n.id !== block.figmaNodeId && typeof n.text === "string" && n.text.trim().length > 1)
     .map((n) => n.text.trim()))];
+  const autoDrive = defaultDriveFor(block, liveSelector);   // deterministic sidebar-open, or null
   return {
     blockId: block.id,
     liveSelector,
@@ -96,19 +144,33 @@ export function scaffoldProbes(block, sliceNodes, comp) {
       expectedTexts,
       note: "seeded fixture content must SHOW these design strings (timestamps/user-variable strings may be pruned by the Planner; adding entries is better than deleting)",
     },
-    drive: {
-      steps: [],
-      _todo_steps: `machine actions to reach state '${block.state}' (vocabulary: click|dblclick|hover|type|press|waitFor|sleep|eval|clear|selectUser). Prose hints from enumeration: ${JSON.stringify((block.drive && block.drive.steps) || [])}`,
-      assert: (block.drive && block.drive.assert) || null,
-      ...((block.drive && block.drive.assert) ? {} : { _todo_assert: "a live selector proving the state is active (a blank/default capture is the classic false-pass)" }),
-    },
+    drive: autoDrive
+      ? {
+          steps: autoDrive.steps,                                              // deterministic sidebar-open OBJECTS
+          assert: (block.drive && block.drive.assert) || autoDrive.assert,
+          _auto_open: autoDrive._auto_open,
+          ...((block.drive && block.drive.steps && block.drive.steps.length)
+            ? { _hint_steps: `enumeration hints (PROSE — fold into the step objects above if useful; do NOT paste as-is): ${JSON.stringify(block.drive.steps)}` } : {}),
+        }
+      : {
+          // NOT a sidebar auto-open — the Planner authors the drive. The value is now a machine-object
+          // TEMPLATE (not the enumerate prose, which used to prime string steps); the prose hints are a
+          // clearly-non-executable `_hint`. `--lint` (validateDriveSteps) rejects prose/empty for any
+          // non-default surface, so a half-filled drive can't reach measure-block.
+          steps: [],
+          _todo_steps: `Fill with machine-executable step OBJECTS (NOT prose) to reach state '${block.state}'. Shape: [{"action":"click","selector":"<sel>"},{"action":"waitFor","selector":"<sel>"}]. Vocabulary: ${DRIVE_VERBS}. A surface that must be opened REQUIRES real steps + a drive.assert (empty = false-pass).`,
+          ...((block.drive && block.drive.steps && block.drive.steps.length)
+            ? { _hint_steps: `enumeration hints (PROSE — turn these into step objects, do NOT paste as-is): ${JSON.stringify(block.drive.steps)}` } : {}),
+          assert: (block.drive && block.drive.assert) || null,
+          ...((block.drive && block.drive.assert) ? {} : { _todo_assert: "a live selector proving the state is active (REQUIRED — a blank/default capture is the classic false-pass)" }),
+        },
     browser: {
       surfaceSelector: liveSelector,
       tol: {},
       elements,
       relations: [],
-      gaps: [],
-      _todo_relations: "add the layout relations/gaps the design shows (name left-of time, message below header, …) from the connect-map layout block",
+      gaps: deriveCardGaps(elements, isRepeating),
+      _todo_relations: "add the layout relations the design shows (name left-of time, message below header, …) from the connect-map layout block. The inter-card gap is AUTO-derived for list surfaces (content-independent) — verify/refine its card pair; ADD any other fixed gaps the design shows (avatar↔name, header↔body).",
     },
     layer: null,
     _todo_layer: "LAYER_PROBE spec(s) for each painted node the design styles (ownerSelector + expectedBox + designPaint), or [] if none",
@@ -155,8 +217,16 @@ async function main() {
     for (const b of blocks.blocks || []) {
       const p = path.join(briefsDir, `${b.id}.probes.json`);
       if (!(await exists(p))) { console.log(`✗ ${b.id}: probes.json MISSING`); dirty++; continue; }
-      const todos = findTodos(await loadJson(p)); checked++;
+      const brief = await loadJson(p); checked++;
+      const todos = findTodos(brief);
       if (todos.length) { console.log(`✗ ${b.id}: ${todos.length} unfilled _todo field(s): ${todos.slice(0, 4).join(", ")}${todos.length > 4 ? ", …" : ""}`); dirty++; }
+      // DRIVE STEPS must be MACHINE-EXECUTABLE step objects (not prose) — the sub-second pre-loop gate
+      // that replaces the ~35-min per-block runtime discovery ("unknown drive action 'undefined'").
+      // Surfaces that must be opened (flow / sidebar / dialog) ALSO require a non-empty drive + assert:
+      // an empty drive that self-certifies is the empty-surface false-pass this whole fix closes.
+      const mustOpen = b.role === "flow" || /sidebar|comments-sidebar|dialog|panel|thread|comment-list|feed/i.test(`${b.component || ""} ${b.surface || ""} ${b.state || ""} ${b.familyId || ""}`);
+      const driveProblems = validateDriveSteps(brief.drive, { requireSteps: mustOpen, label: `${b.id} drive` });
+      if (driveProblems.length) { console.log(`✗ ${b.id}: ${driveProblems.length} drive problem(s): ${driveProblems.slice(0, 3).join(" · ")}${driveProblems.length > 3 ? " · …" : ""}`); dirty++; }
     }
     for (const f of blocks.families || []) {
       const p = path.join(briefsDir, `${f.id}.smoke.json`);

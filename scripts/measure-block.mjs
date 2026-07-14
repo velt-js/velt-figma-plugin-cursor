@@ -46,13 +46,33 @@ async function loadChromium() {
   for (const c of candidates) { try { const m = await import(c); return (m.default || m).chromium; } catch { /* next */ } }
   throw new Error("playwright-core not found — `npm i -D playwright-core` or set $PLAYWRIGHT_CORE");
 }
-async function acquireBrowser(chromium, connectWs) {
-  if (!connectWs) return chromium.launch({ headless: true });
+async function acquireBrowser(chromium, connectWs, { requireConnect = false } = {}) {
+  if (!connectWs) {
+    // FAIL LOUD, never a silent blank headless browser. A throwaway headless Chromium has no auth/
+    // session and can't open the React-state-gated Velt sidebar — it would measure an empty surface
+    // and false-pass. When a real browser is expected (any live measurement), refuse and instruct.
+    if (requireConnect) {
+      console.error("✗ --require-connect is set but no real browser endpoint (--connect <ws>) was provided.\n" +
+        "  Measurement will NOT silently fall back to a blank headless browser (it can't open the Velt\n" +
+        "  sidebar and would report a false PASS on an empty surface). Resolve one first:\n" +
+        "    node scripts/browser-endpoint.mjs   # prints a ws for a Chrome started with --remote-debugging-port=9222\n" +
+        "  then pass its output as --connect <ws>. (Unattended --auto launches its own server browser.)");
+      process.exit(3);
+    }
+    return chromium.launch({ headless: true });   // bare headless: golden/offline calibration only
+  }
   const looksCdp = /^https?:|\/devtools\//.test(connectWs);
   try { return await (looksCdp ? chromium.connectOverCDP(connectWs) : chromium.connect({ wsEndpoint: connectWs })); }
   catch { return await (looksCdp ? chromium.connect({ wsEndpoint: connectWs }) : chromium.connectOverCDP(connectWs)); }
 }
 const vis = (page, sel) => page.locator(`${sel} >> visible=true`).first();
+// waitVisible (BUG-4b, found live): plain page.waitForSelector(sel, {state:'visible'}) targets the
+// FIRST DOM match for `sel` and waits for THAT element to become visible. For any wireframe tag,
+// the first DOM match is the permanently-hidden 0-size registry twin under <velt-wireframe> — it
+// never becomes visible, so the wait hangs/times out even though a live, visible clone matching the
+// same selector exists elsewhere in the DOM. Route every "wait until this becomes visible" through
+// the same visible-first locator the click/hover helper (`vis`) already uses.
+const waitVisible = (page, sel, timeout) => page.locator(`${sel} >> visible=true`).first().waitFor({ state: "visible", timeout });
 
 async function resetState(page) {
   await page.keyboard.press("Escape").catch(() => {});
@@ -100,6 +120,44 @@ async function selectUserRobust(page, user, timeout = 20000) {
   throw new Error(`selectUser '${user}' did not stick after 3 attempts (hydration race) — the app never reached an identified state with that user; treat as BLOCKED (env), not FAIL`);
 }
 
+// The drive-step vocabulary + the required companion field(s) per action. ONE source of truth: the
+// executor (runSteps) AND the pre-loop gate (validateDriveSteps, imported by brief-scaffold --lint and
+// apply-plan-fills) both read it, so the gate can never drift from what the browser can actually run.
+export const DRIVE_VOCAB = {
+  click: ["selector"], dblclick: ["selector"], hover: ["selector"], waitFor: ["selector"],
+  type: ["text"], press: ["key|text"], sleep: [], eval: ["js"], clear: [], selectUser: ["text"],
+};
+
+// Validate a brief's `drive` is MACHINE-EXECUTABLE (step OBJECTS, not prose) BEFORE any browser boots —
+// turning the old ~35-min per-block runtime discovery ("unknown drive action 'undefined'") into a
+// sub-second pre-loop hard-fail that names the offending block + step index. With requireSteps (any
+// surface that must be opened/driven) it also rejects an empty drive with no assert — the empty-drive
+// self-certification that produced the empty-surface false-pass. Returns problems[] (empty = ok).
+export function validateDriveSteps(drive, { requireSteps = false, label = "drive" } = {}) {
+  const problems = [];
+  const steps = drive && drive.steps;
+  if (steps != null && !Array.isArray(steps)) { problems.push(`${label}.steps must be an ARRAY of step objects, got ${typeof steps}`); return problems; }
+  (steps || []).forEach((s, i) => {
+    if (!s || typeof s !== "object" || Array.isArray(s)) {
+      problems.push(`${label}.steps[${i}] is ${typeof s === "string" ? `the string ${JSON.stringify(String(s)).slice(0, 60)}` : typeof s} — expected a step OBJECT like {action:"click", selector:"…"}`);
+      return;
+    }
+    const a = s.action;
+    if (!a || !Object.prototype.hasOwnProperty.call(DRIVE_VOCAB, a)) {
+      problems.push(`${label}.steps[${i}].action ${JSON.stringify(a)} is not a valid action (${Object.keys(DRIVE_VOCAB).join("|")})`);
+      return;
+    }
+    for (const req of DRIVE_VOCAB[a]) {
+      if (!req.split("|").some((f) => s[f] != null && String(s[f]).length)) problems.push(`${label}.steps[${i}] action '${a}' requires field '${req}'`);
+    }
+  });
+  if (requireSteps) {
+    if (!(Array.isArray(steps) && steps.length > 0)) problems.push(`${label}.steps is EMPTY on a surface that must be opened/driven — a blank capture would be a false-pass; author real step objects that OPEN the surface`);
+    if (!(drive && drive.assert && String(drive.assert).trim())) problems.push(`${label}.assert is MISSING on a surface that must be opened/driven — provide a live selector proving the surface is open (the driven-state proof)`);
+  }
+  return problems;
+}
+
 async function runSteps(page, steps, { timeout = 15000 } = {}) {
   for (const s of steps || []) {
     const a = s.action;
@@ -108,12 +166,12 @@ async function runSteps(page, steps, { timeout = 15000 } = {}) {
     else if (a === "hover") await vis(page, s.selector).hover({ timeout });
     else if (a === "type") { if (s.selector) await vis(page, s.selector).click({ timeout }); await page.keyboard.type(s.text ?? "", { delay: 20 }); }
     else if (a === "press") await page.keyboard.press(s.key || s.text);
-    else if (a === "waitFor") await page.waitForSelector(s.selector, { timeout: s.ms || timeout });
+    else if (a === "waitFor") await waitVisible(page, s.selector, s.ms || timeout);
     else if (a === "sleep") await page.waitForTimeout(s.ms || 300);
     else if (a === "eval") await page.evaluate(`(async()=>{ ${s.js} })()`);
     else if (a === "clear") await resetState(page);
     else if (a === "selectUser") await selectUserRobust(page, s.text, timeout);
-    else throw new Error(`unknown drive action '${a}' (click|dblclick|hover|type|press|waitFor|sleep|eval|clear|selectUser)`);
+    else throw new Error(`unknown drive action '${a}' (${Object.keys(DRIVE_VOCAB).join("|")})`);
   }
 }
 
@@ -168,7 +226,7 @@ async function measure(phaseDir, blockId, opts) {
   if (!liveSelector) { console.error(`✗ no liveSelector for '${blockId}' (blocks.json or the probe brief must set it)`); process.exit(3); }
 
   const chromium = await loadChromium();
-  const browser = await acquireBrowser(chromium, opts.connect);
+  const browser = await acquireBrowser(chromium, opts.connect, { requireConnect: opts.requireConnect });
   let driven = false, consoleErrors = [];
   try {
     const o = await openPage(browser, opts.url, { scale: opts.scale, selectUser: opts.selectUser, timeout: opts.timeout });
@@ -178,16 +236,31 @@ async function measure(phaseDir, blockId, opts) {
     // <velt-wireframe>, and the visible clone often only renders after the drive signs in /
     // opens the surface — the visible-wait deadlocked here. The drive's own `assert` is the
     // real driven-state gate; the capture below resolves visible-first.
-    await page.waitForSelector(liveSelector, { timeout: opts.timeout, state: "attached" });
+    // BOOT readiness — wait for Velt to be DEFINED (booted), NOT the block's liveSelector. The
+    // liveSelector's visible clone often only mounts AFTER the drive opens the surface, and a
+    // class-based liveSelector may not exist at all pre-drive — waiting on it would time out before
+    // the drive that creates it ever ran (the old ordering bug behind "measure-block never ran"). The
+    // OPENED surface is proven post-drive, below.
+    await page.waitForFunction(
+      () => !!(window.Velt || document.querySelector('velt-comments, velt-comment-tool, [class*="velt-"]')),
+      { timeout: Math.min(opts.timeout, 20000) },
+    ).catch(() => { /* boot signal absent — the post-drive visibility proof is the real gate */ });
     await resetState(page);
-    // DRIVE to the block's state, then prove it (a blank/default capture is the classic false-pass)
+    // DRIVE to the block's state, then PROVE the surface actually opened. driven=true REQUIRES a
+    // VISIBLE proof selector (drive.assert, else the block's own liveSelector) — never an empty or
+    // assumed drive. This is what kills the empty-surface false-pass: a closed sidebar/dialog's content
+    // never becomes visible, so we refuse to certify it instead of screenshotting a blank shell.
     try {
       await runSteps(page, probes.drive?.steps, { timeout: opts.timeout });
-      if (probes.drive?.assert) { await page.waitForSelector(probes.drive.assert, { timeout: 10000 }); driven = true; }
-      else driven = (probes.drive?.steps || []).length === 0;   // a stateless default block needs no drive
+      const proofSel = probes.drive?.assert || liveSelector;
+      await waitVisible(page, proofSel, probes.drive?.assert ? 10000 : 8000);
+      driven = true;
     } catch (e) {
-      console.error(`✗ drive failed for '${blockId}': ${e.message}`);
-      await fs.writeFile(path.join(resDir, "triage.json"), JSON.stringify({ error: String(e.message), consoleErrors, at: new Date().toISOString() }, null, 2));
+      const why = probes.drive?.assert
+        ? `drive/assert failed: ${e.message}`
+        : `the surface never became VISIBLE after the drive (proof selector '${liveSelector}') — it likely never opened (e.g. a closed sidebar/dialog). A blank capture is a false-pass; the brief must OPEN the surface (drive.steps) and PROVE it (drive.assert).`;
+      console.error(`✗ '${blockId}': ${why}`);
+      await fs.writeFile(path.join(resDir, "triage.json"), JSON.stringify({ error: String(e.message), reason: why, driven: false, consoleErrors, at: new Date().toISOString() }, null, 2));
       process.exit(3);
     }
     await page.waitForTimeout(500);
@@ -224,6 +297,15 @@ async function measure(phaseDir, blockId, opts) {
       console.error(`✗ LAYOUT ANOMALY: '${liveSelector}' measures ${Math.round(bb.width)}×${Math.round(bb.height)}px against a ${vp.width}×${vp.height} viewport — fix the runaway dimension before any visual measurement.`);
       console.log(JSON.stringify(anomaly));
       process.exit(2);
+    }
+    // EMPTY-SHELL BACKSTOP: a null or near-zero capture means we're about to screenshot a closed/empty
+    // surface — the false-pass. The visible-first locator + the post-drive visibility proof should
+    // already prevent it, but never certify a measurement of nothing.
+    if (!bb || bb.width < 8 || bb.height < 8) {
+      const empty = { blockId, emptyCapture: { box: bb, liveSelector }, hint: "the surface is missing or collapsed to ~0px — it likely never opened; a blank capture is not a valid measurement" };
+      await fs.writeFile(path.join(resDir, "triage.json"), JSON.stringify({ ...empty, consoleErrors, at: new Date().toISOString() }, null, 2));
+      console.error(`✗ '${blockId}': captured surface is missing/near-zero (${bb ? Math.round(bb.width) + "×" + Math.round(bb.height) : "no box"}px) — refusing to measure an empty shell.`);
+      process.exit(3);
     }
     await el.screenshot({ path: shotPng });
 
@@ -268,16 +350,24 @@ async function measure(phaseDir, blockId, opts) {
       if (r.status !== 0) process.exit(3);
     }
 
-    // summary → diffCount is what the builder feeds to `block-iter record`
+    // summary → diffCount is what the builder feeds to `block-iter record`. CONTENT-INDEPENDENT ONLY:
+    // deltaCompare (per-element style/box/gap) + contract + stability drive the fix loop. Whole-surface
+    // visualDiff is ADVISORY — it compares live pixels (REAL data) against the design frame (DUMMY data),
+    // so on any content-bearing surface it lights up on data differences (2 vs 11 cards, different text,
+    // real names/timestamps) that are NOT defects. Counting them sent the builder chasing phantom fixes.
+    // It stays in the summary so the Judge can spot regions worth investigating, but it is no longer a
+    // fix-defect. (A data-controlled capture that WANTS pixel gating carries dataMatched — honoured by the
+    // GATE, not this loop.) The corollary: deltaCompare must actually COVER the template (every slot + the
+    // inter-card gap + reaction icons), or a clean loop means nothing — enforced by the gate's coverage floor.
     const sigRegions = (vd.regions || []).filter((r) => (r.fill ?? 1) >= 0.05);
     const deltaFails = delta.ok ? 0 : Math.max(1, (delta.diffs || []).length);
     const contractFails = contract && !contract.ok ? (contract.violations || []).length || 1 : 0;
     const stabilityFails = stability.ok ? 0 : 1;
-    const diffCount = sigRegions.length + deltaFails + contractFails + stabilityFails;
+    const diffCount = deltaFails + contractFails + stabilityFails;
     console.log(JSON.stringify({
       blockId, driven, diffCount,
-      visual: { significantRegions: sigRegions.length, acceptedResiduals: (vd.acceptedResiduals || []).length },
-      delta: { ok: delta.ok, diffs: (delta.diffs || []).length },
+      visualAdvisory: { significantRegions: sigRegions.length, acceptedResiduals: (vd.acceptedResiduals || []).length, note: "advisory: pixel-diff vs dummy-data design — investigate, do not treat as a defect on content-bearing surfaces" },
+      delta: { ok: delta.ok, diffs: (delta.diffs || []).length, checked: (delta.checked || []).length, gaps: (delta.gaps || []).length },
       contract: contract ? { ok: contract.ok, violations: (contract.violations || []).length } : null,
       stability: { ok: stability.ok }, consoleErrors: consoleErrors.length,
       ...(fixtureCheck ? { fixture: fixtureCheck } : {}),
@@ -319,7 +409,7 @@ async function smoke(phaseDir, familyId, opts) {
   const outDir = path.join(phaseDir, "results", "smoke");
   await fs.mkdir(outDir, { recursive: true });
   const chromium = await loadChromium();
-  const browser = await acquireBrowser(chromium, opts.connect);
+  const browser = await acquireBrowser(chromium, opts.connect, { requireConnect: opts.requireConnect });
   const results = [];
   let consoleErrors = [];
   try {
@@ -329,7 +419,7 @@ async function smoke(phaseDir, familyId, opts) {
       const before = consoleErrors.length;
       try {
         await runSteps(page, step.actions, { timeout: opts.timeout });
-        if (step.assert) await page.waitForSelector(step.assert, { timeout: 8000 });
+        if (step.assert) await waitVisible(page, step.assert, 8000);
         if (step.assertAbsent) {
           const still = await page.locator(`${step.assertAbsent} >> visible=true`).count();
           if (still) throw new Error(`'${step.assertAbsent}' still visible (${still})`);
@@ -345,7 +435,7 @@ async function smoke(phaseDir, familyId, opts) {
       try {
         await page.setViewportSize({ width: spec.resize.width || 1100, height: spec.resize.height || 800 });
         await page.waitForTimeout(600);
-        if (spec.resize.assert) await page.waitForSelector(spec.resize.assert, { timeout: 8000 });
+        if (spec.resize.assert) await waitVisible(page, spec.resize.assert, 8000);
         results.push({ name: "resize", ok: true });
       } catch (e) { results.push({ name: "resize", ok: false, error: String(e.message).slice(0, 300) }); }
     }
@@ -377,6 +467,9 @@ async function main() {
     probes: argv("--probes", null), spec: argv("--spec", null), specFile: argv("--spec-file", null),
     acceptGlyph: rest.includes("--accept-glyph-residuals"), noReport: rest.includes("--no-report"),
     structureOnly: rest.includes("--structure-only"),
+    // --require-connect: refuse to run in a blank headless browser (the silent false-pass). The
+    // orchestrator/judge pass this for every LIVE measurement; only golden/offline calibration omits it.
+    requireConnect: rest.includes("--require-connect"),
   };
   if (!opts.url) { console.error("✗ --url <appUrl> is required (the PINNED appUrl from the run journal — never a guessed :3000)"); process.exit(1); }
   if (isSmoke) await smoke(phaseDir, id, opts);

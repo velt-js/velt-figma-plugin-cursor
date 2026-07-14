@@ -10,12 +10,12 @@ Every agent pins a **Claude model** in its frontmatter, and `rules/velt-customiz
 
 | Agent | Model |
 |---|---|
-| `velt-orchestrator` | `claude-fable-5-thinking` |
-| `velt-planner` | `claude-fable-5-thinking` (readonly) |
-| `velt-builder` | `claude-fable-5-thinking` |
-| `velt-judge` | `claude-fable-5-thinking` (readonly) |
+| `velt-orchestrator` | `claude-opus-4-8-thinking` |
+| `velt-planner` | `claude-opus-4-8-thinking` (readonly) |
+| `velt-builder` | `claude-opus-4-8-thinking` |
+| `velt-judge` | `claude-opus-4-8-thinking` (readonly) |
 
-If `claude-fable-5-thinking` isn't in your Cursor model picker yet, the rule's fallback applies: newest available Claude thinking model (Fable preferred, then Opus) — never a non-Claude model.
+If `claude-opus-4-8-thinking` isn't in your Cursor model picker yet, the rule's fallback applies: the nearest available Claude Opus/thinking model — never a non-Claude model.
 
 `scripts/validate.mjs` hard-fails if any agent is missing a `model` pin or pins a non-Claude slug.
 

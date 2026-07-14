@@ -1,0 +1,36 @@
+{
+  "_doc": "Recurring design-intent → Velt-component mappings (the GENERAL shape, not design-specific CSS). The planner reads these as priors so it doesn't re-derive the same mapping every run. The exact cssDecls/values for a specific design remain project-scoped (target repo .velt-customize/memory.json), never here.",
+  "patterns": [
+    {
+      "intent": "comments sidebar surface (docked panel: header + scrollable list + composer)",
+      "veltComponent": "VeltCommentsSidebar (embedMode + pageMode)",
+      "rootWireframe": "VeltCommentsSidebarWireframe",
+      "note": "The single wireframe registry root for a sidebar surface. Host mount: VeltCommentsSidebar with embedMode + pageMode + shadowDom={false}.",
+      "confidence": "confirmed",
+      "seenOn": ["privado", "harvey"]
+    },
+    {
+      "intent": "page-mode comment composer (collapsed pill -> expanded with attach/mention/send)",
+      "veltComponent": "VeltComments (popoverMode)",
+      "wireframe": "VeltCommentsSidebarWireframe.PageModeComposer / VeltCommentDialogWireframe.Composer",
+      "note": "Composer states: default collapsed pill, active (focused, toolbar), active-typing (send enabled). Attach + mention icons appear on focus/has-content.",
+      "confidence": "confirmed",
+      "seenOn": ["privado", "harvey"]
+    },
+    {
+      "intent": "comment card / thread (avatar + author + body + reactions + reply)",
+      "veltComponent": "VeltCommentsSidebar thread items",
+      "wireframe": "VeltCommentDialogWireframe.ThreadCard / comment-dialog",
+      "note": "KNOWN-HARD (see component-difficulty). Resists wireframe replacement; build minimal, cap fixes.",
+      "confidence": "confirmed",
+      "seenOn": ["privado", "harvey"]
+    },
+    {
+      "intent": "sidebar header (title + filter/sort trigger)",
+      "wireframe": "VeltCommentsSidebarWireframe header + filter dropdown",
+      "note": "Header ~48px, filter trigger ~28px. Supply the filter dropdown items explicitly.",
+      "confidence": "confirmed",
+      "seenOn": ["privado", "harvey"]
+    }
+  ]
+}
