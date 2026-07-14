@@ -1,0 +1,8 @@
+[17:53:38] setup started — phase WYAWuEm8DrIk-133-4052 (preflight next; lines will stream here)
+[17:53:57Z] preflight: FIGMA_TOKEN present (env); node v22.14.0; plugin SHA 2edab38 (fetch: no new commits, fresh); egress unrestricted
+[17:53:57Z] preflight: searched VM for pre-provisioned ai-privado-implementation checkout (/, ~, /workspace, /opt, /packages, /mnt, /srv, package.json name grep) — NONE found
+[17:53:57Z] preflight: GitHub App installation/repositories = ONLY velt-js/velt-figma-plugin-cursor (same as attempt 1)
+[17:53:57Z] preflight: git clone https + gh repo clone velt-js/ai-privado-implementation => 404 Repository not found
+[17:53:57Z] preflight: DOCS_REPO_TOKEN (user vivekk-snippyly PAT) => 404 on repo; not in user repos, not in velt-js org (52 repos), not global-searchable; alt owners veltdev/snippyly/vivekk-snippyly all 404
+[17:53:58Z] preflight: environment-info => environment:null (run NOT attached to Figma-privado env), though its secrets (Mongo/AWS/Django/Velt/DOCS_REPO_TOKEN) ARE injected
+[17:53:58Z] HALTED: target repo velt-js/ai-privado-implementation is INACCESSIBLE — GitHub App install lacks repo grant. Fail-fast, no changes made. Writing blocker handoff to .cloud-run-artifacts/
