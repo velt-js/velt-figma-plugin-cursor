@@ -1,0 +1,361 @@
+{
+  "mode": "loop",
+  "loopId": "loop-1-add-simple-comment",
+  "scale": 2,
+  "count": 9,
+  "blocks": [
+    {
+      "id": "state-composer-states-comment-input-default",
+      "name": "comment-input / default",
+      "figmaNodeId": "133:7757",
+      "framePng": "frames/state-composer-states-comment-input-default.png",
+      "loopId": "loop-1-add-simple-comment",
+      "role": "state",
+      "component": "Composer States",
+      "flowStep": null,
+      "surface": null,
+      "state": "default",
+      "drive": {
+        "steps": [
+          "seed one root comment"
+        ],
+        "assert": null
+      },
+      "liveSelector": null,
+      "frameBox": {
+        "x": 8834,
+        "y": 262,
+        "w": 356,
+        "h": 40
+      },
+      "frameRegion": null,
+      "fixture": {
+        "note": "Planner fills canonical content from the frame text (author/message/replyCount)"
+      },
+      "order": 0,
+      "familyId": "fam-composer-states"
+    },
+    {
+      "id": "flow-default-sidebar",
+      "name": "default sidebar",
+      "figmaNodeId": "133:4060",
+      "framePng": "frames/flow-default-sidebar.png",
+      "loopId": "loop-1-add-simple-comment",
+      "role": "flow",
+      "component": null,
+      "flowStep": "default sidebar",
+      "surface": null,
+      "state": "default-sidebar",
+      "drive": {
+        "steps": [
+          "reach the \"default sidebar\" state"
+        ],
+        "assert": null
+      },
+      "liveSelector": null,
+      "frameBox": {
+        "x": 10803,
+        "y": 278,
+        "w": 380,
+        "h": 694
+      },
+      "frameRegion": null,
+      "fixture": {
+        "note": "Planner fills canonical content from the frame text (author/message/replyCount)"
+      },
+      "order": 1,
+      "familyId": "flows"
+    },
+    {
+      "id": "flow-default-sidebar-active-composer",
+      "name": "default sidebar / active composer",
+      "figmaNodeId": "133:4717",
+      "framePng": "frames/flow-default-sidebar-active-composer.png",
+      "loopId": "loop-1-add-simple-comment",
+      "role": "flow",
+      "component": null,
+      "flowStep": "default sidebar / active composer",
+      "surface": null,
+      "state": "composer",
+      "drive": {
+        "steps": [
+          "focus the composer"
+        ],
+        "assert": null
+      },
+      "liveSelector": null,
+      "frameBox": {
+        "x": 11234,
+        "y": 278,
+        "w": 380,
+        "h": 694
+      },
+      "frameRegion": null,
+      "fixture": {
+        "note": "Planner fills canonical content from the frame text (author/message/replyCount)"
+      },
+      "order": 2,
+      "familyId": "flows"
+    },
+    {
+      "id": "flow-empty-placeholder",
+      "name": "Empty placeholder",
+      "figmaNodeId": "335:6997",
+      "framePng": "frames/flow-empty-placeholder.png",
+      "loopId": "loop-1-add-simple-comment",
+      "role": "flow",
+      "component": null,
+      "flowStep": "Empty placeholder",
+      "surface": null,
+      "state": "empty",
+      "drive": {
+        "steps": [
+          "render with no content OR all filtered out"
+        ],
+        "assert": null
+      },
+      "liveSelector": null,
+      "frameBox": {
+        "x": 11661,
+        "y": 278,
+        "w": 380,
+        "h": 694
+      },
+      "frameRegion": null,
+      "fixture": {
+        "note": "Planner fills canonical content from the frame text (author/message/replyCount)"
+      },
+      "order": 3,
+      "familyId": "flows"
+    },
+    {
+      "id": "state-comment-thread-components-comment-dialog",
+      "name": "Comment Dialog",
+      "figmaNodeId": "133:8924",
+      "framePng": "frames/state-comment-thread-components-comment-dialog.png",
+      "loopId": "loop-1-add-simple-comment",
+      "role": "state",
+      "component": "Comment Thread Components",
+      "flowStep": null,
+      "surface": null,
+      "state": "confirm-dialog",
+      "drive": {
+        "steps": [
+          "trigger the confirmation dialog"
+        ],
+        "assert": null
+      },
+      "liveSelector": null,
+      "frameBox": {
+        "x": 10038,
+        "y": 295,
+        "w": 356,
+        "h": 124
+      },
+      "frameRegion": null,
+      "fixture": {
+        "note": "Planner fills canonical content from the frame text (author/message/replyCount)"
+      },
+      "order": 4,
+      "familyId": "fam-comment-thread-components"
+    },
+    {
+      "id": "state-sidebar-components-panel-tabs",
+      "name": "Panel-tabs",
+      "figmaNodeId": "137:5982",
+      "framePng": "frames/state-sidebar-components-panel-tabs.png",
+      "loopId": "loop-1-add-simple-comment",
+      "role": "state",
+      "component": "Sidebar Components",
+      "flowStep": null,
+      "surface": null,
+      "state": "panel-tabs",
+      "drive": {
+        "steps": [
+          "reach the \"Panel-tabs\" state"
+        ],
+        "assert": null
+      },
+      "liveSelector": null,
+      "frameBox": {
+        "x": 9395,
+        "y": 307,
+        "w": 380,
+        "h": 48
+      },
+      "frameRegion": null,
+      "fixture": {
+        "note": "Planner fills canonical content from the frame text (author/message/replyCount)"
+      },
+      "order": 5,
+      "familyId": "fam-sidebar-components"
+    },
+    {
+      "id": "state-composer-states-comment-input-active",
+      "name": "comment-input / active",
+      "figmaNodeId": "133:7758",
+      "framePng": "frames/state-composer-states-comment-input-active.png",
+      "loopId": "loop-1-add-simple-comment",
+      "role": "state",
+      "component": "Composer States",
+      "flowStep": null,
+      "surface": null,
+      "state": "default",
+      "drive": {
+        "steps": [
+          "seed one root comment"
+        ],
+        "assert": null
+      },
+      "liveSelector": null,
+      "frameBox": {
+        "x": 8834,
+        "y": 358,
+        "w": 356,
+        "h": 80
+      },
+      "frameRegion": null,
+      "fixture": {
+        "note": "Planner fills canonical content from the frame text (author/message/replyCount)"
+      },
+      "order": 6,
+      "familyId": "fam-composer-states"
+    },
+    {
+      "id": "state-comment-thread-components-comment-master",
+      "name": "comment-master",
+      "figmaNodeId": "257:8921",
+      "framePng": "frames/state-comment-thread-components-comment-master.png",
+      "loopId": "loop-1-add-simple-comment",
+      "role": "state",
+      "component": "Comment Thread Components",
+      "flowStep": null,
+      "surface": null,
+      "state": "default",
+      "drive": {
+        "steps": [
+          "seed one root comment"
+        ],
+        "assert": null
+      },
+      "liveSelector": null,
+      "frameBox": {
+        "x": 10038,
+        "y": 469,
+        "w": 356,
+        "h": 170
+      },
+      "frameRegion": null,
+      "fixture": {
+        "note": "Planner fills canonical content from the frame text (author/message/replyCount)"
+      },
+      "order": 7,
+      "familyId": "fam-comment-thread-components"
+    },
+    {
+      "id": "state-composer-states-comment-input-active-typing",
+      "name": "comment-input / active typing",
+      "figmaNodeId": "133:7759",
+      "framePng": "frames/state-composer-states-comment-input-active-typing.png",
+      "loopId": "loop-1-add-simple-comment",
+      "role": "state",
+      "component": "Composer States",
+      "flowStep": null,
+      "surface": null,
+      "state": "default",
+      "drive": {
+        "steps": [
+          "seed one root comment"
+        ],
+        "assert": null
+      },
+      "liveSelector": null,
+      "frameBox": {
+        "x": 8834,
+        "y": 494,
+        "w": 356,
+        "h": 80
+      },
+      "frameRegion": null,
+      "fixture": {
+        "note": "Planner fills canonical content from the frame text (author/message/replyCount)"
+      },
+      "order": 8,
+      "familyId": "fam-composer-states"
+    }
+  ],
+  "families": [
+    {
+      "id": "fam-composer-states",
+      "role": "state",
+      "component": "Composer States",
+      "blockIds": [
+        "state-composer-states-comment-input-default",
+        "state-composer-states-comment-input-active",
+        "state-composer-states-comment-input-active-typing"
+      ],
+      "buildOrder": 0
+    },
+    {
+      "id": "fam-comment-thread-components",
+      "role": "state",
+      "component": "Comment Thread Components",
+      "blockIds": [
+        "state-comment-thread-components-comment-dialog",
+        "state-comment-thread-components-comment-master"
+      ],
+      "buildOrder": 1
+    },
+    {
+      "id": "fam-sidebar-components",
+      "role": "state",
+      "component": "Sidebar Components",
+      "blockIds": [
+        "state-sidebar-components-panel-tabs"
+      ],
+      "buildOrder": 2
+    },
+    {
+      "id": "flows",
+      "role": "flow",
+      "component": null,
+      "blockIds": [
+        "flow-default-sidebar",
+        "flow-default-sidebar-active-composer",
+        "flow-empty-placeholder"
+      ],
+      "buildOrder": 3
+    }
+  ],
+  "subPhases": [
+    {
+      "id": "A",
+      "blockIds": [
+        "state-composer-states-comment-input-default",
+        "state-composer-states-comment-input-active",
+        "state-composer-states-comment-input-active-typing",
+        "state-comment-thread-components-comment-dialog",
+        "state-comment-thread-components-comment-master",
+        "state-sidebar-components-panel-tabs"
+      ],
+      "familyIds": [
+        "fam-composer-states",
+        "fam-comment-thread-components",
+        "fam-sidebar-components"
+      ]
+    },
+    {
+      "id": "B",
+      "blockIds": [
+        "flow-default-sidebar",
+        "flow-default-sidebar-active-composer",
+        "flow-empty-placeholder"
+      ],
+      "familyIds": [
+        "flows"
+      ]
+    }
+  ],
+  "source": "figma:WYAWuEm8DrIkAyx03e8fG9",
+  "nodeId": "133:4052"
+}
