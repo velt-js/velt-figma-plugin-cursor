@@ -1,0 +1,34 @@
+{
+  "runId": "WYAWuEm8DrIk-133-9280-2026-07-14T21-03-31Z",
+  "phaseId": "WYAWuEm8DrIk-133-9280",
+  "app": "ai-privado-implementation",
+  "mode": "strictly primitives",
+  "node": "WYAWuEm8DrIkAyx03e8fG9/133:9280",
+  "pluginSha": "2edab38",
+  "publishedAt": "2026-07-14T21:03:31.898Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "general",
+      "statement": "enumerate-blocks can enumerate HIDDEN (visible:false) component sub-parts as State blocks — e.g. a component's footer/topbar/extra-item variants the design instance hides. Figma REST image export returns null for a hidden node (framePngMissing:true), and the node is absent from figma-extract's designSpec (spec-slice yields a THIN 0-node slice). There is no visible design target, so the honest disposition is BLOCKED with evidence; a pixel/delta measurement is impossible (a measured block requires an on-disk frame PNG).",
+      "category": "mapping-pattern",
+      "evidence": "Loop 5 (Sidebar Filter) block state-sorting-dropdown-footer = I133:9780;7901:13314 'Footer' [HIDDEN] (user-email row); images API => null; contract-check flags missing frame + thin slice; verdict-gate accepts BLOCKED+evidence and still returns PASS.",
+      "destination": "guide",
+      "scope": "general",
+      "seenOn": [
+        "WYAWuEm8DrIkAyx03e8fG9/133:9280"
+      ]
+    },
+    {
+      "kind": "general",
+      "statement": "In BROWSER_PROBE selectors, CSS :nth-of-type() counts by element TAG among siblings, not by class. A menu whose direct children mix element roles (e.g. two group <div>s separated by a divider <div>) will have `.group:nth-of-type(2)` silently match the divider (2nd div) and miss the real 2nd group (3rd div), reporting the group's elements MISSING. Use explicit modifier classes (or :nth-child on a homogeneous child set), never `.class:nth-of-type(n)` across heterogeneous siblings.",
+      "category": "model-reliability",
+      "evidence": "Loop 5 content block: `.vcx-sort-group:nth-of-type(2)` matched the .vcx-sort-divider and flagged group-2 + its 2 values MISSING (gross element-count 7/10); switching to explicit .vcx-sort-group--filter fixed it to delta-clean.",
+      "destination": "guide",
+      "scope": "general",
+      "seenOn": [
+        "WYAWuEm8DrIkAyx03e8fG9/133:9280"
+      ]
+    }
+  ]
+}
