@@ -1,0 +1,56 @@
+{
+  "runId": "WYAWuEm8DrIk-177-10853-2026-07-14T19-20-45Z",
+  "phaseId": "WYAWuEm8DrIk-177-10853",
+  "app": "ai-harvey-implementation",
+  "mode": "strictly wireframe",
+  "node": "WYAWuEm8DrIkAyx03e8fG9/177:10853",
+  "pluginSha": "2edab38",
+  "publishedAt": "2026-07-14T19:20:45.478Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "corrections",
+      "statement": "The Velt page-mode composer is rendered as a VeltCommentDialog instance, so a generic .vc-card selector also matches the composer dialog; scope thread-card selectors with :has(.vc-message) to target real comment cards.",
+      "scope": "general",
+      "category": "sdk-gotcha",
+      "evidence": "harvey Loop1: .vc-card first-match was the page-mode composer (42px) not a comment card; :has(.vc-message) fixed measurement",
+      "seenOn": [
+        "harvey"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "corrections",
+      "statement": "After opening a Velt sidebar wireframe, the visible styled clone renders ~5-6s later (not immediately); measurement drive waits must be >=15s and the capture surface must be the visible clone class (.vc-panel/.vc-card), never the 0-size <velt-*-wireframe> template tag.",
+      "scope": "general",
+      "category": "model-reliability",
+      "evidence": "harvey Loop1: waitFor 8s timed out; visible clone appeared at t~6s; wireframe template tag measured 0px ('empty shell')",
+      "seenOn": [
+        "harvey"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "corrections",
+      "statement": "A Figma text node's auto-layout container props (display:flex, justify/align:center, gap, padding) are often container METADATA, not real visual properties of the rendered text; verify against the frame PNG (message renders left-aligned) before asserting them, or delta-compare flags false diffs.",
+      "scope": "general",
+      "category": "mapping-pattern",
+      "evidence": "harvey Loop1: 'justification' node asserted flex/center/gap/28px-indent but the frame shows the message left-aligned matching the render",
+      "seenOn": [
+        "harvey"
+      ],
+      "destination": "guide"
+    },
+    {
+      "kind": "corrections",
+      "statement": "A text element's box.x/box.w are content-driven (real user name vs design mock name); assert only STYLE (color/font) on name/timestamp text nodes and use a content-independent position gap (avatar->name x) to satisfy the repeating-surface gap requirement.",
+      "scope": "general",
+      "category": "mapping-pattern",
+      "evidence": "harvey Loop1: name box.w 93(design) vs 21(rendered 'Me'); dropping text box + avatar->name x gap made 6 thread blocks delta-clean",
+      "seenOn": [
+        "harvey"
+      ],
+      "destination": "guide"
+    }
+  ]
+}
