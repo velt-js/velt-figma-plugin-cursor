@@ -1,0 +1,76 @@
+{
+  "runId": "WYAWuEm8DrIk-247-6766-2026-07-14T20-25-34Z",
+  "phaseId": "WYAWuEm8DrIk-247-6766",
+  "app": "workspace",
+  "mode": "strictly wireframe",
+  "node": "247:6766",
+  "pluginSha": "2edab38",
+  "publishedAt": "2026-07-14T20:25:34.814Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "general",
+      "statement": "Registering VeltAutocompleteOptionWireframe REPLACES Velt's default .velt-autocomplete-option--container option markup; the live selectable row becomes .mat-mdc-option (gets .mat-mdc-option-active on the highlighted row) wrapping your wireframe template. Target .mat-mdc-option for the row + your own wrapper class for the content.",
+      "category": "sdk-gotcha",
+      "evidence": "Loop2 explore: pre-register 4x .velt-autocomplete-option--container; post-register 0 of that class, 4 .vc-ac-option + .mat-mdc-option-active present",
+      "seenOn": [
+        "WYAWuEm8DrIkAyx03e8fG9/247:6766"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "The @mention autocomplete picker renders in a body-level Angular-Material CDK overlay (.mat-mdc-autocomplete-panel / .velt-autocomplete-panel--container), NOT inside the comments-sidebar wireframe subtree. Style it with GLOBAL classes and measure it with surfaceSelector pinned to the overlay, not the sidebar.",
+      "category": "sdk-gotcha",
+      "evidence": "Loop2: querySelector('.velt-autocomplete-panel--container') resolves at document/body level; sidebar-scoped surface gave viewport-absolute coordinates",
+      "seenOn": [
+        "WYAWuEm8DrIkAyx03e8fG9/247:6766"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "Velt *-wireframe custom elements (and vc-* classes placed directly on slot wrappers) are display:contents / 0x0 in the DOM. Drive/measure against the SIZED inner Velt classes (.velt-composer-input--message, .velt-comments-sidebar, .velt-thread-card--container) — a waitFor(visible) or capture on a -wireframe tag times out / captures an empty shell.",
+      "category": "sdk-gotcha",
+      "evidence": "Loop2: velt-comments-sidebar-wireframe 0x0 vs velt-comments-sidebar 353x937; drive waitFor on -wireframe timed out",
+      "seenOn": [
+        "WYAWuEm8DrIkAyx03e8fG9/247:6766"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "The page-mode composer and every comment's inline reply composer SHARE the same vc-*/.velt-composer-input--message classes; querySelector returns whichever is first in DOM (often a 0x0 collapsed reply composer). Scope selectors to .velt-sidebar-page-mode-composer to target the page-mode composer deterministically.",
+      "category": "mapping-pattern",
+      "evidence": "Loop2: first .vc-page-mode-composer-composer-container-root was a 0x0 reply composer; .velt-sidebar-page-mode-composer is unique+sized (353x42)",
+      "seenOn": [
+        "WYAWuEm8DrIkAyx03e8fG9/247:6766"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "corrections",
+      "fact": "Registering VeltAutocompleteOptionWireframe REPLACES Velt's default .velt-autocomplete-option--container option markup; the live selectable row becomes .mat-mdc-option (gets .mat-mdc-option-active on the highlighted row) wrapping your wireframe template. Target .mat-mdc-option for the row + your own wrapper class for the content.",
+      "scope": "general",
+      "category": "sdk-gotcha"
+    },
+    {
+      "kind": "corrections",
+      "fact": "The @mention autocomplete picker renders in a body-level Angular-Material CDK overlay (.mat-mdc-autocomplete-panel / .velt-autocomplete-panel--container), NOT inside the comments-sidebar wireframe subtree. Style it with GLOBAL classes and measure it with surfaceSelector pinned to the overlay, not the sidebar.",
+      "scope": "general",
+      "category": "sdk-gotcha"
+    },
+    {
+      "kind": "corrections",
+      "fact": "Velt *-wireframe custom elements (and vc-* classes placed directly on slot wrappers) are display:contents / 0x0 in the DOM. Drive/measure against the SIZED inner Velt classes (.velt-composer-input--message, .velt-comments-sidebar, .velt-thread-card--container) — a waitFor(visible) or capture on a -wireframe tag times out / captures an empty shell.",
+      "scope": "general",
+      "category": "sdk-gotcha"
+    },
+    {
+      "kind": "corrections",
+      "fact": "The page-mode composer and every comment's inline reply composer SHARE the same vc-*/.velt-composer-input--message classes; querySelector returns whichever is first in DOM (often a 0x0 collapsed reply composer). Scope selectors to .velt-sidebar-page-mode-composer to target the page-mode composer deterministically.",
+      "scope": "general",
+      "category": "mapping-pattern"
+    }
+  ]
+}
