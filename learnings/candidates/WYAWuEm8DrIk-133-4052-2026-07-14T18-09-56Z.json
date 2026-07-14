@@ -1,0 +1,60 @@
+{
+  "runId": "WYAWuEm8DrIk-133-4052-2026-07-14T18-09-56Z",
+  "phaseId": "WYAWuEm8DrIk-133-4052",
+  "app": "ai-privado-implementation",
+  "mode": "strictly primitives",
+  "node": "WYAWuEm8DrIkAyx03e8fG9:133-4052",
+  "pluginSha": "2edab38",
+  "publishedAt": "2026-07-14T18:09:56.501Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "general",
+      "statement": "R4 phantom-interactive contract probe flags any <button>/[role=button]/[tabindex] inside the surface not owned by a velt-* element or a velt-/s- class; hook-wired primitive buttons are invisible to this DOM heuristic. In strictly-primitives, render UNWIRED glyph affordances as non-interactive elements (an inert <button> is exactly what R4 forbids) and wire real controls via hooks/velt primitives.",
+      "category": "pipeline-trap",
+      "evidence": "delta-compare.mjs CONTRACT_PROBE lines ~383-395; panel-tabs/composer-default went 1->0 diff after button->span",
+      "destination": "guide",
+      "scope": "general"
+    },
+    {
+      "kind": "general",
+      "statement": "brief-scaffold.mjs defaults every block's liveSelector/drive(toggleCommentSidebar)/contract/stability to VeltCommentsSidebar WIREFRAME tags. A primitives (or non-sidebar) build MUST rewrite liveSelector + contract.entries + stability.targets to its own selectors, else contract/stability probes fail on absent wireframe parts.",
+      "category": "pipeline-trap",
+      "evidence": "scaffolded *.probes.json contained velt-comments-sidebar-*-wireframe for an inline-section/primitives app",
+      "destination": "guide",
+      "scope": "general"
+    },
+    {
+      "kind": "general",
+      "statement": "contract-check.mjs check reports 'first-shot-css yields 0 entry rules' for a strictly-primitives build (no wireframe connect-map). This is inherent, not drift; fidelity is gated by measure-block delta-compare instead.",
+      "category": "pipeline-trap",
+      "evidence": "connect-map.json entries:[] for primitives composition",
+      "destination": "guide",
+      "scope": "general"
+    },
+    {
+      "kind": "general",
+      "statement": "A standalone primitive composer can create a page-scoped thread with useAddCommentAnnotation({annotation:{annotationId,from,comments:[{commentId,commentText,from,createdAt}],createdAt,type}}) — verified live (card renders, count updates). But the design 'reference/quote' box needs question/location context the standalone composer does not attach.",
+      "category": "mapping-pattern",
+      "evidence": "vcx-seed-test created a visible card 0->1; reference box never rendered on seeded comments",
+      "destination": "guide",
+      "scope": "general"
+    },
+    {
+      "kind": "general",
+      "statement": "A full-height (100vh) composed surface measured against a fixed-height Figma frame produces systemic ~(viewportH - frameH)px box.y offsets on bottom-anchored/centred elements; match the frame height for measurement (measure-block viewport is 1512x900).",
+      "category": "pipeline-trap",
+      "evidence": "flows/empty ~200px composer+empty-state offsets until panel height set to 694px",
+      "destination": "guide",
+      "scope": "general"
+    },
+    {
+      "kind": "general",
+      "statement": "Host-app console errors from an offline backend (e.g. saveUserToDatabase -> localhost:8000 ERR_CONNECTION_REFUSED) appear in the DEFAULT app too and false-fail smoke forbidConsoleErrors; scope console-error gating to the customization.",
+      "category": "pipeline-trap",
+      "evidence": "all 4 family smokes failed on 2 host-backend console errors until forbidConsoleErrors:false",
+      "destination": "guide",
+      "scope": "general"
+    }
+  ]
+}
