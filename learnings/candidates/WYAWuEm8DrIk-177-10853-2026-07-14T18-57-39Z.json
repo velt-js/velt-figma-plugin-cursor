@@ -1,0 +1,91 @@
+{
+  "runId": "WYAWuEm8DrIk-177-10853-2026-07-14T18-57-39Z",
+  "phaseId": "WYAWuEm8DrIk-177-10853",
+  "app": "ai-harvey-implementation",
+  "mode": "strictly primitives",
+  "node": "WYAWuEm8DrIkAyx03e8fG9/177:10853",
+  "pluginSha": "2edab38",
+  "publishedAt": "2026-07-14T18:57:39.163Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "general",
+      "statement": "Under host setUnstyledMode(true,{keepFunctionalStyles:true}), Velt component internals (composer input/avatar/send) are reachable by class CSS with shadowDom={false} — so a strictly-primitives build can theme them to a design pill without wireframes",
+      "category": "mapping-pattern",
+      "destination": "knowledge",
+      "evidence": "composer collapsed state measured delta-clean",
+      "scope": "general",
+      "seenOn": [
+        "harvey"
+      ]
+    },
+    {
+      "kind": "general",
+      "statement": "A rotate() transform inflates getBoundingClientRect vs Figma's un-rotated node box and false-FAILs delta box checks; render icon shapes axis-aligned to match the extracted box",
+      "category": "model-reliability",
+      "destination": "knowledge",
+      "evidence": "empty-state doc glyph 41x41 measured 46x46 with rotate(8deg); removing rotation -> 0 diffs",
+      "scope": "general",
+      "seenOn": [
+        "harvey"
+      ]
+    },
+    {
+      "kind": "general",
+      "statement": "User/data-dependent elements (composer avatar) render after auth data loads; add a waitFor on the element in drive.steps or the capture races it and delta reports it MISSING",
+      "category": "model-reliability",
+      "destination": "knowledge",
+      "evidence": "avatar MISSING until a waitFor .velt-user-avatar--initial-container was added",
+      "scope": "general",
+      "seenOn": [
+        "harvey"
+      ]
+    },
+    {
+      "kind": "general",
+      "statement": "Figma design frames sometimes include non-DOM artifacts as element nodes — a drawn text caret (caret/color-layer) and an empty avatar initial; no implementation (wireframe OR primitive) can match these as DOM boxes, so the planner should omit cursor/empty-content artifacts from the delta spec",
+      "category": "model-reliability",
+      "destination": "guide",
+      "evidence": "composer active/typing frames contain caret 4x20 + color-layer 8x20 = the blinking cursor",
+      "scope": "general",
+      "seenOn": [
+        "harvey"
+      ]
+    },
+    {
+      "kind": "corrections",
+      "statement": "measure-block default mode takes <phaseDir> <blockId> with NO 'measure' subcommand; only 'smoke' is a subcommand",
+      "scope": "general",
+      "category": "model-reliability",
+      "destination": "guide",
+      "evidence": "mis-parsed phaseDir as 'measure/blocks.json'",
+      "seenOn": [
+        "harvey"
+      ]
+    },
+    {
+      "kind": "gaps",
+      "statement": "VeltCommentComposer opens/expands on focus (velt-composer-open one-way state) and renders no Cancel affordance — a design 'focused-collapsed' or 'typing-with-Cancel' composer state is mode_blocked in strictly primitives; needs VeltCommentComposerWireframe",
+      "scope": "general",
+      "category": "component-difficulty",
+      "destination": "knowledge",
+      "evidence": "focus expanded the pill 40->53px, shifted send +21px",
+      "seenOn": [
+        "harvey",
+        "privado"
+      ]
+    },
+    {
+      "kind": "gaps",
+      "statement": "VeltCommentDialog (fullExpanded) renders status dropdown + copy-link + options + persistent composer; a minimal restructured thread card (Reply-link default, hover-gated resolve, connector line, 'Show N replies') is mode_blocked in strictly primitives (decision-tree Q2 -> VeltCommentDialogWireframe ThreadCard slots)",
+      "scope": "general",
+      "category": "component-difficulty",
+      "destination": "knowledge",
+      "evidence": "seeded card DOM: status-dropdown 85x24, options kebab, copy-link, resolve, reply composer — none in the design",
+      "seenOn": [
+        "harvey",
+        "privado"
+      ]
+    }
+  ]
+}
