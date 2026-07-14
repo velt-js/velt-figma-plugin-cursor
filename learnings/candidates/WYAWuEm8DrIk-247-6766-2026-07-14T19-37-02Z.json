@@ -1,0 +1,47 @@
+{
+  "runId": "WYAWuEm8DrIk-247-6766-2026-07-14T19-37-02Z",
+  "phaseId": "WYAWuEm8DrIk-247-6766",
+  "app": "harvey",
+  "mode": "strictly primitives",
+  "node": "247:6766",
+  "pluginSha": "2edab38",
+  "publishedAt": "2026-07-14T19:37:02.428Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "mappings",
+      "element": "@mention autocomplete contact dropdown",
+      "velt": "VeltCommentComposer @mention autocomplete (light-DOM CDK overlay)",
+      "slot": ".mat-mdc-autocomplete-panel / .velt-autocomplete-option--container",
+      "note": "Achievable in strictly primitives via class CSS. Panel=.mat-mdc-autocomplete-panel (unstyled under setUnstyledMode → card: width/r12/bg/shadow/padding). Row=.velt-autocomplete-option--container (gap/pad/r8; active=.mat-mdc-option-active → #f1efec). Avatar=.velt-autocomplete-option-icon .velt-user-avatar (32px default; override width/height + --legacy-velt-user-avatar-* to 20px + r999 + border). Name=.velt-autocomplete-option-name. Email=.velt-autocomplete-option-description (hide for single-line rows). Measured pixel-clean.",
+      "confidence": "tentative",
+      "scope": "general"
+    },
+    {
+      "kind": "gaps",
+      "element": "composer typing action row (Cancel + send)",
+      "why": "VeltCommentComposer (page-mode) renders NO Cancel affordance (hasCancelButton:false, measured) + a voice/video/screen-record toolbar, and a one-way velt-composer-open expansion (42->82px). The design's minimal [Cancel | send] 2-row typing layout needs VeltCommentComposerWireframe.",
+      "mode_blocked": true,
+      "approach_required": "wireframes + primitives",
+      "confidence": "confirmed",
+      "scope": "general",
+      "seenOn": [
+        "harvey",
+        "harvey-loop2"
+      ]
+    },
+    {
+      "kind": "gaps",
+      "element": "minimal restructured comment thread card (avatar+name+time / message / Reply)",
+      "why": "VeltCommentDialog renders status dropdown / options / persistent composer / banners; the design's minimal card requires VeltCommentDialogWireframe. Mention token COLOR is CSS-achievable; the card RESTRUCTURE is the wall.",
+      "mode_blocked": true,
+      "approach_required": "wireframes + primitives",
+      "confidence": "confirmed",
+      "scope": "general",
+      "seenOn": [
+        "harvey",
+        "harvey-loop2"
+      ]
+    }
+  ]
+}
