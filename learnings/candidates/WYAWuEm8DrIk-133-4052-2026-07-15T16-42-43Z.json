@@ -1,0 +1,89 @@
+{
+  "runId": "WYAWuEm8DrIk-133-4052-2026-07-15T16-42-43Z",
+  "phaseId": "WYAWuEm8DrIk-133-4052",
+  "app": "velt-figma-plugin-cursor",
+  "mode": null,
+  "node": null,
+  "pluginSha": "2edab38",
+  "publishedAt": "2026-07-15T16:42:43.709Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "general",
+      "statement": "pageModePlaceholder is a prop on the host VeltCommentsSidebar (and V2), NOT on the composer wireframe. When the sidebar host file is off-limits (R18), set the page-mode composer placeholder via the Composer.Input slot prop instead: <VeltCommentDialogWireframe.Composer.Input placeholder=\"...\" />.",
+      "scope": "general",
+      "category": "wireframe-props",
+      "evidence": "guide/reference/behaviors/sidebar.md pageModePlaceholder row (prop on VeltCommentsSidebar); approaches/wireframes.md line 112 lists Composer.Input placeholder as a slot prop."
+    },
+    {
+      "kind": "general",
+      "statement": "The page-mode composer renders the VeltCommentDialogWireframe.Composer subtree (probes measure velt-comment-dialog-composer-wireframe / -input-wireframe / -action-button-wireframe). You do NOT need to register the sidebar wireframe to customize only the composer — registering VeltCommentDialogWireframe with just a .Composer subtree is enough; Body/Threads fall back to Velt defaults.",
+      "scope": "general",
+      "category": "page-mode-composer",
+      "evidence": "connect-map.json composer entry (VeltCommentDialogWireframe.Composer, hosted by sidebar PageModeComposer) + probes/*.probes.json browser.elements selectors."
+    },
+    {
+      "kind": "general",
+      "statement": "lint-customization.mjs R1 counts occurrences of the literal /<VeltWireframe[\\s>]/ across the whole file, including inside code COMMENTS — a comment containing '<VeltWireframe>' triggers a false 'multiple roots' error. Keep the token out of comments (write 'VeltWireframe' without the angle brackets).",
+      "scope": "general",
+      "category": "tooling",
+      "evidence": "scripts/lint-customization.mjs line 101 regex; observed false R1 error from the seed comment on VeltCustomization.tsx line 2, cleared by removing the angle brackets."
+    },
+    {
+      "kind": "general",
+      "statement": "VeltCommentDialogWireframe.Body, .Threads and .ThreadCard are all valid static dotted accessors on the SAME base registration — a sibling family can add the Body>Threads>ThreadCard subtree next to an existing .Composer subtree inside one <VeltCommentDialogWireframe> without a second root (R1 stays satisfied). ThreadCard sub-slots .Avatar/.Name/.Time/.Message/.Reply nest normally.",
+      "scope": "general",
+      "category": "wireframe-structure",
+      "evidence": "reference/wireframe-components.md §2 slot tree (Body/Threads + ThreadCard{Avatar,Name,Time,Message,Reply}); built in VeltCommentDialogWf.tsx alongside the composer subtree, tsc --noEmit + lint-customization 0 errors."
+    },
+    {
+      "kind": "general",
+      "statement": "For the thread-card footer where the reactions group is MODE_BLOCKED (left side intentionally empty), right-aligning the Reply affordance is cleanest via margin-left:auto on velt-comment-dialog-thread-card-reply-wireframe rather than an empty spacer div — flex space-between with a single child would otherwise pin it left.",
+      "scope": "general",
+      "category": "layout",
+      "evidence": "connect-map.json thread-card-footer-row (justify space-between) + comment-master frame (Reply right-aligned, reactions bottom-left); styles.css thread-card footer patch."
+    },
+    {
+      "kind": "general",
+      "statement": "VeltCommentsSidebarWireframe (V1) static dotted accessors, confirmed against @veltdev/react 6.0.0-beta.10 .d.ts: .Panel/.Header/.List/.PageModeComposer/.EmptyPlaceholder/.Skeleton/.CloseButton/.Search/.FilterButton/.ResetFilterButton/.ActionButton/.FullscreenButton (React.FC), and dropdown groups .MinimalFilterDropdown{.Trigger,.Content{.FilterAll,.FilterUnread,.FilterRead,.FilterResolved,.FilterOpen,.FilterAssignedToMe,.FilterReset,.SelectedIcon,.SortDate,.SortUnread}}, .Status, .LocationFilterDropdown, .DocumentFilterDropdown, .MinimalActionsDropdown, .FocusedThread. Minimal-filter content items are nested UNDER .Content (e.g. .MinimalFilterDropdown.Content.SortDate), NOT directly on .MinimalFilterDropdown.",
+      "scope": "general",
+      "category": "wireframe-structure",
+      "evidence": "node_modules/@veltdev/react/esm/components/VeltCommentsSidebarWireframe/VeltCommentsSidebarWireframe.d.ts + .../VeltCommentsSidebarMinimalFilterDropdown{,Content}.d.ts; tsc --noEmit 0 errors with the built subtree."
+    },
+    {
+      "kind": "general",
+      "statement": "Registering VeltCommentsSidebarWireframe as a ROOT wireframe auto-removes the sidebar's own shadow DOM, so external class CSS in styles.css reaches the live sidebar even though the host mounts <VeltCommentsSidebar shadowDom ...> — NO host shadowDom change is needed (keeps R18 intact). Confirmed by the wireframe-components.md root-vs-nested shadow rule.",
+      "scope": "general",
+      "category": "shadow-dom",
+      "evidence": "reference/wireframe-components.md §2 note ('registering a root wireframe auto-removes that component's own shadow DOM'); host props in document-canvas.tsx."
+    },
+    {
+      "kind": "general",
+      "statement": "The V1 sidebar Panel header has NO dedicated comment-count wireframe slot (the appendix has velt-comments-sidebar-button-comments-count-wireframe only, which is the SIDEBAR BUTTON badge, not the panel header). The panel header 'N Comments' count is Velt-default text rendered by the Header slot — declare <VeltCommentsSidebarWireframe.Header/> to keep it (a legitimate DOM path for the count, R10; never fake the text). Classing that Header tag (.vc-2-comments) carries the count type.",
+      "scope": "general",
+      "category": "wireframe-structure",
+      "evidence": "reference/wireframe-components.md §3 appendix (no panel count slot); probes .vc-2-comments tagged 'assumed'; connect-map fillWith 'count title (Velt default)'."
+    },
+    {
+      "kind": "general",
+      "statement": "The flows family COMPOSES, it does not re-build: VeltCommentsSidebarWireframe.List and .PageModeComposer are left SELF-CLOSING. List is a container slot Velt auto-populates with Item/ThreadCard clones from the base VeltCommentDialogWireframe (Body>Threads>ThreadCard template), and PageModeComposer auto-renders the WHOLE base dialog Composer subtree (build-gotchas: 'the page-mode composer renders the whole dialog wireframe'). No explicit child is needed for either — adding one would duplicate or fight Velt's own render.",
+      "scope": "general",
+      "category": "page-mode-composer",
+      "evidence": "guide/build-gotchas.md 'The page-mode composer renders the WHOLE dialog wireframe'; flow-default-sidebar.probes.json measures velt-comment-dialog-thread-card-* inside the list and velt-comment-dialog-composer-* inside the page-mode composer with self-closing slots."
+    },
+    {
+      "kind": "general",
+      "statement": "V1 VeltCommentsSidebarWireframe.EmptyPlaceholder has NO icon/title/description sub-slots (unlike V2 which has .ResetFilterButton). It is a plain container slot, so the empty-state chat glyph + 'No comments yet' title + description are supplied as custom STATIC markup (div/span/svg) inside it — cloned to inert DOM (R4-safe, no interactivity). With assets:[]/unassignedIcons:[] and no Velt icon element to recolor, the chat-bubble glyph is drawn inline (same precedent as the ThreadCard reply-arrow), recolored #9aa8c3 — reproducing the design glyph, not inventing one (R17).",
+      "scope": "general",
+      "category": "wireframe-structure",
+      "evidence": "reference/wireframe-components.md §3 (EmptyPlaceholder has no children in V1) vs §4 (V2 EmptyPlaceholder>ResetFilterButton); flow-empty-placeholder.spec.json assets:[]/unassignedIcons:[]; tsc + lint 0 errors."
+    },
+    {
+      "kind": "general",
+      "statement": "CROSS-FRAME CLASS CONFLICT (verified): .vc-content, .vc-title, .vc-description, .vc-text-container are shared class names carrying DIFFERENT expectations in the thread-card family vs the sidebar empty-state. Scope EVERY empty-state rule under the tag selector 'velt-comments-sidebar-empty-placeholder-wireframe .vc-*' so it cannot leak into the thread cards (and the unscoped card rules stay confined to the card). A shared stylesheet (R8) means an unscoped .vc-title/.vc-content edit would regress the other frame.",
+      "scope": "general",
+      "category": "scoping",
+      "evidence": "flow-empty-placeholder.probes.json (.vc-content/.vc-title/.vc-description under empty placeholder) vs flow-default-sidebar.probes.json + VeltCommentDialogWf.tsx (.vc-content on ThreadCard.Message, .vc-text-container/.vc-label in Reply); styles.css fam-flows section all rules prefixed with the empty-placeholder tag."
+    }
+  ]
+}
