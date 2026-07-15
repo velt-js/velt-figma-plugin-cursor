@@ -1,0 +1,52 @@
+{
+  "runId": "WYAWuEm8DrIk-250-7804-2026-07-15T04-55-09Z",
+  "phaseId": "WYAWuEm8DrIk-250-7804",
+  "app": "workspace",
+  "mode": "strictly wireframe",
+  "node": null,
+  "pluginSha": "2edab38",
+  "publishedAt": "2026-07-15T04:55:09.771Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "general",
+      "statement": "Velt's comment options-dropdown-content exposes NO CopyLink slot (slots: Assign/MakePrivate/Edit/Delete(.Comment/.Thread)/Notification/MarkAsRead). CopyLink is a separate dialog-level slot (velt-comment-dialog-copy-link-wireframe), not an options-menu item — a design 'Copy link' options-menu row is mode_blocked in strictly wireframe.",
+      "category": "component-difficulty",
+      "evidence": "node_modules/@veltdev/react .d.ts + guide/reference/wireframe-components.md appendix",
+      "seenOn": [
+        "harvey"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "Velt renders BOTH the resolve and unresolve button slots on every comment card (unresolve-button-internal is present even on unresolved cards). Do not detect the resolved state via :has(unresolve-internal) — it matches all cards.",
+      "category": "sdk-gotcha",
+      "evidence": "live probe: unresContent=14, matchesHasUnresolve=true on unresolved cards",
+      "seenOn": [
+        "harvey"
+      ],
+      "destination": "guide"
+    },
+    {
+      "kind": "general",
+      "statement": "MinimalFilterDropdown content rows render inside app-comment-sidebar-minimal-filter-dropdown-content-<slot> wrappers (app- prefix), and the live open filter menu renders in the sidebar tree (NOT a cdk-overlay). Key filter selectors on '.hw-rail app-comment-sidebar-minimal-filter-dropdown-content-<slot>' to avoid the 0-size registry twin.",
+      "category": "sdk-gotcha",
+      "evidence": "live probe fitems.mjs",
+      "seenOn": [
+        "harvey"
+      ],
+      "destination": "guide"
+    },
+    {
+      "kind": "general",
+      "statement": "delta-compare resolves the FIRST querySelector match for a surface/element — which is the 0-size wireframe registry twin for wireframe/overlay surfaces (content-height 0px, elements 'missing'). Pin surfaceSelector + element selectors to live-only classes (.velt-comment-dialog--sidebar-mode, .hw-rail .vc-filter-menu) so measurement hits the visible clone.",
+      "category": "model-reliability",
+      "evidence": "filter block measured 0px/27-missing on '.vc-filter-menu' twin; clean on '.hw-rail .vc-filter-menu'",
+      "seenOn": [
+        "harvey"
+      ],
+      "destination": "script"
+    }
+  ]
+}
