@@ -1,0 +1,28 @@
+{
+  "runId": "WYAWuEm8DrIk-133-8311-2026-07-15T04-35-15Z",
+  "phaseId": "WYAWuEm8DrIk-133-8311",
+  "app": "ai-privado-implementation",
+  "mode": "strictly primitives",
+  "node": "WYAWuEm8DrIkAyx03e8fG9/133:8311",
+  "pluginSha": "2edab38",
+  "publishedAt": "2026-07-15T04:35:15.245Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "corrections",
+      "fact": "enumerate-blocks.mjs legacy flat mode filters top-level children to type==='FRAME' only, so a Loop/section whose direct children are component INSTANCEs (e.g. two 'Dialogue box' instances with no State/Flows groups) yields 0 blocks. Workaround that stays in-harness: fetch the raw /nodes JSON, relabel the target INSTANCE children to type 'FRAME', run `from-nodes`, and export frame PNGs separately (from-nodes does not export them). Candidate general fix: legacy flat mode should accept INSTANCE (and other CONTAINER types) as top-level state frames.",
+      "scope": "general",
+      "confidence": "tentative",
+      "category": "pipeline-trap",
+      "destination": "script"
+    },
+    {
+      "kind": "corrections",
+      "fact": "Figma button/component instances can render a visible border in the exported PNG while the REST node reports strokes:[] (the stroke lives on the component master, not the instance override). Delta-compare only gates asserted properties, so add the visible border for visual fidelity but give the element an explicit height so box-sizing:border-box absorbs it and the measured height still matches the design node.",
+      "scope": "general",
+      "confidence": "tentative",
+      "category": "component-difficulty",
+      "destination": "guide"
+    }
+  ]
+}
