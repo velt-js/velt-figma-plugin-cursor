@@ -1,0 +1,46 @@
+{
+  "runId": "WYAWuEm8DrIk-177-10881-2026-07-15T16-59-19Z",
+  "phaseId": "WYAWuEm8DrIk-177-10881",
+  "app": "velt-figma-plugin-cursor",
+  "mode": "strictly wireframe",
+  "node": "WYAWuEm8DrIk-177-10881",
+  "pluginSha": "2edab38",
+  "publishedAt": "2026-07-15T16:59:19.755Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "general",
+      "statement": "Playwright connectOverCDP measurement browsers on macOS die when launched as shell children of a sandboxed agent harness (killed on command exit even with nohup); a persistent chromium.launchServer in a dedicated background shell is the reliable measurement-browser pattern for attended runs.",
+      "category": "model-reliability",
+      "evidence": "two Chrome respawns died mid-run (ECONNREFUSED); launchServer in a background shell survived all measures",
+      "seenOn": [
+        "harvey-composer"
+      ],
+      "destination": "script",
+      "scope": "general"
+    },
+    {
+      "kind": "general",
+      "statement": "Planner-authored smoke specs must carry machine-checkable CSS selector asserts, not prose — lint smoke.json asserts the way validateDriveSteps rejects prose drives.",
+      "category": "pipeline-trap",
+      "evidence": "smoke failed with CSS parse errors on prose asserts",
+      "seenOn": [
+        "harvey-composer"
+      ],
+      "destination": "lint",
+      "scope": "general"
+    },
+    {
+      "kind": "general",
+      "statement": "Velt SDK demo keys emit Firestore Listen/Write channel 400 console errors independent of customization; smoke specs need allowedConsoleErrorPatterns for firestore.googleapis.com channel noise or R30 false-fails every family.",
+      "category": "sdk-gotcha",
+      "evidence": "115 Listen requests on a pre-build page; errors present on default UI",
+      "seenOn": [
+        "harvey-composer",
+        "privado"
+      ],
+      "destination": "knowledge",
+      "scope": "general"
+    }
+  ]
+}
