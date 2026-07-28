@@ -1,0 +1,106 @@
+{
+  "runId": "WYAWuEm8DrIk-369-29362-2026-07-28T12-06-48Z",
+  "phaseId": "WYAWuEm8DrIk-369-29362",
+  "app": "ai-harvey-implementation",
+  "mode": null,
+  "node": null,
+  "pluginSha": "2edab38",
+  "publishedAt": "2026-07-28T12:06:48.764Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "general",
+      "statement": "Harvey-style apps gate Velt render on user auth: capture/measure must select a user (--select-user) before opening the sidebar or captures are blank",
+      "category": "sdk-gotcha",
+      "evidence": "fam-sidebar-header builder render test",
+      "seenOn": [
+        "harvey-cloud"
+      ],
+      "destination": "guide",
+      "scope": "general"
+    },
+    {
+      "kind": "general",
+      "statement": "first-shot-css.mjs serializes paddingResets decls objects as [object Object] !important (invalid CSS); needs prop:value serialization fix",
+      "category": "model-reliability",
+      "evidence": "generated styles.css in phase WYAWuEm8DrIk-369-29362",
+      "seenOn": [
+        "harvey-cloud"
+      ],
+      "destination": "script",
+      "scope": "general"
+    },
+    {
+      "kind": "general",
+      "statement": "Velt interleaves more-reply-internal hosts between thread-cards, so :last-child selectors on thread-cards fail — use :last-of-type for last-comment styling",
+      "category": "sdk-gotcha",
+      "evidence": "fam-comment-thread builder render diagnostics",
+      "seenOn": [
+        "harvey-cloud"
+      ],
+      "destination": "guide",
+      "scope": "general"
+    },
+    {
+      "kind": "general",
+      "statement": "Velt comment-dialog threads host ships overflow-y:auto+max-height:230px default (velt-comment-dialog-threads-internal) — reset for full-height sidebar card designs",
+      "category": "sdk-gotcha",
+      "evidence": "fam-comment-thread builder render diagnostics",
+      "seenOn": [
+        "harvey-cloud"
+      ],
+      "destination": "guide",
+      "scope": "general"
+    },
+    {
+      "kind": "general",
+      "statement": "CORROBORATION: classlist-space-separated-invalidchar also hits wireframe slot className props (not just injected slots) — one space-separated className aborts the whole dialog wireframe processing (composer never mounts, header falls back to default)",
+      "category": "sdk-gotcha",
+      "evidence": "harvey dev.log InvalidCharacterError vc-composer-pill vc-reply-composer; fixed by single-token classes",
+      "seenOn": [
+        "harvey-cloud"
+      ],
+      "destination": "guide",
+      "scope": "general"
+    },
+    {
+      "kind": "general",
+      "statement": "Velt 6 sidebar page-mode: card selection sets NO state class — the reply composer slot is left EMPTY and gets POPULATED (.velt-comment-dialog-composer inserted) when the card message is clicked; gate composer visibility on :has(.velt-comment-dialog-composer), and drive selection by clicking the message text (card container clicks do nothing)",
+      "category": "sdk-gotcha",
+      "evidence": "probe-native-composer.mjs: at rest hasInner=false, after message click innerKids=3 + contenteditable",
+      "seenOn": [
+        "harvey-cloud"
+      ],
+      "destination": "guide",
+      "scope": "general"
+    },
+    {
+      "kind": "corrections",
+      "statement": "Reply composer selection sets NO state class — gate on :has(.velt-comment-dialog-composer) population; drive selection by clicking the message text",
+      "scope": "general",
+      "evidence": "probe-native-composer: hasInner false->true on message click",
+      "destination": "guide"
+    },
+    {
+      "kind": "corrections",
+      "statement": "Velt sidebar list wraps each card in its own div.ng-star-inserted — consecutive cards need .velt-sidebar-content > * ~ * .vc-card, never .vc-card ~ .vc-card",
+      "scope": "general",
+      "evidence": "probe-listitems sibMatch 0",
+      "destination": "guide"
+    },
+    {
+      "kind": "corrections",
+      "statement": "Enter does not submit the Velt composer — click the send button (.vc-send button) instead",
+      "scope": "general",
+      "evidence": "seed-test: card visible only after send click",
+      "destination": "guide"
+    },
+    {
+      "kind": "corrections",
+      "statement": "MoreReply wireframe template breaks collapsed-thread rendering at dialog root AND nested in Body — style the interleaved velt-comment-dialog-more-reply-internal host via CSS instead",
+      "scope": "general",
+      "evidence": "probe-morereply2: empty hosts + last comment gone with Body-nested template",
+      "destination": "guide"
+    }
+  ]
+}
