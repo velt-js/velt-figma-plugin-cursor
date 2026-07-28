@@ -1,0 +1,79 @@
+{
+  "runId": "WYAWuEm8DrIk-351-15578-2026-07-28T12-25-16Z",
+  "phaseId": "WYAWuEm8DrIk-351-15578",
+  "app": "ai-harvey-implementation",
+  "mode": "strictly wireframe",
+  "node": "WYAWuEm8DrIkAyx03e8fG9/351-15578",
+  "pluginSha": "2edab38",
+  "publishedAt": "2026-07-28T12:25:16.118Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "general",
+      "statement": "brief-scaffold seeds measurement liveSelector/surfaceSelector/click targets to velt-*-wireframe REGISTRY tags, which Velt renders as 0x0 hidden twins at runtime; measure-block then captures an empty shell (exit 3) and BROWSER_PROBE marks every element MISSING — the entire scripted measurement + smoke pipeline is non-functional until briefs are re-keyed to real velt-*/.vc-* classes and a documentsReady content-wait is added",
+      "context": "whole-design judge 5b, all 11 blocks BLOCKED(measurement)",
+      "evidence": "evidence-judge-measurement-pipeline.md",
+      "destination": "script",
+      "scope": "general"
+    },
+    {
+      "kind": "general",
+      "statement": "Velt v6 V1 sidebar default header renders Search+Status+FilterButton; a title/doc-id/badge header design requires the wireframe Header slot, not CSS",
+      "evidence": "fam-sidebar-header build",
+      "destination": "guide",
+      "scope": "general"
+    },
+    {
+      "kind": "general",
+      "statement": "shadowDom:false strips Velt's internal sidebar panel layout CSS — the panel needs an explicit flex column + list-only scroll re-established or the header renders off-screen",
+      "evidence": "fam-sidebar-header-childrens build",
+      "destination": "guide",
+      "scope": "general"
+    },
+    {
+      "kind": "general",
+      "statement": "Page-mode composer placeholder is set via the Composer.Input wireframe slot placeholder prop (IVeltCommentDialogComposerInputProps.placeholder), NOT the host commentPlaceholder prop",
+      "evidence": "fam-sidebar-footer build, live DOM verified",
+      "destination": "guide",
+      "scope": "general"
+    },
+    {
+      "kind": "general",
+      "statement": "Composer.ActionButton type accepts file|userMentions|submit and mounts functional affordances (app-attachment-button / velt-autocomplete-tool / submit button)",
+      "evidence": "fam-sidebar-footer build",
+      "destination": "guide",
+      "scope": "general"
+    },
+    {
+      "kind": "general",
+      "statement": "capture-block.mjs single fresh context can stall on documentsReady and screenshot an empty rail — needs reload/re-auth/content-wait recovery before capture",
+      "evidence": "flows family render tests + judge diagnosis",
+      "destination": "script",
+      "scope": "general"
+    },
+    {
+      "kind": "mappings",
+      "intent": "sidebar header with title/doc-id/unread badge/status filter/kebab",
+      "velt": "VeltCommentsSidebarWireframe Header slot (default V1 header renders Search+Status+FilterButton — CSS cannot produce the design header)",
+      "scope": "general"
+    },
+    {
+      "kind": "mappings",
+      "intent": "page-mode composer with label + attach/@/send action row",
+      "velt": "VeltCommentDialogWireframe variant=pageModeComposer pinned via sidebar pageModeComposerVariant prop; placeholder via Composer.Input slot placeholder prop; ActionButton type=file|userMentions|submit",
+      "scope": "general"
+    },
+    {
+      "kind": "gaps",
+      "statement": "VeltCommentsSidebar wireframe exposes no documentId/documentName VeltData token (only Inline Comments Section & Comments Tool do) — doc-id label needs a host-provided value",
+      "evidence": "evidence-state-sidebar-header-childrens-document-id.md",
+      "scope": "general"
+    },
+    {
+      "kind": "gaps",
+      "statement": "Velt default thread card renders no 'Last reply Xh ago' text in the collapsed reply preview — unreachable without a ThreadCard wireframe",
+      "evidence": "evidence-fam-comment-annotations.md",
+      "scope": "general"
+    }
+  ]
+}
