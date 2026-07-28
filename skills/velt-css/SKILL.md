@@ -7,3 +7,4 @@ CSS customization.
 
 - Procedure: `guide/approaches/css.md` (step-ordered). Identifiers: `guide/reference/css-variables.md` (the `--velt-*` set) and `guide/reference/css-classes.md` (stateful classes + their conditions). Verify every name — never invent (R10).
 - Variables (`--velt-*`) cross the shadow boundary — no flag. Class/selector overrides need `shadowDom={false}` (or `injectCustomCss`) + `!important` (R6/R9b). Dark values under `:root[data-velt-theme="dark"]` (R9). One stylesheet (R8). Never `display:none` a feature (R7).
+- **Two layers:** plan-style / first-shot owns design **VALUES**. Composed bugs (clipped kebab, non-scrolling sidebar, Reply hidden by bad `:has`) are **MECHANISM** — load `node scripts/knowledge.mjs mechanism-polish` and fix via vision→live DOM→CSS. Delete stale rules when the wireframe moves; do not invent new tokens.

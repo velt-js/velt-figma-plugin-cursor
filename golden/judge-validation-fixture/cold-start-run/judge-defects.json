@@ -1,0 +1,342 @@
+{
+  "stage": "judge",
+  "run": "cold-start-run",
+  "generatedAt": "2026-07-28T15:10:33.896Z",
+  "emitter": "emit-judge-defects.mjs",
+  "buildFingerprint": {
+    "sha256": "130fd39bda84566e3be3beaf54ec858fba87ea00e22d45b1980eb3403196897c",
+    "mtime": "2026-07-28T15:10:33.809Z",
+    "path": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png"
+  },
+  "doctrine": "FORWARD the vision record; never regenerate P0s from pixel regions. VISION/COMPOSED + HOST/MECHANISM first (P0). Unnamed visual-diff regions are P1. Delta micro-rows are P2. Data-density is noise UNLESS above the F9 severity floor. P0 packets carry live+figma CROPS — text alone is insufficient.",
+  "notes": [
+    "Each defect carries category|detector|evidence|affectedComponent|requiredMode|confidence. Judge types; Builder chooses mechanism.",
+    "requiredMode: style|structure|wireframe|host-wiring|behavior|replan — NEVER treat unknown findings as CSS by default.",
+    "Before editing: confirm visual vs structural vs wireframe vs behavioral. Never CSS-imitate a missing component or hide wrong DOM.",
+    "After fixing: rerun relevant DOM + visual + interaction checks — not screenshot comparison alone.",
+    "Builder MUST follow workOrder[] top-down by requiredMode/route.mode (structure/wireframe/behavior ≠ DEMO-POLISH CSS).",
+    "After emit, run judge-evidence.mjs --write so each P0 gets liveCrop+figmaCrop.",
+    "Every delta FAIL is builder-error, plan-error(*) (→ planner-tickets.json), or noise-ledger — silent drop banned.",
+    "source field per row is provenance-truthful: vision | composed-audit | visual-diff | delta-compare | host-wiring | mechanism | smoke | contract-probe | interaction | emit-gate.",
+    "Builder MUST Read evidence.liveCrop + evidence.figmaCrop per P0 packet (judge-evidence.mjs)."
+  ],
+  "doctrineContract": "Judge reports facts + defect type; Builder chooses fixing mechanism. Uncertain → replan.",
+  "workOrder": [
+    {
+      "element": "(design)",
+      "property": "mechanism-checklist",
+      "spec": "recorded",
+      "rendered": "missing",
+      "KIND": "pixel",
+      "attribution": "builder-error",
+      "issueKey": "mechanism.checklist-missing",
+      "source": "mechanism",
+      "rootCause": "mechanism-checklist.json absent — Builder must run DEMO-POLISH and record results",
+      "tier": "P0",
+      "rank": 20,
+      "label": "mechanism",
+      "subRank": 2000000,
+      "category": "style",
+      "detector": "probe",
+      "evidence": null,
+      "affectedComponent": "mechanism",
+      "requiredMode": "style",
+      "confidence": "medium",
+      "rootCauseGroup": null,
+      "route": {
+        "manifestId": "mechanism",
+        "mode": "style",
+        "category": "style",
+        "remedy": "style/paint CSS via DEMO-POLISH — values from plan; mechanism only",
+        "builderChoosesMechanism": true
+      }
+    },
+    {
+      "block": "flow",
+      "element": "(composed)",
+      "property": "composed-vision",
+      "spec": "matches mock/Figma chrome",
+      "rendered": "injected magenta diagnostic stripe visible on panel chrome — novel cold-start defect",
+      "KIND": "pixel",
+      "attribution": "builder-error",
+      "issueKey": "composed.flow.cold-start-magenta-stripe",
+      "canonicalId": "cold-start-magenta-stripe",
+      "composed": true,
+      "source": "vision",
+      "evidence": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png",
+      "affectedBlocks": [
+        "flow"
+      ],
+      "rootCause": "Judge glance-named miss (recorded via composed-vision-record.mjs)",
+      "tier": "P0",
+      "rank": 30,
+      "label": "composed-vision",
+      "subRank": 0,
+      "category": "uncertain",
+      "detector": "vision",
+      "affectedComponent": "unknown",
+      "requiredMode": "replan",
+      "confidence": "low",
+      "rootCauseGroup": null,
+      "route": {
+        "manifestId": "(default)",
+        "mode": "replan",
+        "category": "uncertain",
+        "remedy": "uncertain root cause — replan; never guess with CSS",
+        "builderChoosesMechanism": true
+      }
+    }
+  ],
+  "workOrderP0": [
+    {
+      "block": "flow",
+      "element": "(composed)",
+      "property": "composed-vision",
+      "spec": "matches mock/Figma chrome",
+      "rendered": "injected magenta diagnostic stripe visible on panel chrome — novel cold-start defect",
+      "KIND": "pixel",
+      "attribution": "builder-error",
+      "issueKey": "composed.flow.cold-start-magenta-stripe",
+      "canonicalId": "cold-start-magenta-stripe",
+      "composed": true,
+      "source": "vision",
+      "evidence": {
+        "liveCrop": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/live.png",
+        "figmaCrop": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/figma.png",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "w": 96,
+          "h": 38
+        },
+        "anchor": "position-heuristic",
+        "selectorHint": null,
+        "selectorValidated": false
+      },
+      "affectedBlocks": [
+        "flow"
+      ],
+      "rootCause": "Judge glance-named miss (recorded via composed-vision-record.mjs)",
+      "tier": "P0",
+      "rank": 30,
+      "label": "composed-vision",
+      "subRank": 0,
+      "category": "uncertain",
+      "detector": "vision",
+      "affectedComponent": "unknown",
+      "requiredMode": "replan",
+      "confidence": "low",
+      "rootCauseGroup": null,
+      "route": {
+        "manifestId": "(default)",
+        "mode": "replan",
+        "category": "uncertain",
+        "remedy": "uncertain root cause — replan; never guess with CSS",
+        "builderChoosesMechanism": true
+      },
+      "builderPacket": {
+        "issueKey": "composed.flow.cold-start-magenta-stripe",
+        "tier": "P0",
+        "block": "flow",
+        "affectedBlocks": [
+          "flow"
+        ],
+        "kind": "pixel",
+        "miss": "injected magenta diagnostic stripe visible on panel chrome — novel cold-start defect",
+        "source": "vision",
+        "route": {
+          "manifestId": "(default)",
+          "mode": "replan",
+          "category": "uncertain",
+          "remedy": "uncertain root cause — replan; never guess with CSS",
+          "builderChoosesMechanism": true
+        },
+        "fixHint": "match figma crop chrome in the routed mode; ignore data text",
+        "selectorHint": null,
+        "evidence": {
+          "liveCrop": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/live.png",
+          "figmaCrop": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/figma.png",
+          "box": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 38
+          },
+          "evidenceSource": "degraded-source",
+          "landmarkQuery": null
+        }
+      }
+    }
+  ],
+  "smokeDefects": [],
+  "goldenPathDefects": [
+    {
+      "element": "(design)",
+      "property": "mechanism-checklist",
+      "spec": "recorded",
+      "rendered": "missing",
+      "KIND": "pixel",
+      "attribution": "builder-error",
+      "issueKey": "mechanism.checklist-missing",
+      "source": "mechanism",
+      "rootCause": "mechanism-checklist.json absent — Builder must run DEMO-POLISH and record results"
+    }
+  ],
+  "composedDefects": [
+    {
+      "block": "flow",
+      "element": "(composed)",
+      "property": "composed-vision",
+      "spec": "matches mock/Figma chrome",
+      "rendered": "injected magenta diagnostic stripe visible on panel chrome — novel cold-start defect",
+      "KIND": "pixel",
+      "attribution": "builder-error",
+      "issueKey": "composed.flow.cold-start-magenta-stripe",
+      "canonicalId": "cold-start-magenta-stripe",
+      "composed": true,
+      "source": "vision",
+      "evidence": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png",
+      "affectedBlocks": [
+        "flow"
+      ],
+      "rootCause": "Judge glance-named miss (recorded via composed-vision-record.mjs)"
+    }
+  ],
+  "unnamedRegionRows": [],
+  "plannerTickets": [],
+  "deliveryLedger": [
+    {
+      "issueKey": "composed.flow.cold-start-magenta-stripe",
+      "identity": "composed.flow.cold-start-magenta-stripe",
+      "source": "vision",
+      "deliveredIn": {
+        "builderPackets": true,
+        "prompt": true
+      }
+    }
+  ],
+  "issueIndex": [
+    {
+      "block": "flow",
+      "element": "(composed)",
+      "property": "composed-vision",
+      "spec": "matches mock/Figma chrome",
+      "rendered": "injected magenta diagnostic stripe visible on panel chrome — novel cold-start defect",
+      "KIND": "pixel",
+      "attribution": "builder-error",
+      "issueKey": "composed.flow.cold-start-magenta-stripe",
+      "canonicalId": "cold-start-magenta-stripe",
+      "composed": true,
+      "source": "vision",
+      "evidence": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png",
+      "affectedBlocks": [
+        "flow"
+      ],
+      "rootCause": "Judge glance-named miss (recorded via composed-vision-record.mjs)"
+    }
+  ],
+  "blocks": {
+    "flow": {
+      "deltaOk": null,
+      "diffCount": 0,
+      "defectRows": [],
+      "noiseLedger": [],
+      "actionableForBuilder": 0,
+      "routeToPlanner": 0
+    },
+    "state-comment-thread-components-selected-state": {
+      "deltaOk": null,
+      "diffCount": 0,
+      "defectRows": [],
+      "noiseLedger": [],
+      "actionableForBuilder": 0,
+      "routeToPlanner": 0
+    }
+  },
+  "totals": {
+    "builder": 2,
+    "plan": 0,
+    "noise": 0,
+    "uniqueIssues": 2,
+    "goldenPath": 1,
+    "composed": 1,
+    "unnamedRegions": 0,
+    "plannerTickets": 0,
+    "workOrderP0": 2,
+    "workOrderTotal": 2
+  },
+  "evidenceMeta": {
+    "evidenceSource": "degraded-source",
+    "connected": false,
+    "hoverBlocked": [],
+    "at": "2026-07-28T15:10:33.932Z"
+  },
+  "builderPackets": [
+    {
+      "issueKey": "composed.flow.cold-start-magenta-stripe",
+      "tier": "P0",
+      "block": "flow",
+      "affectedBlocks": [
+        "flow"
+      ],
+      "kind": "pixel",
+      "miss": "injected magenta diagnostic stripe visible on panel chrome — novel cold-start defect",
+      "source": "vision",
+      "route": {
+        "manifestId": "(default)",
+        "mode": "replan",
+        "category": "uncertain",
+        "remedy": "uncertain root cause — replan; never guess with CSS",
+        "builderChoosesMechanism": true
+      },
+      "fixHint": "match figma crop chrome in the routed mode; ignore data text",
+      "selectorHint": null,
+      "evidence": {
+        "liveCrop": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/live.png",
+        "figmaCrop": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/figma.png",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "w": 96,
+          "h": 38
+        },
+        "evidenceSource": "degraded-source",
+        "landmarkQuery": null
+      }
+    }
+  ],
+  "builderPacketsTop": [
+    {
+      "issueKey": "composed.flow.cold-start-magenta-stripe",
+      "tier": "P0",
+      "block": "flow",
+      "affectedBlocks": [
+        "flow"
+      ],
+      "kind": "pixel",
+      "miss": "injected magenta diagnostic stripe visible on panel chrome — novel cold-start defect",
+      "source": "vision",
+      "route": {
+        "manifestId": "(default)",
+        "mode": "replan",
+        "category": "uncertain",
+        "remedy": "uncertain root cause — replan; never guess with CSS",
+        "builderChoosesMechanism": true
+      },
+      "fixHint": "match figma crop chrome in the routed mode; ignore data text",
+      "selectorHint": null,
+      "evidence": {
+        "liveCrop": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/live.png",
+        "figmaCrop": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/figma.png",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "w": 96,
+          "h": 38
+        },
+        "evidenceSource": "degraded-source",
+        "landmarkQuery": null
+      }
+    }
+  ]
+}

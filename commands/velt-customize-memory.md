@@ -1,10 +1,9 @@
 ---
-description: View or prune this project's cross-phase velt-customize memory (learned tokens, component mappings, naming, corrections, gaps). Usage — /velt-customize-memory [show | prune] [--dir .]
+description: View or prune this project's cross-phase velt-customize memory (learned tokens, component mappings, naming, corrections, gaps).
+argument-hint: "[show | prune] [--dir .]"
 ---
 
 # /velt-customize-memory
-
-**Arguments arrive as the free text after the command** — an optional subcommand: `show` (default) or `prune`.
 
 Inspect or clean the **per-project** cross-phase memory at `<cwd>/.velt-customize/memory.json` — the advisory store the Planner reads at the start of each phase (tokens, component mappings, naming conventions, learned corrections, verified gaps, and the phase ledger). Memory is **advisory, never authoritative** — the Planner always re-verifies against the fresh design.
 

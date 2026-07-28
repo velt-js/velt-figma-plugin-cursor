@@ -1,20 +1,36 @@
 # Golden regression test
 
-Locks the whole Planner → Builder → Judge loop against two **verified-in-browser** designs, so changes to agent prompts or the guide can't silently break it.
+The plugin's offline regression net: `node golden/run-golden.mjs` (no browser, ~1s, CI-safe).
 
-## The two golden designs
-- **Design #1 — review-card comment dialog** (`designs/design-1-review-card-dialog.md`): wireframed `VeltCommentDialog`, renders in dialog + sidebar.
-- **Design #2 — map-marker numbered pins** (`designs/design-2-map-marker-pins.md`): wireframed `VeltCommentPin`, color-by-status + numbered.
+## What it locks (all executed against the REAL shipped code, not copies)
 
-Each has an `expected/<design>.expected.json` (surface, layer, the identifiers the build relies on, the goals, and `expectedVerdict: PASS`).
+- **Judge & style calibration** (`calibration/`): the delta-compare engine must FAIL the
+  known-bad rendered fixture and PASS the known-good one — proves the checker can actually fail.
+- **Layout calibration** (`calibration-layout/`): same, for geometry (boxes/relations/gaps).
+- **Probe runtime**: the injected probe STRINGS (`BROWSER_PROBE`, `LAYER_PROBE`, `CONTRACT_PROBE`,
+  `STABILITY_PROBE`, `SNAPSHOT_FN`) are executed against synthetic DOMs with planted defects —
+  overlapping glyphs, un-neutralized wrappers, focus-shift, phantom buttons, registry-twin
+  contract matches, page-absolute box regressions.
+- **Gates**: verdict-gate (sampling ⇒ INCOMPLETE, full+diff ⇒ FAIL), content-independent gate
+  (pixel-diff advisory, thin spec ⇒ INCOMPLETE), stability gate (moved target ⇒ FAIL).
+- **Two-phase pipeline gates**: structure-plan completeness (leaf-without-container-chain),
+  plan-vs-spec value conflicts (`plan-error(style)`), drive-selector repair, skeleton-check
+  (missing / zero-size / hollow / row-vs-column), structure fingerprint (stale style plan),
+  style coverage gaps, `nodeKind` classification (layout-frame vs paint vs text),
+  selector-collision-is-advisory, and the build-over-build regression guard
+  (paint-lost / box-collapsed fail; improvements never punished).
 
-## Two layers of checking
+If you change `scripts/delta-compare.mjs`, `brief-scaffold.mjs`, `skeleton-check.mjs`,
+`regression-guard.mjs`, `figma-extract.mjs`, or an agent's measurement contract — run this first.
+A change that breaks a calibration is a change that would have shipped a broken judge.
 
-**1. Offline guard — `node golden/run-golden.mjs`** (runs anywhere, no browser).
-Asserts each design's surface + every identifier its golden build uses **still exists in the guide**. This catches guide drift breaking the golden expectations (the R10 failure mode) — cheaply, in CI, on every change. Wire it into `validate` / pre-publish.
+## E2E — the full loop (pre-release; needs the live env)
 
-**2. E2E — the full loop** (needs the live env: the playground app, the connected MCPs, and the installed plugin).
-The playground (`sdk/src/playground.html`, run with `npx ng serve --port 4200` in the `sdk` repo — it can't be moved) reproduces both designs. Run `/velt-customize` against a Figma frame replicating each design and assert the **Judge reaches PASS** with a **clean rules scan**. `run-golden.mjs` prints this checklist.
+Run `/velt-customize` against a real Figma Loop node on a target React app with the
+Cursor's native browser tool + a Figma token, and assert the **Judge reaches PASS via
+`verdict-gate-blocks.mjs` exit 0** with a clean rules scan. `run-golden.mjs` prints the
+step-by-step checklist.
 
-## Why both
-The offline guard is fast and always-runnable, so it's the regression net for guide/plugin edits. The E2E is the real proof the loop produces the designs — run it before a release and after any agent-prompt change.
+*(History: until 2026-07-22 this folder also carried two June "golden design" fixtures and a
+frozen `mock-baseline/` set; they predated the two-phase redesign and were removed — the
+calibration suites above are the regression net.)*

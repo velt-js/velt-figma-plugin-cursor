@@ -1,0 +1,111 @@
+{
+  "_doc": "DEMO-POLISH playbook — how a human/agent closes the gap between plan-correct CSS and a design-matching demo. Builder MUST load this (node scripts/knowledge.mjs mechanism-polish) in style mode + fix mode. These are MECHANISM rules (overflow, clip, hover hosts, flex scrollports, CSS debt), NOT design-token values. Plan-style.json owns hex/px/radius; this file owns composed appearance.",
+  "doctrine": {
+    "authority": "Vision + live DOM beat plan prose when the composed UI is wrong. Screenshots (live vs mock vs Figma chrome) diagnose; computed styles + elementFromPoint confirm; mechanism CSS fixes; re-screenshot proves.",
+    "prerequisite": "Host wiring must already be live (knowledge/host-wiring.json + verify-host-wiring.mjs). Show-N replies / placeholders / page-mode composer cannot be polished into existence with CSS.",
+    "layers": [
+      "VALUES — from plan-style / designSpec (first-shot-css). Never invent hex/px.",
+      "MECHANISM — overflow, min-height:0 scrollports, hover opacity hosts, Options.Trigger sizing, clone-wrapper flex, selected-state visibility. FREE to write/delete in styles.css during appearance + fix.",
+      "STRUCTURE — wrong slot/cardinality → BLOCKED_FOR_REPLAN, not CSS papering."
+    ],
+    "innerLoop": "Plan once → Build values → Mechanism polish (vision) → Judge → Strict-fix (Builder↔Judge). Do NOT replan because pixels look off.",
+    "terminator": "mechanism-checklist.mjs check exit 0 — not a flat diffCount plateau. Record results via mechanism-checklist.mjs init.",
+    "cssDebt": "When wireframe/structure changes (Options.Trigger moves, Reply becomes Body ToggleReply, etc.), DELETE or rewrite CSS that assumed the old tree. Stale collapse/hide/absolute rules are the #1 reason a correct wireframe still looks broken."
+  },
+  "loop": [
+    "1. Drive the state (hover / selected / expanded).",
+    "2. Screenshot the live surface next to the mock (and Figma for chrome).",
+    "3. Name the composed miss in one sentence (kebab invisible, Reply gone, list won't scroll, gap too large).",
+    "4. Probe the LIVE node (never 0-size *-wireframe twin): getBoundingClientRect, getComputedStyle, ancestry, elementFromPoint.",
+    "5. Identify the MECHANISM (clipped host, wrong opacity owner, flex min-height:auto, :has matching closed composer, body gap stacking).",
+    "6. Patch minimal mechanism CSS with !important; do not invent design values.",
+    "7. Hard-reload / bust CSS cache; re-screenshot; confirm the miss is gone and no regression on sibling states.",
+    "8. Log every beyond-plan mechanism fix in beyondPlan.json with evidence."
+  ],
+  "checklist": [
+    {
+      "id": "options-trigger-visible-on-hover",
+      "surface": "comment-dialog / thread card",
+      "ask": "On card/dialog hover, is the design kebab (Options.Trigger content) visible and clickable?",
+      "probe": "Find .vc-options and .vc-options-trigger; check host width/height/overflow/opacity and whether Trigger is inside Options.",
+      "failIf": "Host is 0×0, overflow:hidden clips Trigger, or options-trigger-container is zeroed/pointer-events:none while it hosts the design glyph."
+    },
+    {
+      "id": "toggle-reply-visible-when-unselected",
+      "surface": "comment-dialog",
+      "ask": "Unselected threads show Reply; selected (composer open) hide Reply without leaving a blank band.",
+      "probe": ".vc-reply display + whether hide rules key on --selected vs composer presence.",
+      "failIf": "Reply display:none on unselected cards, or empty gap between last comment and composer from a hidden-but-spaced ToggleReply."
+    },
+    {
+      "id": "sidebar-list-scrolls",
+      "surface": "comments sidebar",
+      "ask": "When threads exceed the rail height, the LIST scrolls; the rail does not clip with no scrollport.",
+      "probe": "app-comment-sidebar-list / .vc-list scrollHeight vs clientHeight; min-height; flex; overflow-y; try scrollTop=200.",
+      "failIf": "scrollHeight===clientHeight while content is clipped by .hw-rail overflow:hidden, or list grows unbounded (min-height:auto)."
+    },
+    {
+      "id": "composer-one-pill",
+      "surface": "page-mode + reply composer",
+      "ask": "Composer is one bordered pill (avatar+input+send), not nested double borders.",
+      "probe": "Outer vs inner .velt-comment-dialog-composer borders; chrome scoped to the right dialog context.",
+      "failIf": "Two visible rings, or page-mode chrome applied to reply composer."
+    },
+    {
+      "id": "thread-composer-gap",
+      "surface": "selected dialog",
+      "ask": "Gap between last comment and reply composer matches design (~8px body column), not stacked 16+16.",
+      "probe": "Measure threads bottom → composer top; body gap vs threads gap.",
+      "failIf": "Body and threads both use the card-list gap, or ToggleReply still occupies space when composer is open."
+    },
+    {
+      "id": "expand-does-not-spill-into-composer",
+      "surface": "expanded thread",
+      "ask": "Show N replies expands cards above the composer; cards do not overlap the composer.",
+      "probe": "overlap of last card vs .vc-reply-composer; .vc-threads max-height.",
+      "failIf": "SDK max-height (~230px) on threads forces later cards into the composer."
+    }
+  ],
+  "traps": [
+    {
+      "id": "options-host-collapse-clips-trigger",
+      "symptom": "Resolve shows on hover but kebab is missing after Options.Trigger correctly holds the design glyph.",
+      "cause": "Older CSS collapsed .vc-options to 0×0 + overflow:hidden and zeroed .options-trigger-container to hide the SDK ••• — that also clips the design Trigger now living inside Options.",
+      "fix": "Size .vc-options to the 16px kebab; overflow:visible; rest-hide via opacity on the Options HOST; hide ONLY svg.comment-dialog-options-dropdown-trigger; keep .options-trigger-container 16×16 + pointer-events:auto when it hosts .vc-options-trigger.",
+      "confidence": "confirmed",
+      "seenOn": ["harvey"]
+    },
+    {
+      "id": "style-attr-has-hides-toggle-reply",
+      "symptom": "ToggleReply is in the DOM but never visible on unselected threads.",
+      "cause": ":has(.vc-reply-composer:not([style*=\"display: none\"])) matches every dialog — composer is hidden via CSS class, not an inline style attribute.",
+      "fix": "Gate Reply visibility on stable selected class (.velt-comment-dialog--selected), never on composer inline style presence.",
+      "confidence": "confirmed",
+      "seenOn": ["harvey"]
+    },
+    {
+      "id": "flex-min-height-blocks-sidebar-scroll",
+      "symptom": "Sidebar content clipped at the rail; wheel/scrollTop does nothing.",
+      "cause": "Fixed mock height on velt-comments-sidebar + flex children with min-height:auto grow with threads; .hw-rail overflow:hidden clips; no element has scrollHeight>clientHeight.",
+      "fix": "Sidebar/panel height:100% + min-height:0 + overflow:hidden; .vc-list flex:1 1 0 + min-height:0 + overflow:auto as the scrollport; .velt-sidebar-content height:auto overflow:visible (content grows, list scrolls).",
+      "confidence": "confirmed",
+      "seenOn": ["harvey"]
+    },
+    {
+      "id": "body-gap-equals-threads-gap",
+      "symptom": "Extra padding between last comment and reply composer.",
+      "cause": "Same gap:16px applied to both .vc-threads (card spacing) and .velt-body (section spacing), plus ToggleReply still in flow.",
+      "fix": "Threads keep card gap (design); body column uses tighter gap; hide ToggleReply when selected/composer open.",
+      "confidence": "confirmed",
+      "seenOn": ["harvey"]
+    },
+    {
+      "id": "threads-max-height-spill",
+      "symptom": "Expanded replies overlap or sit under the reply composer.",
+      "cause": "SDK sets .vc-threads max-height ~230px on expand.",
+      "fix": "On sidebar dialogs: height:auto; max-height:none; flex-shrink:0 on dialog→body→threads→cards chain so expand grows in flow above the composer.",
+      "confidence": "confirmed",
+      "seenOn": ["harvey"]
+    }
+  ]
+}

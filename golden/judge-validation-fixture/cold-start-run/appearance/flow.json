@@ -1,0 +1,28 @@
+{
+  "blockId": "flow",
+  "unresolved": [
+    {
+      "id": "cold-start-magenta-stripe",
+      "issue": "injected magenta diagnostic stripe visible on panel chrome — novel cold-start defect",
+      "summary": "injected magenta diagnostic stripe visible on panel chrome — novel cold-start defect",
+      "kind": "pixel",
+      "evidence": null,
+      "source": "composed-vision.glance"
+    }
+  ],
+  "disposition": "open",
+  "visionReviewed": true,
+  "figmaFramePng": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/frames/flow.png",
+  "mockScreenshot": null,
+  "liveScreenshot": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png",
+  "status": "appearance-reviewed",
+  "visionReviewedAt": "2026-07-28T15:10:33.836Z",
+  "visionMissCount": 1,
+  "needsReGlance": false,
+  "liveCaptureFingerprint": {
+    "sha256": "130fd39bda84566e3be3beaf54ec858fba87ea00e22d45b1980eb3403196897c",
+    "mtime": "2026-07-28T15:10:33.810Z",
+    "path": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png"
+  },
+  "at": "2026-07-28T15:10:33.837Z"
+}

@@ -1,0 +1,108 @@
+{
+  "description": "Shared capability-routing manifest (Judge→Builder). Judge reports facts + defect type; Builder chooses the fixing mechanism. emit-judge-defects.mjs + defect-contract.mjs stamp category/detector/requiredMode/confidence. Uncertain root cause → replan — never default unknown findings to CSS/style.",
+  "seenOn": ["WYAWuEm8DrIk-369-29362"],
+  "modes": ["style", "structure", "wireframe", "host-wiring", "behavior", "replan", "replan-style", "replan-structure"],
+  "categories": ["style", "layout", "structure", "wireframe", "behavior", "host-wiring", "uncertain"],
+  "defaultRoute": {
+    "mode": "replan",
+    "remedy": "uncertain root cause — replan; never guess with CSS"
+  },
+  "traps": [
+    {
+      "id": "renders-serif",
+      "category": "style",
+      "judgeProbe": "composed-audit.mjs font probe — FontFaceSet vs plan font families",
+      "builderRemedy": "font-verify-and-fit shim — load real @font-face or documented web fallback; see knowledge/mock-fidelity.json",
+      "mode": "style",
+      "match": ["renders-serif", "font-loaded", "font-family"]
+    },
+    {
+      "id": "layout-spacing",
+      "category": "layout",
+      "judgeProbe": "design-sourced list-gap / card-internal-spacing / severity-floor layout-spacing",
+      "builderRemedy": "layout CSS (gap/margin/padding) on measured elements — merge sibling spacing symptoms; re-measure, don't only screenshot",
+      "mode": "style",
+      "match": ["list-gap", "comment-gap", "list-gap-too-tight", "card-internal-spacing", "layout-spacing", "vertical-rhythm", "section-spacing", "content-alignment"]
+    },
+    {
+      "id": "paint-chrome",
+      "category": "style",
+      "judgeProbe": "subtle paint probes — shadow, border token, ring, hover background",
+      "builderRemedy": "style/paint CSS from plan tokens — not structure edits",
+      "mode": "style",
+      "match": ["card-border-chrome", "paint-card-ring", "paint-border-token", "paint-composer-shadow", "composer-missing-shadow", "paint-hover-background", "composer-pill-chrome"]
+    },
+    {
+      "id": "reply-containment",
+      "category": "structure",
+      "judgeProbe": "composed-audit reply-inside-card-dom / card-stack-structure",
+      "builderRemedy": "inspect DOM parent-child/order; move Reply inside ThreadCard — never CSS to fake containment",
+      "mode": "structure",
+      "match": ["reply-inside-card-dom", "reply-inside-card", "card-stack-structure", "thread-grouping"]
+    },
+    {
+      "id": "wireframe-slots",
+      "category": "wireframe",
+      "judgeProbe": "wireframe-source-validate.mjs + vision chevron/slot presence",
+      "builderRemedy": "inspect wireframe/template source; correct slots/components/nesting — never CSS to imitate a missing component",
+      "mode": "wireframe",
+      "match": ["show-replies-chevron-missing", "show-n-replies-control", "wf-more-reply", "wf-toggle-reply", "wf-thread-card", "wf-composer", "wireframe-root", "mustSupply"]
+    },
+    {
+      "id": "mount-map",
+      "category": "structure",
+      "judgeProbe": "CONTRACT_PROBE mount-map diff (MISSING / CONTAINMENT / CARDINALITY / PHANTOM_INTERACTIVE)",
+      "builderRemedy": "structure build: mount the missing Velt part / fix containment — never a CSS patch",
+      "mode": "structure",
+      "match": ["contract.", "MISSING", "CONTAINMENT", "CARDINALITY", "PHANTOM_INTERACTIVE", "mount-map"]
+    },
+    {
+      "id": "host-wiring",
+      "category": "host-wiring",
+      "judgeProbe": "verify-host-wiring.mjs / host-wiring.json missing[]",
+      "builderRemedy": "fix mounting/context/configuration (R18 APPLY+KEEP)",
+      "mode": "host-wiring",
+      "match": ["host-wiring."]
+    },
+    {
+      "id": "behavior-interaction",
+      "category": "behavior",
+      "judgeProbe": "interaction-state-probe.mjs + smoke hover/click/focus/selected",
+      "builderRemedy": "run interaction flow; fix event/state/reveal logic — not a static screenshot-only CSS guess",
+      "mode": "behavior",
+      "match": ["resolve-on-hover", "hover-actions", "interaction-hover", "interaction-focus", "interaction-click", "interaction-selected", "smoke."]
+    },
+    {
+      "id": "mechanism",
+      "category": "style",
+      "judgeProbe": "mechanism-checklist.mjs recorded fails",
+      "builderRemedy": "mechanism CSS / host wiring per knowledge/mechanism-polish.json — confirm not structure first",
+      "mode": "style",
+      "match": ["mechanism."]
+    },
+    {
+      "id": "plan-error-style",
+      "category": "style",
+      "judgeProbe": "delta rows classified plan-error(style)",
+      "builderRemedy": "NONE for Builder — planner ticket; style planner re-derives",
+      "mode": "replan-style",
+      "match": ["plan-error(style)"]
+    },
+    {
+      "id": "plan-error-structure",
+      "category": "structure",
+      "judgeProbe": "delta rows classified plan-error(structure)",
+      "builderRemedy": "NONE for Builder — planner ticket; structure planner revises",
+      "mode": "replan-structure",
+      "match": ["plan-error(structure)"]
+    },
+    {
+      "id": "unnamed-region",
+      "category": "uncertain",
+      "judgeProbe": "composed-audit visual-diff regions with no named vision miss",
+      "builderRemedy": "P1 only — re-glance and NAME the miss before prescribing a fix; never guess CSS",
+      "mode": "replan",
+      "match": ["unnamed-region", "visual-region-", "visual-chrome-"]
+    }
+  ]
+}

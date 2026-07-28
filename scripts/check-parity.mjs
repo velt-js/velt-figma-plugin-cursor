@@ -21,7 +21,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-const IDENTICAL_DIRS = ["guide", "manifest", "templates", "scripts"];
+const IDENTICAL_DIRS = ["guide", "manifest", "templates", "scripts", "knowledge"];
 const ADAPTER_DIRS = ["agents", "skills", "commands", "golden"];
 // per-host files allowed to differ (or exist in only one repo) inside the IDENTICAL set:
 const EXCEPTIONS = new Set([
@@ -29,6 +29,8 @@ const EXCEPTIONS = new Set([
   "scripts/progress.mjs",       // host-specific labels
   "scripts/deploy-skills.mjs",  // cursor-only
   "scripts/clear.mjs",          // user-visible command name differs per host
+  "scripts/check-parity.mjs",   // cursor-owned drift guard
+  "scripts/_sync-from-claude.mjs", // one-shot sync helper (cursor-only)
 ]);
 // command files are renamed per host: claude commands/<x>.md ↔ cursor commands/velt-customize-<x>.md
 const cmdCounterpart = (rel, otherIsCursor) => {

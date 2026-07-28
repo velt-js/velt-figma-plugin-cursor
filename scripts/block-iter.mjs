@@ -49,6 +49,7 @@ import { promises as fs } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import path from "node:path";
+import { obsEvent } from "./obs.mjs";
 
 const BUDGETS = {
   // maxBlockMinutes counts ACTIVE minutes (stalls excluded) and must exceed one full
@@ -170,6 +171,7 @@ async function cmdStart(dir, blockId, budget) {
   }
   await saveJson(statePath(dir), state);
   const b = state.blocks[blockId];
+  obsEvent(dir, { type: "block.start", src: "block-iter", stage: "fix", blockId, summary: `block '${blockId}' entered — ${b.attempts.length} prior attempt(s), window #${b.windows || 1}, budget=${state.budget}`, data: { priorAttempts: b.attempts.length, window: b.windows || 1, budget: state.budget } });
   console.log(`▶ block '${blockId}' — iteration ${b.attempts.length}/${state.caps.maxBlockIters}, budget=${state.budget} (≤${state.caps.maxBlockMinutes} active min/block window, phase soft-cap ${state.caps.maxPhaseMinutes} active min)`);
 }
 
@@ -238,6 +240,12 @@ async function cmdRecord(dir, blockId, diffCount, fallbackHash, srcDir, maxAttem
     }
   }
   await saveJson(statePath(dir), state);
+  obsEvent(dir, {
+    type: "iter.record", src: "block-iter", stage: "fix", blockId, iter,
+    ok: verdict === "CONTINUE" ? (diffCount === 0 ? true : null) : false,
+    summary: `'${blockId}' iter ${iter}: diffCount=${diffCount} → ${verdict}${noProgress ? " (no-progress)" : ""}${plateau ? " (plateau)" : ""}`,
+    data: { iter, diffCount, hash: hash || null, signals: attempt.signals, verdict, elapsedMin: +elapsedMin.toFixed(1), best },
+  });
 
   const left = `${state.caps.maxBlockIters - iter} iters / ${(state.caps.maxBlockMinutes - elapsedMin).toFixed(1)} active min left`;
   if (verdict === "CONTINUE") console.log(`● ${blockId} iter ${iter}: diffCount=${diffCount}${noProgress ? " (NO-PROGRESS — must strictly drop)" : ""} hash=${hash || "n/a"} — CONTINUE (${left})`);
@@ -254,6 +262,7 @@ async function cmdPause(dir, reason) {
   if (open) { console.log(`⏸ already paused since ${open.from} (${open.reason || "no reason"}) — nothing to do`); process.exit(0); }
   state.stalls.push({ from: nowIso(), to: null, reason: reason || null });
   await saveJson(statePath(dir), state);
+  obsEvent(dir, { type: "pause", src: "block-iter", summary: `env stall OPEN: ${reason || "no reason given"}`, data: { reason: reason || null } });
   console.log(`⏸ env stall OPEN (${reason || "no reason given"}) — elapsed-time budgets are frozen; run 'resume' when the environment is healthy`);
 }
 async function cmdResume(dir) {
@@ -263,6 +272,7 @@ async function cmdResume(dir) {
   open.to = nowIso();
   const min = ((new Date(open.to) - new Date(open.from)) / 60000).toFixed(1);
   await saveJson(statePath(dir), state);
+  obsEvent(dir, { type: "resume", src: "block-iter", summary: `env stall CLOSED after ${min} min (${open.reason || "no reason"})`, data: { minutes: +min, reason: open.reason || null } });
   console.log(`▶ env stall CLOSED after ${min} min (${open.reason || "no reason"}) — excluded from all block/phase budgets`);
 }
 
@@ -279,8 +289,10 @@ async function cmdCheckPhase(dir, remaining) {
     const report = await loadJson(rp, { blocks: {} });
     report.phase = { softCapReached: true, remaining };
     await saveJson(rp, report);
+    obsEvent(dir, { type: "phase.softcap", src: "block-iter", ok: false, summary: `phase soft-cap reached (${elapsed.toFixed(0)} ≥ ${state.caps.maxPhaseMinutes} active min) — ${remaining.length} block(s) remaining`, data: { elapsedMin: +elapsed.toFixed(1), remaining } });
     console.log(`■ phase soft-cap (${elapsed.toFixed(0)} ≥ ${state.caps.maxPhaseMinutes} active min): ${remaining.length} un-started block(s) written to report.phase.remaining`);
   } else {
+    obsEvent(dir, { type: "phase.softcap", src: "block-iter", ok: false, summary: `phase soft-cap reached (${elapsed.toFixed(0)} ≥ ${state.caps.maxPhaseMinutes} active min) — grace window open`, data: { elapsedMin: +elapsed.toFixed(1) } });
     console.log(`■ phase soft-cap reached (${elapsed.toFixed(0)} ≥ ${state.caps.maxPhaseMinutes} active min): finish the IN-FLIGHT block within the ~${state.caps.graceMinutes} min grace, do NOT start new blocks; re-run with --remaining <ids> to record un-started blocks`);
   }
   process.exit(4);

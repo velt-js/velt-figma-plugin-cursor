@@ -146,12 +146,24 @@ const IS_AVATAR = (n) => /^(avatar|profile picture)$/i.test((n.name || "").trim(
 // `frameId` (the block's figmaNodeId): with a multi-frame/section designSpec (boxSpace:"frame-relative",
 // each node tagged with `frameId`), pass the block's frame id so ONLY that block's nodes are used and
 // their boxes are already relative to the block's frame PNG. Omit for a single-frame designSpec.
-export function textMasksFromSpec(spec, { scale = 2, pad = 3, frameId = null } = {}) {
+/**
+ * Text/avatar masks from designSpec.
+ * `pad` dilates each box — keep it SMALL (0–1). Large pads (3–4+) swallow the micro-gaps
+ * between adjacent chrome (avatar→name, name→timestamp) and hide real spacing defects.
+ * Returns device-px boxes `[x,y,w,h]`. Callers that need gap analysis should keep the
+ * undilated bboxes via `textBoxesFromSpec` (same boxes at pad=0).
+ */
+export function textMasksFromSpec(spec, { scale = 2, pad = 1, frameId = null } = {}) {
   const nodes = (spec.nodes || spec).filter((n) => !frameId || n.frameId === frameId);
   return nodes.filter((n) => (n.text || IS_AVATAR(n)) && n.box && n.box.w).map((n) => [
     Math.round(n.box.x * scale - pad), Math.round(n.box.y * scale - pad),
     Math.round(n.box.w * scale + pad * 2), Math.round(n.box.h * scale + pad * 2),
   ]);
+}
+
+/** Exact (pad=0) text/avatar bboxes — for micro-gap / adjacency analysis alongside masks. */
+export function textBoxesFromSpec(spec, { scale = 2, frameId = null } = {}) {
+  return textMasksFromSpec(spec, { scale, pad: 0, frameId });
 }
 
 // Icon/glyph boxes from a designSpec: nodes whose name marks them as an icon/vector glyph (the
@@ -188,8 +200,139 @@ export function classifyAcceptedResiduals(regions, iconBoxes, { maxFill = 0.10, 
   return { regions: kept, acceptedResiduals: accepted };
 }
 
+/**
+ * Mean-shift (area statistics) detector — catches subtle UNIFORM tints that sit below the
+ * per-pixel YIQ threshold (classic chromatic gap). Example: Figma hover card `#f7f6f4` vs live
+ * `#ffffff` → luminance Δ≈8, invisible at threshold 0.12, trivial as a region mean.
+ *
+ * Operates on the ALREADY-MASKED buffers (content whitened). Tiles whose mean luminance delta
+ * exceeds `minLumDelta` over enough unmasked pixels become regions with `detector:"mean-shift"`.
+ */
+export function detectMeanShift(a, b, w, h, {
+  cell = 48,
+  minLumDelta = 5,
+  minSamples = 64,
+  minArea = 48 * 48,
+  scale = 2,
+} = {}) {
+  const cols = Math.ceil(w / cell), rows = Math.ceil(h / cell);
+  const hot = new Uint8Array(cols * rows);
+  const lumDelta = new Float32Array(cols * rows);
+  const samples = new Int32Array(cols * rows);
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    let sumA = 0, sumB = 0, n = 0;
+    const x0 = c * cell, y0 = r * cell;
+    const x1 = Math.min(w, x0 + cell), y1 = Math.min(h, y0 + cell);
+    for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) {
+      const i = (y * w + x) * 4;
+      // Skip fully-whitened mask pixels (content masks paint RGB=255)
+      if (a[i] === 255 && a[i + 1] === 255 && a[i + 2] === 255 &&
+          b[i] === 255 && b[i + 1] === 255 && b[i + 2] === 255) continue;
+      sumA += rgb2y(a[i], a[i + 1], a[i + 2]);
+      sumB += rgb2y(b[i], b[i + 1], b[i + 2]);
+      n++;
+    }
+    const k = r * cols + c;
+    samples[k] = n;
+    if (n >= minSamples) {
+      const d = Math.abs(sumA / n - sumB / n);
+      lumDelta[k] = d;
+      if (d >= minLumDelta) hot[k] = 1;
+    }
+  }
+  // Cluster adjacent hot tiles (same flood-fill as pixel regions)
+  const seen = new Uint8Array(cols * rows), out = [], idx = (c, r) => r * cols + c;
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    if (!hot[idx(c, r)] || seen[idx(c, r)]) continue;
+    let minc = c, maxc = c, minr = r, maxr = r, maxD = 0, nSamp = 0;
+    const st = [[c, r]]; seen[idx(c, r)] = 1;
+    while (st.length) {
+      const [cc, rr] = st.pop();
+      maxD = Math.max(maxD, lumDelta[idx(cc, rr)]);
+      nSamp += samples[idx(cc, rr)];
+      minc = Math.min(minc, cc); maxc = Math.max(maxc, cc);
+      minr = Math.min(minr, rr); maxr = Math.max(maxr, rr);
+      for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nc = cc + dc, nr = rr + dr;
+        if (nc >= 0 && nc < cols && nr >= 0 && nr < rows && hot[idx(nc, nr)] && !seen[idx(nc, nr)]) {
+          seen[idx(nc, nr)] = 1; st.push([nc, nr]);
+        }
+      }
+    }
+    const bw = (maxc - minc + 1) * cell, bh = (maxr - minr + 1) * cell;
+    if (bw * bh < minArea) continue;
+    out.push({
+      x: minc * cell, y: minr * cell, w: bw, h: bh,
+      changed: nSamp,
+      fill: 1,
+      detector: "mean-shift",
+      meanLumDelta: +maxD.toFixed(2),
+      cssBox: `${Math.round((minc * cell) / scale)},${Math.round((minr * cell) / scale)} ${Math.round(bw / scale)}x${Math.round(bh / scale)}`,
+    });
+  }
+  return out.sort((a, b) => b.meanLumDelta - a.meanLumDelta);
+}
+
+/**
+ * Micro-gap strips between adjacent text/avatar bboxes on the same row.
+ * With tight text masks (pad≤1) these strips stay in the per-pixel diff; this helper
+ * ALSO surfaces them as explicit regions when the gap itself has a mean luminance shift
+ * or enough changed pixels — so avatar→name / name→timestamp spacing can't hide.
+ */
+export function detectAdjacentTextGaps(a, b, w, h, textBoxes, {
+  maxGap = 28, minGap = 2, rowSlop = 8, minLumDelta = 4, scale = 2,
+} = {}) {
+  const boxes = (textBoxes || []).map(([x, y, bw, bh]) => ({ x, y, w: bw, h: bh })).filter((t) => t.w > 0 && t.h > 0);
+  boxes.sort((p, q) => (p.y - q.y) || (p.x - q.x));
+  const gaps = [];
+  for (let i = 0; i < boxes.length; i++) {
+    for (let j = i + 1; j < boxes.length; j++) {
+      const L = boxes[i], R = boxes[j];
+      // same row roughly
+      if (Math.abs((L.y + L.h / 2) - (R.y + R.h / 2)) > Math.max(L.h, R.h) / 2 + rowSlop) continue;
+      const left = L.x + L.w <= R.x ? L : (R.x + R.w <= L.x ? R : null);
+      const right = left === L ? R : (left === R ? L : null);
+      if (!left || !right) continue;
+      const gap = right.x - (left.x + left.w);
+      if (gap < minGap || gap > maxGap) continue;
+      const gx = left.x + left.w, gy = Math.max(left.y, right.y);
+      const gw = gap, gh = Math.min(left.y + left.h, right.y + right.h) - gy;
+      if (gw < 1 || gh < 1) continue;
+      let sumA = 0, sumB = 0, n = 0, changed = 0;
+      const maxDelta = 35215 * 0.08 * 0.08; // sensitive strip check
+      for (let y = Math.max(0, gy); y < Math.min(h, gy + gh); y++) {
+        for (let x = Math.max(0, gx); x < Math.min(w, gx + gw); x++) {
+          const p = (y * w + x) * 4;
+          sumA += rgb2y(a[p], a[p + 1], a[p + 2]);
+          sumB += rgb2y(b[p], b[p + 1], b[p + 2]);
+          n++;
+          if (colorDelta(a, b, p) > maxDelta) changed++;
+        }
+      }
+      if (!n) continue;
+      const d = Math.abs(sumA / n - sumB / n);
+      if (d < minLumDelta && changed < Math.max(4, n * 0.15)) continue;
+      gaps.push({
+        x: gx, y: gy, w: gw, h: Math.max(1, gh),
+        changed: Math.max(changed, n),
+        fill: +(changed / Math.max(1, gw * gh)).toFixed(3),
+        detector: "text-gap",
+        meanLumDelta: +d.toFixed(2),
+        cssBox: `${Math.round(gx / scale)},${Math.round(gy / scale)} ${Math.round(gw / scale)}x${Math.round(Math.max(1, gh) / scale)}`,
+      });
+    }
+  }
+  return gaps;
+}
+
 // Core: returns {canvas, changedPixels, diffPct, regions, diffPNG}. scale = device/css for cssBox reporting.
-export function visualDiff(refImg, liveImg, { masks = [], threshold = 0.1, cell = 24, scale = 2, minChanged = 0, minFill = 0 } = {}) {
+export function visualDiff(refImg, liveImg, {
+  masks = [], threshold = 0.1, cell = 24, scale = 2, minChanged = 0, minFill = 0,
+  // Area-statistics pass for sub-threshold uniform tints (hover-bg etc.)
+  meanShift = true, meanShiftCell = 48, minLumDelta = 5, meanShiftMinArea = 48 * 48,
+  // Optional exact text bboxes (pad=0) for adjacent micro-gap detection
+  textBoxes = null, detectGaps = false,
+} = {}) {
   const w = Math.max(refImg.width, liveImg.width), h = Math.max(refImg.height, liveImg.height);
   const a = pad(refImg, w, h), b = pad(liveImg, w, h);
   maskBoxes(a, w, h, masks); maskBoxes(b, w, h, masks);
@@ -200,10 +343,57 @@ export function visualDiff(refImg, liveImg, { masks = [], threshold = 0.1, cell 
     if (colorDelta(a, b, i) > maxDelta) { diff[i] = 255; diff[i + 1] = 0; diff[i + 2] = 0; diff[i + 3] = 255; mask[p] = 1; changed++; }
     else { const g = (a[i] * 0.1 + 242); diff[i] = diff[i + 1] = diff[i + 2] = g; diff[i + 3] = 255; } // faint ghost of the ref
   }
-  const all = clusterRegions(mask, w, h, cell).map((r) => ({ ...r, cssBox: `${Math.round(r.x / scale)},${Math.round(r.y / scale)} ${Math.round(r.w / scale)}x${Math.round(r.h / scale)}` }));
+  const all = clusterRegions(mask, w, h, cell).map((r) => ({
+    ...r,
+    detector: "pixel",
+    cssBox: `${Math.round(r.x / scale)},${Math.round(r.y / scale)} ${Math.round(r.w / scale)}x${Math.round(r.h / scale)}`,
+  }));
   // significant = solid-ish blocks (real missing/extra/wrong element); thin drift outlines are filtered.
-  const regions = all.filter((r) => r.changed >= minChanged && r.fill >= minFill);
-  return { canvas: `${w}x${h}`, changedPixels: changed, diffPct: +(100 * changed / (w * h)).toFixed(3), regions, regionsTotal: all.length, _diff: diff, _w: w, _h: h };
+  const pixelRegions = all.filter((r) => r.changed >= minChanged && r.fill >= minFill);
+
+  const meanRegions = meanShift
+    ? detectMeanShift(a, b, w, h, { cell: meanShiftCell, minLumDelta, minArea: meanShiftMinArea, scale })
+    : [];
+  // Paint mean-shift tiles onto the diff image (magenta) so crops still show something
+  for (const r of meanRegions) {
+    for (let y = r.y; y < Math.min(h, r.y + r.h); y++) {
+      for (let x = r.x; x < Math.min(w, r.x + r.w); x++) {
+        const i = (y * w + x) * 4;
+        if (mask[y * w + x]) continue; // already a pixel-hit
+        // soft magenta wash
+        diff[i] = Math.min(255, diff[i] + 80);
+        diff[i + 1] = Math.max(0, diff[i + 1] - 40);
+        diff[i + 2] = Math.min(255, diff[i + 2] + 80);
+        diff[i + 3] = 255;
+      }
+    }
+  }
+
+  const gapRegions = (detectGaps && textBoxes?.length)
+    ? detectAdjacentTextGaps(a, b, w, h, textBoxes, { scale })
+    : [];
+
+  // De-dupe: drop mean-shift / gap regions that substantially overlap a stronger pixel region
+  const overlaps = (p, q) => {
+    const ix = Math.max(0, Math.min(p.x + p.w, q.x + q.w) - Math.max(p.x, q.x));
+    const iy = Math.max(0, Math.min(p.y + p.h, q.y + q.h) - Math.max(p.y, q.y));
+    const inter = ix * iy;
+    return inter > 0.5 * Math.min(p.w * p.h, q.w * q.h);
+  };
+  const extra = [...meanRegions, ...gapRegions].filter((m) => !pixelRegions.some((p) => overlaps(p, m)));
+  const regions = [...pixelRegions, ...extra]
+    .sort((a, b) => (b.w * b.h) - (a.w * a.h));
+
+  return {
+    canvas: `${w}x${h}`,
+    changedPixels: changed,
+    diffPct: +(100 * changed / (w * h)).toFixed(3),
+    regions,
+    regionsTotal: all.length + meanRegions.length + gapRegions.length,
+    meanShiftCount: meanRegions.length,
+    gapCount: gapRegions.length,
+    _diff: diff, _w: w, _h: h,
+  };
 }
 
 async function main() {
@@ -250,4 +440,4 @@ async function main() {
   console.log(JSON.stringify(result, null, 2));
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });

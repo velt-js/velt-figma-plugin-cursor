@@ -91,4 +91,4 @@ async function main() {
   if (thin) console.error(`⚠ ${thin}/${targets.length} slices are THIN (≤2 nodes) — masking/probes downstream will be degraded; investigate before building`);
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });

@@ -1,0 +1,49 @@
+{
+  "issueKey": "composed.flow.cold-start-magenta-stripe",
+  "issueId": "cold-start-magenta-stripe",
+  "block": "flow",
+  "affectedBlocks": [
+    "flow"
+  ],
+  "miss": "injected magenta diagnostic stripe visible on panel chrome — novel cold-start defect",
+  "source": "vision",
+  "route": {
+    "manifestId": "(default)",
+    "mode": "replan",
+    "category": "uncertain",
+    "remedy": "uncertain root cause — replan; never guess with CSS",
+    "builderChoosesMechanism": true
+  },
+  "anchor": "position-heuristic",
+  "boxCss": {
+    "x": 0,
+    "y": 0,
+    "w": 96,
+    "h": 38
+  },
+  "boxLiveDevice": {
+    "x": 0,
+    "y": 0,
+    "w": 96,
+    "h": 38
+  },
+  "boxFigmaDevice": {
+    "x": 0,
+    "y": 0,
+    "w": 96,
+    "h": 38
+  },
+  "liveCrop": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/live.png",
+  "figmaCrop": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/figma.png",
+  "selectorHint": null,
+  "selectorValidated": false,
+  "landmarkQuery": null,
+  "evidenceSource": "degraded-source",
+  "requiresHover": false,
+  "buildFingerprint": {
+    "sha256": "130fd39bda84566e3be3beaf54ec858fba87ea00e22d45b1980eb3403196897c",
+    "mtime": "2026-07-28T15:10:33.810Z",
+    "path": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png"
+  },
+  "at": "2026-07-28T15:10:33.931Z"
+}

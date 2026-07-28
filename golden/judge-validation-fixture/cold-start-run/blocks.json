@@ -1,0 +1,12 @@
+{
+  "blocks": [
+    {
+      "id": "flow",
+      "family": "sidebar"
+    },
+    {
+      "id": "state-comment-thread-components-selected-state",
+      "family": "thread"
+    }
+  ]
+}

@@ -92,7 +92,27 @@ async function verdict(dir) {
     "reset stage-timer stages that already ended",
   ];
   const briefsDir = path.join(dir, "briefs");
-  const planExists = (await exists(path.join(dir, "connect-map.json"))) || (await exists(path.join(dir, "plan.json")));
+  // TWO-PHASE PLANNING ladder (plan-structure → build-structure → dom-snapshot → plan-style →
+  // build-style → audit). Detected by plan-structure.json — a run that died after the snapshot
+  // must NOT re-plan structure; each artifact marks its stage DONE.
+  const twoPhase = await exists(path.join(dir, "plan-structure.json"));
+  if (twoPhase) {
+    const snapDir = path.join(dir, "dom-snapshot");
+    const snapExists = (await fs.readdir(snapDir).catch(() => [])).some((f) => f.endsWith(".json"));
+    const stylePlanExists = await exists(path.join(dir, "plan-style.json"));
+    if (!snapExists) {
+      return { verdict: "RESUME", stage: "build-structure", blocks: blocks.length,
+        instruction: "plan-structure.json is DONE — restore env services, re-enter the STRUCTURE build (builder mode=structure) for any family whose skeleton isn't rendering, then run dom-snapshot.mjs (5a2). NEVER re-plan structure.",
+        doNotRedo: [...doNotRedo, "re-dispatch the structure planner (plan-structure.json exists)"] };
+    }
+    if (!stylePlanExists) {
+      return { verdict: "RESUME", stage: "plan-style", blocks: blocks.length,
+        instruction: "structure build + dom-snapshot are DONE — restore env services, run brief-scaffold --style --from-snapshot if briefs aren't style-enriched, then dispatch the STYLE planner to fill the style briefs + emit plan-style.json. NEVER re-plan structure or re-snapshot.",
+        doNotRedo: [...doNotRedo, "re-dispatch the structure planner", "re-run the structure build or dom-snapshot (snapshots exist)"] };
+    }
+    // plan-style exists → fall through to the build/audit accounting below (build = build-style + fixes)
+  }
+  const planExists = twoPhase || (await exists(path.join(dir, "connect-map.json"))) || (await exists(path.join(dir, "plan.json")));
   if (!planExists) {
     return { verdict: "RESUME", stage: "plan", blocks: blocks.length,
       instruction: "restore env services (dev server / backend / browser / proxy per the journal), then re-dispatch the planner to FILL the scaffolded briefs only",

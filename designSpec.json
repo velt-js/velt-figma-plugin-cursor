@@ -1,0 +1,5893 @@
+{
+  "source": "rest",
+  "fileKey": "WYAWuEm8DrIkAyx03e8fG9",
+  "nodeId": "369:29362",
+  "boxSpace": "frame-relative",
+  "frames": [
+    {
+      "id": "369:29363",
+      "name": "Flows",
+      "type": "SECTION"
+    },
+    {
+      "id": "369:29491",
+      "name": "State",
+      "type": "SECTION"
+    }
+  ],
+  "nodeCount": 277,
+  "nodes": [
+    {
+      "id": "369:29362",
+      "name": "Loop 1 - Add simple comment",
+      "type": "SECTION",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 2093,
+        "h": 1920
+      },
+      "cssDecls": {
+        "border": "1px solid #ffffff1a",
+        "background": "#3a3a3a"
+      },
+      "frameId": null
+    },
+    {
+      "id": "369:29363",
+      "name": "Flows",
+      "type": "SECTION",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 695,
+        "h": 940
+      },
+      "cssDecls": {
+        "border": "1px solid #ffffff1a",
+        "background": "#444444"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29412",
+      "name": "__",
+      "type": "FRAME",
+      "box": {
+        "x": 233,
+        "y": 54,
+        "w": 354,
+        "h": 832
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "width": "354px",
+        "height": "832px",
+        "border": "1px solid #f1efec",
+        "background": "#ffffff"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29413",
+      "name": "Frame 626259",
+      "type": "FRAME",
+      "box": {
+        "x": 233,
+        "y": 54,
+        "w": 354,
+        "h": 832
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "24px",
+        "padding": "12px 16px",
+        "flex": "1 1 0",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29414",
+      "name": "Frame 2147239783",
+      "type": "FRAME",
+      "box": {
+        "x": 249,
+        "y": 66,
+        "w": 322,
+        "h": 20
+      },
+      "cssDecls": {
+        "height": "20px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29415",
+      "name": "Comments",
+      "type": "TEXT",
+      "box": {
+        "x": 249,
+        "y": 64,
+        "w": 322,
+        "h": 24
+      },
+      "cssDecls": {
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "16px",
+        "font-weight": "500",
+        "line-height": "24px",
+        "align-content": "center"
+      },
+      "text": {
+        "content": "Comments",
+        "family": "Poppins",
+        "size": 16,
+        "weight": 500,
+        "lineHeight": 24,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29416",
+      "name": "iconButton",
+      "type": "INSTANCE",
+      "box": {
+        "x": 547,
+        "y": 64,
+        "w": 24,
+        "h": 24
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "width": "24px",
+        "height": "24px",
+        "border-radius": "6px"
+      },
+      "componentId": "1:1573",
+      "frameId": "369:29363"
+    },
+    {
+      "id": "I369:29416;703:470",
+      "name": "Icon",
+      "type": "INSTANCE",
+      "box": {
+        "x": 553,
+        "y": 70,
+        "w": 12,
+        "h": 12
+      },
+      "cssDecls": {
+        "width": "12px",
+        "height": "12px"
+      },
+      "componentId": "1:1525",
+      "frameId": "369:29363"
+    },
+    {
+      "id": "I369:29416;703:470;11724:2445",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 554,
+        "y": 72,
+        "w": 10,
+        "h": 8
+      },
+      "cssDecls": {
+        "fill": "#1a1917"
+      },
+      "frameId": "369:29363",
+      "inIcon": true
+    },
+    {
+      "id": "369:29417",
+      "name": "Frame 2147239778",
+      "type": "FRAME",
+      "box": {
+        "x": 249,
+        "y": 110,
+        "w": 322,
+        "h": 363
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "24px"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29418",
+      "name": "Profile picture and name",
+      "type": "FRAME",
+      "box": {
+        "x": 249,
+        "y": 110,
+        "w": 322,
+        "h": 40
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "width": "322px",
+        "box-shadow": "0px 4px 12px #0000000a, 0px 0px 0px 1px #1a191714"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29419",
+      "name": "TextField",
+      "type": "FRAME",
+      "box": {
+        "x": 249,
+        "y": 110,
+        "w": 322,
+        "h": 40
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "gap": "8px",
+        "flex": "1 1 0"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29423",
+      "name": "Content",
+      "type": "FRAME",
+      "box": {
+        "x": 249,
+        "y": 110,
+        "w": 322,
+        "h": 40
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "4px",
+        "padding": "8px 10px",
+        "flex": "1 1 0",
+        "border-radius": "8px",
+        "border": "1px solid #f1efec",
+        "background": "#ffffff"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29424",
+      "name": "Frame 2147239771",
+      "type": "FRAME",
+      "box": {
+        "x": 259,
+        "y": 120,
+        "w": 274,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "width": "274px"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29425",
+      "name": "Avatar",
+      "type": "FRAME",
+      "box": {
+        "x": 259,
+        "y": 120,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "width": "20px",
+        "height": "20px",
+        "border-radius": "999px",
+        "box-shadow": "0px 0px 0px 1px #e4e1dd"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29426",
+      "name": "Avatar",
+      "type": "ELLIPSE",
+      "box": {
+        "x": 259,
+        "y": 120,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "background": "#333f40"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29427",
+      "name": "Initials",
+      "type": "TEXT",
+      "box": {
+        "x": 259,
+        "y": 126,
+        "w": 20,
+        "h": 8
+      },
+      "cssDecls": {
+        "color": "#ffffff",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "12px",
+        "letter-spacing": "-0.4px",
+        "text-align": "center",
+        "align-content": "center",
+        "text-box": "trim-both cap alphabetic"
+      },
+      "text": {
+        "content": "W",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 12,
+        "letterSpacing": -0.40000003576278687,
+        "alignH": "CENTER",
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29428",
+      "name": "Edit",
+      "type": "FRAME",
+      "box": {
+        "x": 287,
+        "y": 120,
+        "w": 246,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "flex": "1 1 0"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29430",
+      "name": "Placeholder",
+      "type": "TEXT",
+      "box": {
+        "x": 287,
+        "y": 120,
+        "w": 246,
+        "h": 20
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#848079",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "400",
+        "line-height": "20px"
+      },
+      "text": {
+        "content": "Comment or tag others with @",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 400,
+        "lineHeight": 20,
+        "letterSpacing": 0
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29432",
+      "name": "iconButton",
+      "type": "INSTANCE",
+      "box": {
+        "x": 537,
+        "y": 118,
+        "w": 24,
+        "h": 24
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "width": "24px",
+        "height": "24px",
+        "border-radius": "6px",
+        "opacity": "0.5",
+        "background": "#f1efec"
+      },
+      "componentId": "1:1619",
+      "frameId": "369:29363"
+    },
+    {
+      "id": "I369:29432;9650:600",
+      "name": "Icon",
+      "type": "INSTANCE",
+      "box": {
+        "x": 543,
+        "y": 124,
+        "w": 12,
+        "h": 12
+      },
+      "cssDecls": {
+        "width": "12px",
+        "height": "12px"
+      },
+      "componentId": "1:1694",
+      "frameId": "369:29363"
+    },
+    {
+      "id": "I369:29432;9650:600;11727:2567",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 546,
+        "y": 126,
+        "w": 7,
+        "h": 9
+      },
+      "cssDecls": {
+        "fill": "#b8b5b0"
+      },
+      "frameId": "369:29363",
+      "inIcon": true
+    },
+    {
+      "id": "369:29437",
+      "name": "Frame 2147239785",
+      "type": "FRAME",
+      "box": {
+        "x": 249,
+        "y": 174,
+        "w": 322,
+        "h": 299
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "16px"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29438",
+      "name": "Comment",
+      "type": "FRAME",
+      "box": {
+        "x": 249,
+        "y": 174,
+        "w": 322,
+        "h": 193
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "16px",
+        "padding": "12px",
+        "width": "322px",
+        "border-radius": "8px",
+        "box-shadow": "0px 0px 0px 1px #e4e1dd",
+        "background": "#ffffff"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29439",
+      "name": "Frame 2147239780",
+      "type": "FRAME",
+      "box": {
+        "x": 261,
+        "y": 186,
+        "w": 298,
+        "h": 64
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "4px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29440",
+      "name": "Frame 2147239780",
+      "type": "FRAME",
+      "box": {
+        "x": 261,
+        "y": 186,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "4px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29441",
+      "name": "Item",
+      "type": "FRAME",
+      "box": {
+        "x": 261,
+        "y": 186,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "space-between",
+        "align-items": "center",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29442",
+      "name": "Profile picture and name",
+      "type": "FRAME",
+      "box": {
+        "x": 261,
+        "y": 186,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "padding": "0px 20px 0px 0px",
+        "flex": "1 1 0"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29443",
+      "name": "Avatar",
+      "type": "FRAME",
+      "box": {
+        "x": 261,
+        "y": 186,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "width": "20px",
+        "height": "20px",
+        "border-radius": "999px",
+        "box-shadow": "0px 0px 0px 1px #e4e1dd"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29444",
+      "name": "Avatar",
+      "type": "ELLIPSE",
+      "box": {
+        "x": 261,
+        "y": 186,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "background": "#333f40"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29445",
+      "name": "Initials",
+      "type": "TEXT",
+      "box": {
+        "x": 261,
+        "y": 192,
+        "w": 20,
+        "h": 8
+      },
+      "cssDecls": {
+        "color": "#ffffff",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "12px",
+        "letter-spacing": "-0.4px",
+        "text-align": "center",
+        "align-content": "center",
+        "text-box": "trim-both cap alphabetic"
+      },
+      "text": {
+        "content": "W",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 12,
+        "letterSpacing": -0.40000003576278687,
+        "alignH": "CENTER",
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29446",
+      "name": "Frame 2147239787",
+      "type": "FRAME",
+      "box": {
+        "x": 289,
+        "y": 186,
+        "w": 117,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "baseline",
+        "gap": "7px"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29447",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 289,
+        "y": 186,
+        "w": 93,
+        "h": 20
+      },
+      "cssDecls": {
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "500",
+        "line-height": "20px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Wilson Jones",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 500,
+        "lineHeight": 20,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29448",
+      "name": "Timestamp",
+      "type": "TEXT",
+      "box": {
+        "x": 389,
+        "y": 189,
+        "w": 17,
+        "h": 16
+      },
+      "cssDecls": {
+        "color": "#848079",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "400",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "1m",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 400,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29449",
+      "name": "Justification",
+      "type": "FRAME",
+      "box": {
+        "x": 261,
+        "y": 210,
+        "w": 298,
+        "h": 40
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "10px",
+        "padding": "0px 0px 0px 28px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29451",
+      "name": "Rectangle 3805",
+      "type": "RECTANGLE",
+      "box": {
+        "x": 271,
+        "y": 212,
+        "w": 1,
+        "h": 49
+      },
+      "cssDecls": {
+        "width": "1px",
+        "height": "49px",
+        "background": "#e4e1dd"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29450",
+      "name": "Placeholder",
+      "type": "TEXT",
+      "box": {
+        "x": 289,
+        "y": 210,
+        "w": 270,
+        "h": 40
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "400",
+        "line-height": "20px"
+      },
+      "text": {
+        "content": "Make sure to update the NDA to our standards.",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 400,
+        "lineHeight": 20,
+        "letterSpacing": 0
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29454",
+      "name": "Frame 2147239788",
+      "type": "FRAME",
+      "box": {
+        "x": 261,
+        "y": 266,
+        "w": 298,
+        "h": 89
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "8px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29455",
+      "name": "Frame 2147239784",
+      "type": "FRAME",
+      "box": {
+        "x": 261,
+        "y": 266,
+        "w": 298,
+        "h": 65
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "8px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29456",
+      "name": "Frame 2147239779",
+      "type": "FRAME",
+      "box": {
+        "x": 261,
+        "y": 266,
+        "w": 299,
+        "h": 65
+      },
+      "cssDecls": {
+        "height": "65px",
+        "width": "299px"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29457",
+      "name": "Frame 2147239780",
+      "type": "FRAME",
+      "box": {
+        "x": 262,
+        "y": 267,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "4px",
+        "width": "298px"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29458",
+      "name": "Item",
+      "type": "FRAME",
+      "box": {
+        "x": 262,
+        "y": 267,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "space-between",
+        "align-items": "center",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29459",
+      "name": "Profile picture and name",
+      "type": "FRAME",
+      "box": {
+        "x": 262,
+        "y": 267,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "padding": "0px 20px 0px 0px",
+        "flex": "1 1 0"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29460",
+      "name": "Avatar",
+      "type": "FRAME",
+      "box": {
+        "x": 262,
+        "y": 267,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "width": "20px",
+        "height": "20px",
+        "border-radius": "999px",
+        "box-shadow": "0px 0px 0px 1px #e4e1dd"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29461",
+      "name": "Avatar",
+      "type": "ELLIPSE",
+      "box": {
+        "x": 262,
+        "y": 267,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "background": "#333f40"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29462",
+      "name": "Initials",
+      "type": "TEXT",
+      "box": {
+        "x": 262,
+        "y": 273,
+        "w": 20,
+        "h": 8
+      },
+      "cssDecls": {
+        "color": "#ffffff",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "12px",
+        "letter-spacing": "-0.4px",
+        "text-align": "center",
+        "align-content": "center",
+        "text-box": "trim-both cap alphabetic"
+      },
+      "text": {
+        "content": "W",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 12,
+        "letterSpacing": -0.40000003576278687,
+        "alignH": "CENTER",
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29463",
+      "name": "Frame 2147239787",
+      "type": "FRAME",
+      "box": {
+        "x": 290,
+        "y": 267,
+        "w": 117,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "baseline",
+        "gap": "7px"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29464",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 290,
+        "y": 267,
+        "w": 93,
+        "h": 20
+      },
+      "cssDecls": {
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "500",
+        "line-height": "20px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Wilson Jones",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 500,
+        "lineHeight": 20,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29465",
+      "name": "Timestamp",
+      "type": "TEXT",
+      "box": {
+        "x": 390,
+        "y": 270,
+        "w": 17,
+        "h": 16
+      },
+      "cssDecls": {
+        "color": "#848079",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "400",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "1m",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 400,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29466",
+      "name": "Justification",
+      "type": "FRAME",
+      "box": {
+        "x": 262,
+        "y": 291,
+        "w": 298,
+        "h": 40
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "10px",
+        "padding": "0px 0px 0px 28px",
+        "width": "298px"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29467",
+      "name": "Body",
+      "type": "TEXT",
+      "box": {
+        "x": 290,
+        "y": 291,
+        "w": 270,
+        "h": 40
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "400",
+        "line-height": "20px",
+        "align-content": "center"
+      },
+      "text": {
+        "content": "Wait on second thought, let’s not do what I just mentioned.",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 400,
+        "lineHeight": 20,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29468",
+      "name": "Frame 2147239783",
+      "type": "FRAME",
+      "box": {
+        "x": 261,
+        "y": 339,
+        "w": 298,
+        "h": 16
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "4px",
+        "padding": "0px 0px 0px 28px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29469",
+      "name": "Frame",
+      "type": "FRAME",
+      "box": {
+        "x": 289,
+        "y": 339,
+        "w": 16,
+        "h": 16
+      },
+      "cssDecls": {
+        "width": "16px",
+        "height": "16px"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29470",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 291,
+        "y": 342,
+        "w": 12,
+        "h": 10
+      },
+      "cssDecls": {
+        "border": "0.88px solid #000000"
+      },
+      "frameId": "369:29363",
+      "inIcon": true
+    },
+    {
+      "id": "369:29471",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 309,
+        "y": 339,
+        "w": 250,
+        "h": 16
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Reply",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29472",
+      "name": "Comment",
+      "type": "FRAME",
+      "box": {
+        "x": 249,
+        "y": 383,
+        "w": 322,
+        "h": 90
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "8px",
+        "padding": "10px 12px 12px 12px",
+        "width": "322px",
+        "border-radius": "8px",
+        "box-shadow": "0px 0px 0px 1px #1a191714",
+        "background": "#ffffff"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29473",
+      "name": "Frame 2147239782",
+      "type": "FRAME",
+      "box": {
+        "x": 261,
+        "y": 393,
+        "w": 298,
+        "h": 44
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "4px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29474",
+      "name": "Frame 2147239780",
+      "type": "FRAME",
+      "box": {
+        "x": 261,
+        "y": 393,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "4px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29475",
+      "name": "Item",
+      "type": "FRAME",
+      "box": {
+        "x": 261,
+        "y": 393,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "space-between",
+        "align-items": "center",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29476",
+      "name": "Profile picture and name",
+      "type": "FRAME",
+      "box": {
+        "x": 261,
+        "y": 393,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "padding": "0px 20px 0px 0px",
+        "flex": "1 1 0"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29477",
+      "name": "Avatar",
+      "type": "FRAME",
+      "box": {
+        "x": 261,
+        "y": 393,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "width": "20px",
+        "height": "20px",
+        "border-radius": "999px",
+        "box-shadow": "0px 0px 0px 1px #e4e1dd"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29478",
+      "name": "Avatar",
+      "type": "ELLIPSE",
+      "box": {
+        "x": 261,
+        "y": 393,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "background": "#333f40"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29479",
+      "name": "Initials",
+      "type": "TEXT",
+      "box": {
+        "x": 261,
+        "y": 399,
+        "w": 20,
+        "h": 8
+      },
+      "cssDecls": {
+        "color": "#ffffff",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "12px",
+        "letter-spacing": "-0.4px",
+        "text-align": "center",
+        "align-content": "center",
+        "text-box": "trim-both cap alphabetic"
+      },
+      "text": {
+        "content": "W",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 12,
+        "letterSpacing": -0.40000003576278687,
+        "alignH": "CENTER",
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29480",
+      "name": "Frame 2147239787",
+      "type": "FRAME",
+      "box": {
+        "x": 289,
+        "y": 393,
+        "w": 117,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "baseline",
+        "gap": "7px"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29481",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 289,
+        "y": 393,
+        "w": 93,
+        "h": 20
+      },
+      "cssDecls": {
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "500",
+        "line-height": "20px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Wilson Jones",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 500,
+        "lineHeight": 20,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29482",
+      "name": "Timestamp",
+      "type": "TEXT",
+      "box": {
+        "x": 389,
+        "y": 396,
+        "w": 17,
+        "h": 16
+      },
+      "cssDecls": {
+        "color": "#848079",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "400",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "1m",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 400,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29483",
+      "name": "Justification",
+      "type": "FRAME",
+      "box": {
+        "x": 261,
+        "y": 417,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "10px",
+        "padding": "0px 0px 0px 28px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29484",
+      "name": "Body",
+      "type": "TEXT",
+      "box": {
+        "x": 289,
+        "y": 417,
+        "w": 270,
+        "h": 20
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "400",
+        "line-height": "20px",
+        "align-content": "center"
+      },
+      "text": {
+        "content": "I love legal tech! Let’s goo!",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 400,
+        "lineHeight": 20,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29485",
+      "name": "Frame 2147239783",
+      "type": "FRAME",
+      "box": {
+        "x": 261,
+        "y": 445,
+        "w": 298,
+        "h": 16
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "4px",
+        "padding": "0px 0px 0px 28px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29486",
+      "name": "Frame",
+      "type": "FRAME",
+      "box": {
+        "x": 289,
+        "y": 445,
+        "w": 16,
+        "h": 16
+      },
+      "cssDecls": {
+        "width": "16px",
+        "height": "16px"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29487",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 291,
+        "y": 448,
+        "w": 12,
+        "h": 10
+      },
+      "cssDecls": {
+        "border": "0.88px solid #000000"
+      },
+      "frameId": "369:29363",
+      "inIcon": true
+    },
+    {
+      "id": "369:29488",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 309,
+        "y": 445,
+        "w": 250,
+        "h": 16
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Reply",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29363"
+    },
+    {
+      "id": "369:29491",
+      "name": "State",
+      "type": "SECTION",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 1255,
+        "h": 1720
+      },
+      "cssDecls": {
+        "border": "1px solid #ffffff1a",
+        "background": "#444444"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29550",
+      "name": "Sidebar Header",
+      "type": "SECTION",
+      "box": {
+        "x": 38,
+        "y": 143,
+        "w": 580,
+        "h": 248
+      },
+      "cssDecls": {
+        "border": "1px solid #ffffff1a",
+        "background": "#3a3b3a"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29551",
+      "name": "Frame 2147239786",
+      "type": "FRAME",
+      "box": {
+        "x": 110,
+        "y": 267,
+        "w": 322,
+        "h": 20
+      },
+      "cssDecls": {},
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29552",
+      "name": "Comments",
+      "type": "TEXT",
+      "box": {
+        "x": 110,
+        "y": 265,
+        "w": 322,
+        "h": 24
+      },
+      "cssDecls": {
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "16px",
+        "font-weight": "500",
+        "line-height": "24px",
+        "align-content": "center"
+      },
+      "text": {
+        "content": "Comments",
+        "family": "Poppins",
+        "size": 16,
+        "weight": 500,
+        "lineHeight": 24,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29553",
+      "name": "iconButton",
+      "type": "INSTANCE",
+      "box": {
+        "x": 408,
+        "y": 265,
+        "w": 24,
+        "h": 24
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "width": "24px",
+        "height": "24px",
+        "border-radius": "6px"
+      },
+      "componentId": "1:1573",
+      "frameId": "369:29491"
+    },
+    {
+      "id": "I369:29553;703:470",
+      "name": "Icon",
+      "type": "INSTANCE",
+      "box": {
+        "x": 414,
+        "y": 271,
+        "w": 12,
+        "h": 12
+      },
+      "cssDecls": {
+        "width": "12px",
+        "height": "12px"
+      },
+      "componentId": "1:1525",
+      "frameId": "369:29491"
+    },
+    {
+      "id": "I369:29553;703:470;11724:2445",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 415,
+        "y": 273,
+        "w": 10,
+        "h": 8
+      },
+      "cssDecls": {
+        "fill": "#1a1917"
+      },
+      "frameId": "369:29491",
+      "inIcon": true
+    },
+    {
+      "id": "369:29567",
+      "name": "Comment Thread Components",
+      "type": "SECTION",
+      "box": {
+        "x": 661,
+        "y": 143,
+        "w": 556,
+        "h": 1568
+      },
+      "cssDecls": {
+        "border": "1px solid #ffffff1a",
+        "background": "#3a3b3a"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29568",
+      "name": "Single Comment Dialog",
+      "type": "FRAME",
+      "box": {
+        "x": 775,
+        "y": 268,
+        "w": 322,
+        "h": 112
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "4px",
+        "padding": "12px",
+        "width": "322px",
+        "border-radius": "8px",
+        "box-shadow": "0px 0px 0px 1px #1a191714",
+        "background": "#ffffff"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29569",
+      "name": "Frame 2147239780",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 280,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "4px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29570",
+      "name": "Item",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 280,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "space-between",
+        "align-items": "center",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29571",
+      "name": "Profile picture and name",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 280,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "padding": "0px 20px 0px 0px",
+        "flex": "1 1 0"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29572",
+      "name": "Avatar",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 280,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "width": "20px",
+        "height": "20px",
+        "border-radius": "999px",
+        "box-shadow": "0px 0px 0px 1px #e4e1dd"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29573",
+      "name": "Avatar",
+      "type": "ELLIPSE",
+      "box": {
+        "x": 787,
+        "y": 280,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "background": "#333f40"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29574",
+      "name": "Initials",
+      "type": "TEXT",
+      "box": {
+        "x": 787,
+        "y": 286,
+        "w": 20,
+        "h": 8
+      },
+      "cssDecls": {
+        "color": "#ffffff",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "12px",
+        "letter-spacing": "-0.4px",
+        "text-align": "center",
+        "align-content": "center",
+        "text-box": "trim-both cap alphabetic"
+      },
+      "text": {
+        "content": "W",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 12,
+        "letterSpacing": -0.40000003576278687,
+        "alignH": "CENTER",
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29575",
+      "name": "Frame 2147239787",
+      "type": "FRAME",
+      "box": {
+        "x": 815,
+        "y": 280,
+        "w": 117,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "baseline",
+        "gap": "7px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29576",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 815,
+        "y": 280,
+        "w": 93,
+        "h": 20
+      },
+      "cssDecls": {
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "500",
+        "line-height": "20px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Wilson Jones",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 500,
+        "lineHeight": 20,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29577",
+      "name": "Timestamp",
+      "type": "TEXT",
+      "box": {
+        "x": 915,
+        "y": 283,
+        "w": 17,
+        "h": 16
+      },
+      "cssDecls": {
+        "color": "#848079",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "400",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "1m",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 400,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29580",
+      "name": "Frame 2147239786",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 304,
+        "w": 298,
+        "h": 64
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "8px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29581",
+      "name": "Justification",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 304,
+        "w": 298,
+        "h": 40
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "10px",
+        "padding": "0px 0px 0px 28px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29582",
+      "name": "Edit",
+      "type": "FRAME",
+      "box": {
+        "x": 815,
+        "y": 304,
+        "w": 270,
+        "h": 40
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "flex": "1 1 0"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29584",
+      "name": "Placeholder",
+      "type": "TEXT",
+      "box": {
+        "x": 815,
+        "y": 304,
+        "w": 270,
+        "h": 40
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "400",
+        "line-height": "20px"
+      },
+      "text": {
+        "content": "Make sure to update the NDA to our standards.",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 400,
+        "lineHeight": 20,
+        "letterSpacing": 0
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29586",
+      "name": "Frame 2147239783",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 352,
+        "w": 298,
+        "h": 16
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "4px",
+        "padding": "0px 0px 0px 28px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29587",
+      "name": "Frame",
+      "type": "FRAME",
+      "box": {
+        "x": 815,
+        "y": 352,
+        "w": 16,
+        "h": 16
+      },
+      "cssDecls": {
+        "width": "16px",
+        "height": "16px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29588",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 817,
+        "y": 355,
+        "w": 12,
+        "h": 10
+      },
+      "cssDecls": {
+        "border": "0.88px solid #000000"
+      },
+      "frameId": "369:29491",
+      "inIcon": true
+    },
+    {
+      "id": "369:29589",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 835,
+        "y": 352,
+        "w": 250,
+        "h": 16
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Reply",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29590",
+      "name": "Single Comment Dialog / Hover",
+      "type": "FRAME",
+      "box": {
+        "x": 775,
+        "y": 437,
+        "w": 322,
+        "h": 112
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "4px",
+        "padding": "12px",
+        "width": "322px",
+        "border-radius": "8px",
+        "box-shadow": "0px 0px 0px 1px #1a191714",
+        "background": "#f7f6f4"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29591",
+      "name": "Frame 2147239780",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 449,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "4px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29592",
+      "name": "Item",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 449,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "space-between",
+        "align-items": "center",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29593",
+      "name": "Profile picture and name",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 449,
+        "w": 258,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "padding": "0px 20px 0px 0px",
+        "flex": "1 1 0"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29594",
+      "name": "Avatar",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 449,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "width": "20px",
+        "height": "20px",
+        "border-radius": "999px",
+        "box-shadow": "0px 0px 0px 1px #e4e1dd"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29595",
+      "name": "Avatar",
+      "type": "ELLIPSE",
+      "box": {
+        "x": 787,
+        "y": 449,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "background": "#333f40"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29596",
+      "name": "Initials",
+      "type": "TEXT",
+      "box": {
+        "x": 787,
+        "y": 455,
+        "w": 20,
+        "h": 8
+      },
+      "cssDecls": {
+        "color": "#ffffff",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "12px",
+        "letter-spacing": "-0.4px",
+        "text-align": "center",
+        "align-content": "center",
+        "text-box": "trim-both cap alphabetic"
+      },
+      "text": {
+        "content": "W",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 12,
+        "letterSpacing": -0.40000003576278687,
+        "alignH": "CENTER",
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29597",
+      "name": "Frame 2147239787",
+      "type": "FRAME",
+      "box": {
+        "x": 815,
+        "y": 449,
+        "w": 128,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "baseline",
+        "gap": "8px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29598",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 815,
+        "y": 449,
+        "w": 93,
+        "h": 20
+      },
+      "cssDecls": {
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "500",
+        "line-height": "20px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Wilson Jones",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 500,
+        "lineHeight": 20,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29599",
+      "name": "Timestamp",
+      "type": "TEXT",
+      "box": {
+        "x": 916,
+        "y": 452,
+        "w": 27,
+        "h": 16
+      },
+      "cssDecls": {
+        "color": "#848079",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "400",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "32m",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 400,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29600",
+      "name": "Frame 62",
+      "type": "FRAME",
+      "box": {
+        "x": 1045,
+        "y": 451,
+        "w": 40,
+        "h": 16
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29602",
+      "name": "IconCheckCircle2",
+      "type": "INSTANCE",
+      "box": {
+        "x": 1045,
+        "y": 451,
+        "w": 16,
+        "h": 16
+      },
+      "cssDecls": {
+        "width": "16px",
+        "height": "16px"
+      },
+      "componentId": "1:3141",
+      "frameId": "369:29491"
+    },
+    {
+      "id": "I369:29602;11724:2545",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 1046,
+        "y": 452,
+        "w": 13,
+        "h": 13
+      },
+      "cssDecls": {
+        "fill": "#1a1917"
+      },
+      "frameId": "369:29491",
+      "inIcon": true
+    },
+    {
+      "id": "369:29603",
+      "name": "central-icon",
+      "type": "INSTANCE",
+      "box": {
+        "x": 1069,
+        "y": 451,
+        "w": 16,
+        "h": 16
+      },
+      "cssDecls": {
+        "width": "16px",
+        "height": "16px"
+      },
+      "componentId": "1:3145",
+      "frameId": "369:29491"
+    },
+    {
+      "id": "I369:29603;67:21663",
+      "name": "Frame",
+      "type": "FRAME",
+      "box": {
+        "x": 1069,
+        "y": 451,
+        "w": 16,
+        "h": 16
+      },
+      "cssDecls": {},
+      "frameId": "369:29491"
+    },
+    {
+      "id": "I369:29603;67:21664",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 1076,
+        "y": 453,
+        "w": 3,
+        "h": 3
+      },
+      "cssDecls": {
+        "fill": "#1a1917"
+      },
+      "frameId": "369:29491",
+      "inIcon": true
+    },
+    {
+      "id": "I369:29603;67:21665",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 1076,
+        "y": 458,
+        "w": 3,
+        "h": 3
+      },
+      "cssDecls": {
+        "fill": "#1a1917"
+      },
+      "frameId": "369:29491",
+      "inIcon": true
+    },
+    {
+      "id": "I369:29603;67:21666",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 1076,
+        "y": 462,
+        "w": 3,
+        "h": 3
+      },
+      "cssDecls": {
+        "fill": "#1a1917"
+      },
+      "frameId": "369:29491",
+      "inIcon": true
+    },
+    {
+      "id": "369:29606",
+      "name": "Frame 2147239786",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 473,
+        "w": 298,
+        "h": 64
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "8px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29607",
+      "name": "Justification",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 473,
+        "w": 298,
+        "h": 40
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "10px",
+        "padding": "0px 0px 0px 28px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29608",
+      "name": "Edit",
+      "type": "FRAME",
+      "box": {
+        "x": 815,
+        "y": 473,
+        "w": 270,
+        "h": 40
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "flex": "1 1 0"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29610",
+      "name": "Placeholder",
+      "type": "TEXT",
+      "box": {
+        "x": 815,
+        "y": 473,
+        "w": 270,
+        "h": 40
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "400",
+        "line-height": "20px"
+      },
+      "text": {
+        "content": "Make sure to update the NDA to our standards.",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 400,
+        "lineHeight": 20,
+        "letterSpacing": 0
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29612",
+      "name": "Frame 2147239783",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 521,
+        "w": 298,
+        "h": 16
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "4px",
+        "padding": "0px 0px 0px 28px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29613",
+      "name": "Frame",
+      "type": "FRAME",
+      "box": {
+        "x": 815,
+        "y": 521,
+        "w": 16,
+        "h": 16
+      },
+      "cssDecls": {
+        "width": "16px",
+        "height": "16px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29614",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 817,
+        "y": 524,
+        "w": 12,
+        "h": 10
+      },
+      "cssDecls": {
+        "border": "0.88px solid #000000"
+      },
+      "frameId": "369:29491",
+      "inIcon": true
+    },
+    {
+      "id": "369:29615",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 835,
+        "y": 521,
+        "w": 250,
+        "h": 16
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Reply",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29616",
+      "name": "Selected State",
+      "type": "FRAME",
+      "box": {
+        "x": 775,
+        "y": 606,
+        "w": 322,
+        "h": 140
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "4px",
+        "padding": "12px",
+        "width": "322px",
+        "border-radius": "8px",
+        "box-shadow": "0px 0px 0px 1px #1a191714",
+        "background": "#f7f6f4"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29617",
+      "name": "Item",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 618,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "space-between",
+        "align-items": "center",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29618",
+      "name": "Profile picture and name",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 618,
+        "w": 258,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "padding": "0px 20px 0px 0px",
+        "flex": "1 1 0"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29619",
+      "name": "Avatar",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 618,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "width": "20px",
+        "height": "20px",
+        "border-radius": "999px",
+        "box-shadow": "0px 0px 0px 1px #e4e1dd"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29620",
+      "name": "Avatar",
+      "type": "ELLIPSE",
+      "box": {
+        "x": 787,
+        "y": 618,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "background": "#333f40"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29621",
+      "name": "Initials",
+      "type": "TEXT",
+      "box": {
+        "x": 787,
+        "y": 624,
+        "w": 20,
+        "h": 8
+      },
+      "cssDecls": {
+        "color": "#ffffff",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "12px",
+        "letter-spacing": "-0.4px",
+        "text-align": "center",
+        "align-content": "center",
+        "text-box": "trim-both cap alphabetic"
+      },
+      "text": {
+        "content": "W",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 12,
+        "letterSpacing": -0.40000003576278687,
+        "alignH": "CENTER",
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29622",
+      "name": "Frame 2147239787",
+      "type": "FRAME",
+      "box": {
+        "x": 815,
+        "y": 618,
+        "w": 128,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "baseline",
+        "gap": "8px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29623",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 815,
+        "y": 618,
+        "w": 93,
+        "h": 20
+      },
+      "cssDecls": {
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "500",
+        "line-height": "20px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Wilson Jones",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 500,
+        "lineHeight": 20,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29624",
+      "name": "Timestamp",
+      "type": "TEXT",
+      "box": {
+        "x": 916,
+        "y": 621,
+        "w": 27,
+        "h": 16
+      },
+      "cssDecls": {
+        "color": "#848079",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "400",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "32m",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 400,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29625",
+      "name": "Frame 62",
+      "type": "FRAME",
+      "box": {
+        "x": 1045,
+        "y": 620,
+        "w": 40,
+        "h": 16
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29627",
+      "name": "IconCheckCircle2",
+      "type": "INSTANCE",
+      "box": {
+        "x": 1045,
+        "y": 620,
+        "w": 16,
+        "h": 16
+      },
+      "cssDecls": {
+        "width": "16px",
+        "height": "16px"
+      },
+      "componentId": "1:3141",
+      "frameId": "369:29491"
+    },
+    {
+      "id": "I369:29627;11724:2545",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 1046,
+        "y": 621,
+        "w": 13,
+        "h": 13
+      },
+      "cssDecls": {
+        "fill": "#1a1917"
+      },
+      "frameId": "369:29491",
+      "inIcon": true
+    },
+    {
+      "id": "369:29628",
+      "name": "central-icon",
+      "type": "INSTANCE",
+      "box": {
+        "x": 1069,
+        "y": 620,
+        "w": 16,
+        "h": 16
+      },
+      "cssDecls": {
+        "width": "16px",
+        "height": "16px"
+      },
+      "componentId": "1:3145",
+      "frameId": "369:29491"
+    },
+    {
+      "id": "I369:29628;67:21663",
+      "name": "Frame",
+      "type": "FRAME",
+      "box": {
+        "x": 1069,
+        "y": 620,
+        "w": 16,
+        "h": 16
+      },
+      "cssDecls": {},
+      "frameId": "369:29491"
+    },
+    {
+      "id": "I369:29628;67:21664",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 1076,
+        "y": 622,
+        "w": 3,
+        "h": 3
+      },
+      "cssDecls": {
+        "fill": "#1a1917"
+      },
+      "frameId": "369:29491",
+      "inIcon": true
+    },
+    {
+      "id": "I369:29628;67:21665",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 1076,
+        "y": 627,
+        "w": 3,
+        "h": 3
+      },
+      "cssDecls": {
+        "fill": "#1a1917"
+      },
+      "frameId": "369:29491",
+      "inIcon": true
+    },
+    {
+      "id": "I369:29628;67:21666",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 1076,
+        "y": 631,
+        "w": 3,
+        "h": 3
+      },
+      "cssDecls": {
+        "fill": "#1a1917"
+      },
+      "frameId": "369:29491",
+      "inIcon": true
+    },
+    {
+      "id": "369:29631",
+      "name": "Frame 2147239786",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 642,
+        "w": 298,
+        "h": 92
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "12px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29632",
+      "name": "Justification",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 642,
+        "w": 298,
+        "h": 40
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "10px",
+        "padding": "0px 0px 0px 28px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29633",
+      "name": "Edit",
+      "type": "FRAME",
+      "box": {
+        "x": 815,
+        "y": 642,
+        "w": 270,
+        "h": 40
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "flex": "1 1 0"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29635",
+      "name": "Placeholder",
+      "type": "TEXT",
+      "box": {
+        "x": 815,
+        "y": 642,
+        "w": 270,
+        "h": 40
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "400",
+        "line-height": "20px"
+      },
+      "text": {
+        "content": "Make sure to update the NDA to our standards.",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 400,
+        "lineHeight": 20,
+        "letterSpacing": 0
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29637",
+      "name": "Content",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 694,
+        "w": 298,
+        "h": 40
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "4px",
+        "padding": "8px 10px",
+        "align-self": "stretch",
+        "border-radius": "8px",
+        "border": "1px solid #1a1917",
+        "background": "#ffffff"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29648",
+      "name": "Caret",
+      "type": "FRAME",
+      "box": {
+        "x": 821,
+        "y": 704,
+        "w": 4,
+        "h": 20
+      },
+      "cssDecls": {
+        "width": "4px",
+        "height": "20px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29649",
+      "name": "GIF mask",
+      "type": "RECTANGLE",
+      "box": {
+        "x": 823,
+        "y": 706,
+        "w": 1,
+        "h": 16
+      },
+      "cssDecls": {},
+      "isMask": true,
+      "frameId": "369:29491",
+      "inIcon": true
+    },
+    {
+      "id": "369:29650",
+      "name": "Color layer",
+      "type": "RECTANGLE",
+      "box": {
+        "x": 819,
+        "y": 704,
+        "w": 8,
+        "h": 20
+      },
+      "cssDecls": {
+        "background": "#1a1917"
+      },
+      "frameId": "369:29491",
+      "inIcon": true
+    },
+    {
+      "id": "369:29638",
+      "name": "Frame 2147239771",
+      "type": "FRAME",
+      "box": {
+        "x": 797,
+        "y": 704,
+        "w": 250,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "width": "250px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29639",
+      "name": "Avatar",
+      "type": "FRAME",
+      "box": {
+        "x": 797,
+        "y": 704,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "width": "20px",
+        "height": "20px",
+        "border-radius": "999px",
+        "box-shadow": "0px 0px 0px 1px #e4e1dd"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29640",
+      "name": "Avatar",
+      "type": "ELLIPSE",
+      "box": {
+        "x": 797,
+        "y": 704,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "background": "#333f40"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29641",
+      "name": "Initials",
+      "type": "TEXT",
+      "box": {
+        "x": 797,
+        "y": 710,
+        "w": 20,
+        "h": 8
+      },
+      "cssDecls": {
+        "color": "#ffffff",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "12px",
+        "letter-spacing": "-0.4px",
+        "text-align": "center",
+        "align-content": "center",
+        "text-box": "trim-both cap alphabetic"
+      },
+      "text": {
+        "content": "W",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 12,
+        "letterSpacing": -0.40000003576278687,
+        "alignH": "CENTER",
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29642",
+      "name": "Edit",
+      "type": "FRAME",
+      "box": {
+        "x": 825,
+        "y": 704,
+        "w": 246,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "width": "246px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29644",
+      "name": "Placeholder",
+      "type": "TEXT",
+      "box": {
+        "x": 825,
+        "y": 704,
+        "w": 246,
+        "h": 20
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#848079",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "400",
+        "line-height": "20px"
+      },
+      "text": {
+        "content": "Reply to Wilson...",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 400,
+        "lineHeight": 20,
+        "letterSpacing": 0
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29646",
+      "name": "iconButton",
+      "type": "INSTANCE",
+      "box": {
+        "x": 1051,
+        "y": 702,
+        "w": 24,
+        "h": 24
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "width": "24px",
+        "height": "24px",
+        "border-radius": "6px",
+        "opacity": "0.5",
+        "background": "#f1efec"
+      },
+      "componentId": "1:1619",
+      "frameId": "369:29491"
+    },
+    {
+      "id": "I369:29646;9650:600",
+      "name": "Icon",
+      "type": "INSTANCE",
+      "box": {
+        "x": 1057,
+        "y": 708,
+        "w": 12,
+        "h": 12
+      },
+      "cssDecls": {
+        "width": "12px",
+        "height": "12px"
+      },
+      "componentId": "1:1694",
+      "frameId": "369:29491"
+    },
+    {
+      "id": "I369:29646;9650:600;11727:2567",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 1060,
+        "y": 710,
+        "w": 7,
+        "h": 9
+      },
+      "cssDecls": {
+        "fill": "#b8b5b0"
+      },
+      "frameId": "369:29491",
+      "inIcon": true
+    },
+    {
+      "id": "369:29651",
+      "name": "Single Comment with 1 Replies",
+      "type": "FRAME",
+      "box": {
+        "x": 775,
+        "y": 803,
+        "w": 322,
+        "h": 193
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "16px",
+        "padding": "12px",
+        "width": "322px",
+        "border-radius": "8px",
+        "box-shadow": "0px 0px 0px 1px #e4e1dd",
+        "background": "#ffffff"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29652",
+      "name": "Frame 2147239780",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 815,
+        "w": 298,
+        "h": 64
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "4px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29653",
+      "name": "Frame 2147239780",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 815,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "4px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29654",
+      "name": "Item",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 815,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "space-between",
+        "align-items": "center",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29655",
+      "name": "Profile picture and name",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 815,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "padding": "0px 20px 0px 0px",
+        "flex": "1 1 0"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29656",
+      "name": "Avatar",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 815,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "width": "20px",
+        "height": "20px",
+        "border-radius": "999px",
+        "box-shadow": "0px 0px 0px 1px #e4e1dd"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29657",
+      "name": "Avatar",
+      "type": "ELLIPSE",
+      "box": {
+        "x": 787,
+        "y": 815,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "background": "#333f40"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29658",
+      "name": "Initials",
+      "type": "TEXT",
+      "box": {
+        "x": 787,
+        "y": 821,
+        "w": 20,
+        "h": 8
+      },
+      "cssDecls": {
+        "color": "#ffffff",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "12px",
+        "letter-spacing": "-0.4px",
+        "text-align": "center",
+        "align-content": "center",
+        "text-box": "trim-both cap alphabetic"
+      },
+      "text": {
+        "content": "W",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 12,
+        "letterSpacing": -0.40000003576278687,
+        "alignH": "CENTER",
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29659",
+      "name": "Frame 2147239787",
+      "type": "FRAME",
+      "box": {
+        "x": 815,
+        "y": 815,
+        "w": 117,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "baseline",
+        "gap": "7px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29660",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 815,
+        "y": 815,
+        "w": 93,
+        "h": 20
+      },
+      "cssDecls": {
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "500",
+        "line-height": "20px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Wilson Jones",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 500,
+        "lineHeight": 20,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29661",
+      "name": "Timestamp",
+      "type": "TEXT",
+      "box": {
+        "x": 915,
+        "y": 818,
+        "w": 17,
+        "h": 16
+      },
+      "cssDecls": {
+        "color": "#848079",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "400",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "1m",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 400,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29662",
+      "name": "Justification",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 839,
+        "w": 298,
+        "h": 40
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "10px",
+        "padding": "0px 0px 0px 28px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29664",
+      "name": "Rectangle 3805",
+      "type": "RECTANGLE",
+      "box": {
+        "x": 797,
+        "y": 841,
+        "w": 1,
+        "h": 49
+      },
+      "cssDecls": {
+        "width": "1px",
+        "height": "49px",
+        "background": "#e4e1dd"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29663",
+      "name": "Placeholder",
+      "type": "TEXT",
+      "box": {
+        "x": 815,
+        "y": 839,
+        "w": 270,
+        "h": 40
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "400",
+        "line-height": "20px"
+      },
+      "text": {
+        "content": "Make sure to update the NDA to our standards.",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 400,
+        "lineHeight": 20,
+        "letterSpacing": 0
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29667",
+      "name": "Frame 2147239788",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 895,
+        "w": 298,
+        "h": 89
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "8px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29668",
+      "name": "Frame 2147239784",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 895,
+        "w": 298,
+        "h": 65
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "8px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29669",
+      "name": "Frame 2147239779",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 895,
+        "w": 299,
+        "h": 65
+      },
+      "cssDecls": {
+        "height": "65px",
+        "width": "299px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29670",
+      "name": "Frame 2147239780",
+      "type": "FRAME",
+      "box": {
+        "x": 788,
+        "y": 896,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "4px",
+        "width": "298px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29671",
+      "name": "Item",
+      "type": "FRAME",
+      "box": {
+        "x": 788,
+        "y": 896,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "space-between",
+        "align-items": "center",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29672",
+      "name": "Profile picture and name",
+      "type": "FRAME",
+      "box": {
+        "x": 788,
+        "y": 896,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "padding": "0px 20px 0px 0px",
+        "flex": "1 1 0"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29673",
+      "name": "Avatar",
+      "type": "FRAME",
+      "box": {
+        "x": 788,
+        "y": 896,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "width": "20px",
+        "height": "20px",
+        "border-radius": "999px",
+        "box-shadow": "0px 0px 0px 1px #e4e1dd"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29674",
+      "name": "Avatar",
+      "type": "ELLIPSE",
+      "box": {
+        "x": 788,
+        "y": 896,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "background": "#333f40"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29675",
+      "name": "Initials",
+      "type": "TEXT",
+      "box": {
+        "x": 788,
+        "y": 902,
+        "w": 20,
+        "h": 8
+      },
+      "cssDecls": {
+        "color": "#ffffff",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "12px",
+        "letter-spacing": "-0.4px",
+        "text-align": "center",
+        "align-content": "center",
+        "text-box": "trim-both cap alphabetic"
+      },
+      "text": {
+        "content": "W",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 12,
+        "letterSpacing": -0.40000003576278687,
+        "alignH": "CENTER",
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29676",
+      "name": "Frame 2147239787",
+      "type": "FRAME",
+      "box": {
+        "x": 816,
+        "y": 896,
+        "w": 117,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "baseline",
+        "gap": "7px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29677",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 816,
+        "y": 896,
+        "w": 93,
+        "h": 20
+      },
+      "cssDecls": {
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "500",
+        "line-height": "20px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Wilson Jones",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 500,
+        "lineHeight": 20,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29678",
+      "name": "Timestamp",
+      "type": "TEXT",
+      "box": {
+        "x": 916,
+        "y": 899,
+        "w": 17,
+        "h": 16
+      },
+      "cssDecls": {
+        "color": "#848079",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "400",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "1m",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 400,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29679",
+      "name": "Justification",
+      "type": "FRAME",
+      "box": {
+        "x": 788,
+        "y": 920,
+        "w": 298,
+        "h": 40
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "10px",
+        "padding": "0px 0px 0px 28px",
+        "width": "298px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29680",
+      "name": "Body",
+      "type": "TEXT",
+      "box": {
+        "x": 816,
+        "y": 920,
+        "w": 270,
+        "h": 40
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "400",
+        "line-height": "20px",
+        "align-content": "center"
+      },
+      "text": {
+        "content": "Wait on second thought, let’s not do what I just mentioned.",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 400,
+        "lineHeight": 20,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29681",
+      "name": "Frame 2147239783",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 968,
+        "w": 298,
+        "h": 16
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "4px",
+        "padding": "0px 0px 0px 28px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29682",
+      "name": "Frame",
+      "type": "FRAME",
+      "box": {
+        "x": 815,
+        "y": 968,
+        "w": 16,
+        "h": 16
+      },
+      "cssDecls": {
+        "width": "16px",
+        "height": "16px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29683",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 817,
+        "y": 971,
+        "w": 12,
+        "h": 10
+      },
+      "cssDecls": {
+        "border": "0.88px solid #000000"
+      },
+      "frameId": "369:29491",
+      "inIcon": true
+    },
+    {
+      "id": "369:29684",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 835,
+        "y": 968,
+        "w": 250,
+        "h": 16
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Reply",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29685",
+      "name": "Single Comment with more than 1 replies",
+      "type": "FRAME",
+      "box": {
+        "x": 775,
+        "y": 1053,
+        "w": 322,
+        "h": 225
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "16px",
+        "padding": "12px",
+        "width": "322px",
+        "border-radius": "8px",
+        "box-shadow": "0px 0px 0px 1px #e4e1dd",
+        "background": "#ffffff"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29686",
+      "name": "Frame 2147239780",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1065,
+        "w": 298,
+        "h": 64
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "4px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29687",
+      "name": "Frame 2147239780",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1065,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "4px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29688",
+      "name": "Item",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1065,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "space-between",
+        "align-items": "center",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29689",
+      "name": "Profile picture and name",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1065,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "padding": "0px 20px 0px 0px",
+        "flex": "1 1 0"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29690",
+      "name": "Avatar",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1065,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "width": "20px",
+        "height": "20px",
+        "border-radius": "999px",
+        "box-shadow": "0px 0px 0px 1px #e4e1dd"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29691",
+      "name": "Avatar",
+      "type": "ELLIPSE",
+      "box": {
+        "x": 787,
+        "y": 1065,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "background": "#333f40"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29692",
+      "name": "Initials",
+      "type": "TEXT",
+      "box": {
+        "x": 787,
+        "y": 1071,
+        "w": 20,
+        "h": 8
+      },
+      "cssDecls": {
+        "color": "#ffffff",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "12px",
+        "letter-spacing": "-0.4px",
+        "text-align": "center",
+        "align-content": "center",
+        "text-box": "trim-both cap alphabetic"
+      },
+      "text": {
+        "content": "W",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 12,
+        "letterSpacing": -0.40000003576278687,
+        "alignH": "CENTER",
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29693",
+      "name": "Frame 2147239787",
+      "type": "FRAME",
+      "box": {
+        "x": 815,
+        "y": 1065,
+        "w": 117,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "baseline",
+        "gap": "7px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29694",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 815,
+        "y": 1065,
+        "w": 93,
+        "h": 20
+      },
+      "cssDecls": {
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "500",
+        "line-height": "20px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Wilson Jones",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 500,
+        "lineHeight": 20,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29695",
+      "name": "Timestamp",
+      "type": "TEXT",
+      "box": {
+        "x": 915,
+        "y": 1068,
+        "w": 17,
+        "h": 16
+      },
+      "cssDecls": {
+        "color": "#848079",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "400",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "1m",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 400,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29696",
+      "name": "Justification",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1089,
+        "w": 298,
+        "h": 40
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "10px",
+        "padding": "0px 0px 0px 28px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29698",
+      "name": "Rectangle 3805",
+      "type": "RECTANGLE",
+      "box": {
+        "x": 797,
+        "y": 1089,
+        "w": 1,
+        "h": 54
+      },
+      "cssDecls": {
+        "width": "1px",
+        "height": "54px",
+        "background": "#e4e1dd"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29699",
+      "name": "Rectangle 3806",
+      "type": "RECTANGLE",
+      "box": {
+        "x": 797,
+        "y": 1163,
+        "w": 1,
+        "h": 10
+      },
+      "cssDecls": {
+        "width": "1px",
+        "height": "10px",
+        "background": "#e4e1dd"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29697",
+      "name": "Placeholder",
+      "type": "TEXT",
+      "box": {
+        "x": 815,
+        "y": 1089,
+        "w": 270,
+        "h": 40
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "400",
+        "line-height": "20px"
+      },
+      "text": {
+        "content": "Make sure to update the NDA to our standards.",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 400,
+        "lineHeight": 20,
+        "letterSpacing": 0
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29702",
+      "name": "Frame 2147239782",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1145,
+        "w": 298,
+        "h": 16
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "8px",
+        "padding": "0px 0px 0px 28px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29704",
+      "name": "ChevronGrabberVertical",
+      "type": "INSTANCE",
+      "box": {
+        "x": 792,
+        "y": 1147,
+        "w": 12,
+        "h": 12
+      },
+      "cssDecls": {
+        "width": "12px",
+        "height": "12px"
+      },
+      "componentId": "1:1714",
+      "frameId": "369:29491"
+    },
+    {
+      "id": "I369:29704;12003:318",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 795,
+        "y": 1149,
+        "w": 5,
+        "h": 8
+      },
+      "cssDecls": {
+        "fill": "#6a6660"
+      },
+      "frameId": "369:29491",
+      "inIcon": true
+    },
+    {
+      "id": "369:29703",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 815,
+        "y": 1145,
+        "w": 270,
+        "h": 16
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#6a6660",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Show 13 replies...",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29705",
+      "name": "Frame 2147239789",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1177,
+        "w": 298,
+        "h": 89
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "8px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29706",
+      "name": "Frame 2147239784",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1177,
+        "w": 298,
+        "h": 65
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "8px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29707",
+      "name": "Frame 2147239779",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1177,
+        "w": 299,
+        "h": 65
+      },
+      "cssDecls": {
+        "height": "65px",
+        "width": "299px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29708",
+      "name": "Frame 2147239780",
+      "type": "FRAME",
+      "box": {
+        "x": 788,
+        "y": 1178,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "4px",
+        "width": "298px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29709",
+      "name": "Item",
+      "type": "FRAME",
+      "box": {
+        "x": 788,
+        "y": 1178,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "space-between",
+        "align-items": "center",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29710",
+      "name": "Profile picture and name",
+      "type": "FRAME",
+      "box": {
+        "x": 788,
+        "y": 1178,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "padding": "0px 20px 0px 0px",
+        "flex": "1 1 0"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29711",
+      "name": "Avatar",
+      "type": "FRAME",
+      "box": {
+        "x": 788,
+        "y": 1178,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "width": "20px",
+        "height": "20px",
+        "border-radius": "999px",
+        "box-shadow": "0px 0px 0px 1px #e4e1dd"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29712",
+      "name": "Avatar",
+      "type": "ELLIPSE",
+      "box": {
+        "x": 788,
+        "y": 1178,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "background": "#333f40"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29713",
+      "name": "Initials",
+      "type": "TEXT",
+      "box": {
+        "x": 788,
+        "y": 1184,
+        "w": 20,
+        "h": 8
+      },
+      "cssDecls": {
+        "color": "#ffffff",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "12px",
+        "letter-spacing": "-0.4px",
+        "text-align": "center",
+        "align-content": "center",
+        "text-box": "trim-both cap alphabetic"
+      },
+      "text": {
+        "content": "W",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 12,
+        "letterSpacing": -0.40000003576278687,
+        "alignH": "CENTER",
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29714",
+      "name": "Frame 2147239787",
+      "type": "FRAME",
+      "box": {
+        "x": 816,
+        "y": 1178,
+        "w": 117,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "baseline",
+        "gap": "7px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29715",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 816,
+        "y": 1178,
+        "w": 93,
+        "h": 20
+      },
+      "cssDecls": {
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "500",
+        "line-height": "20px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Wilson Jones",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 500,
+        "lineHeight": 20,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29716",
+      "name": "Timestamp",
+      "type": "TEXT",
+      "box": {
+        "x": 916,
+        "y": 1181,
+        "w": 17,
+        "h": 16
+      },
+      "cssDecls": {
+        "color": "#848079",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "400",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "1m",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 400,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29717",
+      "name": "Justification",
+      "type": "FRAME",
+      "box": {
+        "x": 788,
+        "y": 1202,
+        "w": 298,
+        "h": 40
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "10px",
+        "padding": "0px 0px 0px 28px",
+        "width": "298px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29718",
+      "name": "Body",
+      "type": "TEXT",
+      "box": {
+        "x": 816,
+        "y": 1202,
+        "w": 270,
+        "h": 40
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "400",
+        "line-height": "20px",
+        "align-content": "center"
+      },
+      "text": {
+        "content": "Wait on second thought, let’s not do what I just mentioned.",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 400,
+        "lineHeight": 20,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29719",
+      "name": "Frame 2147239783",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1250,
+        "w": 298,
+        "h": 16
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "4px",
+        "padding": "0px 0px 0px 28px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29720",
+      "name": "Frame",
+      "type": "FRAME",
+      "box": {
+        "x": 815,
+        "y": 1250,
+        "w": 16,
+        "h": 16
+      },
+      "cssDecls": {
+        "width": "16px",
+        "height": "16px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29721",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 817,
+        "y": 1253,
+        "w": 12,
+        "h": 10
+      },
+      "cssDecls": {
+        "border": "0.88px solid #000000"
+      },
+      "frameId": "369:29491",
+      "inIcon": true
+    },
+    {
+      "id": "369:29722",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 835,
+        "y": 1250,
+        "w": 250,
+        "h": 16
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Reply",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29723",
+      "name": "Multiple Comments",
+      "type": "FRAME",
+      "box": {
+        "x": 775,
+        "y": 1349,
+        "w": 322,
+        "h": 299
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "16px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29724",
+      "name": "Comment",
+      "type": "FRAME",
+      "box": {
+        "x": 775,
+        "y": 1349,
+        "w": 322,
+        "h": 193
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "16px",
+        "padding": "12px",
+        "width": "322px",
+        "border-radius": "8px",
+        "box-shadow": "0px 0px 0px 1px #e4e1dd",
+        "background": "#ffffff"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29725",
+      "name": "Frame 2147239780",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1361,
+        "w": 298,
+        "h": 64
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "4px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29726",
+      "name": "Frame 2147239780",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1361,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "4px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29727",
+      "name": "Item",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1361,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "space-between",
+        "align-items": "center",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29728",
+      "name": "Profile picture and name",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1361,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "padding": "0px 20px 0px 0px",
+        "flex": "1 1 0"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29729",
+      "name": "Avatar",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1361,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "width": "20px",
+        "height": "20px",
+        "border-radius": "999px",
+        "box-shadow": "0px 0px 0px 1px #e4e1dd"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29730",
+      "name": "Avatar",
+      "type": "ELLIPSE",
+      "box": {
+        "x": 787,
+        "y": 1361,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "background": "#333f40"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29731",
+      "name": "Initials",
+      "type": "TEXT",
+      "box": {
+        "x": 787,
+        "y": 1367,
+        "w": 20,
+        "h": 8
+      },
+      "cssDecls": {
+        "color": "#ffffff",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "12px",
+        "letter-spacing": "-0.4px",
+        "text-align": "center",
+        "align-content": "center",
+        "text-box": "trim-both cap alphabetic"
+      },
+      "text": {
+        "content": "W",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 12,
+        "letterSpacing": -0.40000003576278687,
+        "alignH": "CENTER",
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29732",
+      "name": "Frame 2147239787",
+      "type": "FRAME",
+      "box": {
+        "x": 815,
+        "y": 1361,
+        "w": 117,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "baseline",
+        "gap": "7px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29733",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 815,
+        "y": 1361,
+        "w": 93,
+        "h": 20
+      },
+      "cssDecls": {
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "500",
+        "line-height": "20px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Wilson Jones",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 500,
+        "lineHeight": 20,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29734",
+      "name": "Timestamp",
+      "type": "TEXT",
+      "box": {
+        "x": 915,
+        "y": 1364,
+        "w": 17,
+        "h": 16
+      },
+      "cssDecls": {
+        "color": "#848079",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "400",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "1m",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 400,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29735",
+      "name": "Justification",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1385,
+        "w": 298,
+        "h": 40
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "10px",
+        "padding": "0px 0px 0px 28px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29737",
+      "name": "Rectangle 3805",
+      "type": "RECTANGLE",
+      "box": {
+        "x": 797,
+        "y": 1387,
+        "w": 1,
+        "h": 49
+      },
+      "cssDecls": {
+        "width": "1px",
+        "height": "49px",
+        "background": "#e4e1dd"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29736",
+      "name": "Placeholder",
+      "type": "TEXT",
+      "box": {
+        "x": 815,
+        "y": 1385,
+        "w": 270,
+        "h": 40
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "400",
+        "line-height": "20px"
+      },
+      "text": {
+        "content": "Make sure to update the NDA to our standards.",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 400,
+        "lineHeight": 20,
+        "letterSpacing": 0
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29740",
+      "name": "Frame 2147239788",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1441,
+        "w": 298,
+        "h": 89
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "8px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29741",
+      "name": "Frame 2147239784",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1441,
+        "w": 298,
+        "h": 65
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "8px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29742",
+      "name": "Frame 2147239779",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1441,
+        "w": 299,
+        "h": 65
+      },
+      "cssDecls": {
+        "height": "65px",
+        "width": "299px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29743",
+      "name": "Frame 2147239780",
+      "type": "FRAME",
+      "box": {
+        "x": 788,
+        "y": 1442,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "4px",
+        "width": "298px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29744",
+      "name": "Item",
+      "type": "FRAME",
+      "box": {
+        "x": 788,
+        "y": 1442,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "space-between",
+        "align-items": "center",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29745",
+      "name": "Profile picture and name",
+      "type": "FRAME",
+      "box": {
+        "x": 788,
+        "y": 1442,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "padding": "0px 20px 0px 0px",
+        "flex": "1 1 0"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29746",
+      "name": "Avatar",
+      "type": "FRAME",
+      "box": {
+        "x": 788,
+        "y": 1442,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "width": "20px",
+        "height": "20px",
+        "border-radius": "999px",
+        "box-shadow": "0px 0px 0px 1px #e4e1dd"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29747",
+      "name": "Avatar",
+      "type": "ELLIPSE",
+      "box": {
+        "x": 788,
+        "y": 1442,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "background": "#333f40"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29748",
+      "name": "Initials",
+      "type": "TEXT",
+      "box": {
+        "x": 788,
+        "y": 1448,
+        "w": 20,
+        "h": 8
+      },
+      "cssDecls": {
+        "color": "#ffffff",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "12px",
+        "letter-spacing": "-0.4px",
+        "text-align": "center",
+        "align-content": "center",
+        "text-box": "trim-both cap alphabetic"
+      },
+      "text": {
+        "content": "W",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 12,
+        "letterSpacing": -0.40000003576278687,
+        "alignH": "CENTER",
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29749",
+      "name": "Frame 2147239787",
+      "type": "FRAME",
+      "box": {
+        "x": 816,
+        "y": 1442,
+        "w": 117,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "baseline",
+        "gap": "7px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29750",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 816,
+        "y": 1442,
+        "w": 93,
+        "h": 20
+      },
+      "cssDecls": {
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "500",
+        "line-height": "20px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Wilson Jones",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 500,
+        "lineHeight": 20,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29751",
+      "name": "Timestamp",
+      "type": "TEXT",
+      "box": {
+        "x": 916,
+        "y": 1445,
+        "w": 17,
+        "h": 16
+      },
+      "cssDecls": {
+        "color": "#848079",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "400",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "1m",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 400,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29752",
+      "name": "Justification",
+      "type": "FRAME",
+      "box": {
+        "x": 788,
+        "y": 1466,
+        "w": 298,
+        "h": 40
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "10px",
+        "padding": "0px 0px 0px 28px",
+        "width": "298px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29753",
+      "name": "Body",
+      "type": "TEXT",
+      "box": {
+        "x": 816,
+        "y": 1466,
+        "w": 270,
+        "h": 40
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "400",
+        "line-height": "20px",
+        "align-content": "center"
+      },
+      "text": {
+        "content": "Wait on second thought, let’s not do what I just mentioned.",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 400,
+        "lineHeight": 20,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29754",
+      "name": "Frame 2147239783",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1514,
+        "w": 298,
+        "h": 16
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "4px",
+        "padding": "0px 0px 0px 28px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29755",
+      "name": "Frame",
+      "type": "FRAME",
+      "box": {
+        "x": 815,
+        "y": 1514,
+        "w": 16,
+        "h": 16
+      },
+      "cssDecls": {
+        "width": "16px",
+        "height": "16px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29756",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 817,
+        "y": 1517,
+        "w": 12,
+        "h": 10
+      },
+      "cssDecls": {
+        "border": "0.88px solid #000000"
+      },
+      "frameId": "369:29491",
+      "inIcon": true
+    },
+    {
+      "id": "369:29757",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 835,
+        "y": 1514,
+        "w": 250,
+        "h": 16
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Reply",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29758",
+      "name": "Comment",
+      "type": "FRAME",
+      "box": {
+        "x": 775,
+        "y": 1558,
+        "w": 322,
+        "h": 90
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "8px",
+        "padding": "10px 12px 12px 12px",
+        "width": "322px",
+        "border-radius": "8px",
+        "box-shadow": "0px 0px 0px 1px #1a191714",
+        "background": "#ffffff"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29759",
+      "name": "Frame 2147239782",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1568,
+        "w": 298,
+        "h": 44
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "4px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29760",
+      "name": "Frame 2147239780",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1568,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "justify-content": "center",
+        "gap": "4px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29761",
+      "name": "Item",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1568,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "space-between",
+        "align-items": "center",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29762",
+      "name": "Profile picture and name",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1568,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "center",
+        "gap": "8px",
+        "padding": "0px 20px 0px 0px",
+        "flex": "1 1 0"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29763",
+      "name": "Avatar",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1568,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "width": "20px",
+        "height": "20px",
+        "border-radius": "999px",
+        "box-shadow": "0px 0px 0px 1px #e4e1dd"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29764",
+      "name": "Avatar",
+      "type": "ELLIPSE",
+      "box": {
+        "x": 787,
+        "y": 1568,
+        "w": 20,
+        "h": 20
+      },
+      "cssDecls": {
+        "background": "#333f40"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29765",
+      "name": "Initials",
+      "type": "TEXT",
+      "box": {
+        "x": 787,
+        "y": 1574,
+        "w": 20,
+        "h": 8
+      },
+      "cssDecls": {
+        "color": "#ffffff",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "12px",
+        "letter-spacing": "-0.4px",
+        "text-align": "center",
+        "align-content": "center",
+        "text-box": "trim-both cap alphabetic"
+      },
+      "text": {
+        "content": "W",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 12,
+        "letterSpacing": -0.40000003576278687,
+        "alignH": "CENTER",
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29766",
+      "name": "Frame 2147239787",
+      "type": "FRAME",
+      "box": {
+        "x": 815,
+        "y": 1568,
+        "w": 117,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "align-items": "baseline",
+        "gap": "7px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29767",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 815,
+        "y": 1568,
+        "w": 93,
+        "h": 20
+      },
+      "cssDecls": {
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "500",
+        "line-height": "20px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Wilson Jones",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 500,
+        "lineHeight": 20,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29768",
+      "name": "Timestamp",
+      "type": "TEXT",
+      "box": {
+        "x": 915,
+        "y": 1571,
+        "w": 17,
+        "h": 16
+      },
+      "cssDecls": {
+        "color": "#848079",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "400",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "1m",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 400,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29769",
+      "name": "Justification",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1592,
+        "w": 298,
+        "h": 20
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "10px",
+        "padding": "0px 0px 0px 28px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29770",
+      "name": "Body",
+      "type": "TEXT",
+      "box": {
+        "x": 815,
+        "y": 1592,
+        "w": 270,
+        "h": 20
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "14px",
+        "font-weight": "400",
+        "line-height": "20px",
+        "align-content": "center"
+      },
+      "text": {
+        "content": "I love legal tech! Let’s goo!",
+        "family": "Poppins",
+        "size": 14,
+        "weight": 400,
+        "lineHeight": 20,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29771",
+      "name": "Frame 2147239783",
+      "type": "FRAME",
+      "box": {
+        "x": 787,
+        "y": 1620,
+        "w": 298,
+        "h": 16
+      },
+      "cssDecls": {
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "center",
+        "align-items": "center",
+        "gap": "4px",
+        "padding": "0px 0px 0px 28px",
+        "align-self": "stretch"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29772",
+      "name": "Frame",
+      "type": "FRAME",
+      "box": {
+        "x": 815,
+        "y": 1620,
+        "w": 16,
+        "h": 16
+      },
+      "cssDecls": {
+        "width": "16px",
+        "height": "16px"
+      },
+      "frameId": "369:29491"
+    },
+    {
+      "id": "369:29773",
+      "name": "Vector",
+      "type": "VECTOR",
+      "box": {
+        "x": 817,
+        "y": 1623,
+        "w": 12,
+        "h": 10
+      },
+      "cssDecls": {
+        "border": "0.88px solid #000000"
+      },
+      "frameId": "369:29491",
+      "inIcon": true
+    },
+    {
+      "id": "369:29774",
+      "name": "Name",
+      "type": "TEXT",
+      "box": {
+        "x": 835,
+        "y": 1620,
+        "w": 250,
+        "h": 16
+      },
+      "cssDecls": {
+        "flex": "1 1 0",
+        "color": "#1a1917",
+        "font-family": "'Poppins'",
+        "font-size": "12px",
+        "font-weight": "500",
+        "line-height": "16px",
+        "align-content": "center",
+        "overflow": "hidden"
+      },
+      "text": {
+        "content": "Reply",
+        "family": "Poppins",
+        "size": 12,
+        "weight": 500,
+        "lineHeight": 16,
+        "letterSpacing": 0,
+        "alignV": "CENTER"
+      },
+      "frameId": "369:29491"
+    }
+  ],
+  "assets": [],
+  "icons": 18,
+  "iconAssignments": {},
+  "unassignedIcons": [],
+  "skippedIconSlots": []
+}

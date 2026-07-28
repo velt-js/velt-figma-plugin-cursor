@@ -45,6 +45,7 @@
 import { promises as fs } from "node:fs";
 import { pathToFileURL } from "node:url";
 import path from "node:path";
+import { obsEvent } from "./obs.mjs";
 
 const STATUS_EXIT = { PASS: 0, FAIL: 2, INCOMPLETE: 3, STOPPED: 4 };
 const TERMINAL = new Set(["BLOCKED", "GAP", "STUCK"]);
@@ -162,9 +163,12 @@ export function verdictGateBlocks(blocks, report, { maxRegionFill = 0.05 } = {})
     // must not certify a surface by checking nothing. This is the RUN-3 hole: delta reported 'clean' while
     // the inter-card gap and the reaction icons were never in the spec, and whole-surface pixel-diff (the
     // only thing that would have caught them) drowned in real-vs-dummy DATA noise and got waved off.
+    // Raised floor: when the brief/report carries coverage.minAssert (from paint+text slot census),
+    // require that many checked elements — not the historic ≥2 which let a 17-slot surface certify on crumbs.
     const checkedN = Array.isArray(r.deltaCompare.checked) ? r.deltaCompare.checked.length : 0;
     const gapsN = Array.isArray(r.deltaCompare.gaps) ? r.deltaCompare.gaps.length : 0;
-    if (checkedN < 2) { missing.push(`block '${b.id}' delta-compare spec too thin (asserted ${checkedN} element(s)) — enumerate every visible slot's style + box; a surface cannot be certified by checking nothing`); continue; }
+    const minAssert = Math.max(2, Number(r.deltaCompare?.coverage?.minAssert ?? r.coverage?.minAssert ?? 2) || 2);
+    if (checkedN < minAssert) { missing.push(`block '${b.id}' delta-compare spec too thin (asserted ${checkedN} element(s), need ≥${minAssert}) — enumerate every visible paint/text slot's style + box; a surface cannot be certified by checking nothing`); continue; }
     const isRepeating = /flow/i.test(b.role || "") || /comment|thread|list|feed/i.test(String(b.familyId || "") + String(b.component || ""));
     if (isRepeating && gapsN < 1) { missing.push(`block '${b.id}' is a repeating/list surface but delta-compare asserted no inter-card gap — add a compareGap between consecutive cards (the '2 vs 11' blind spot: the count varies, the gap does not)`); continue; }
 
@@ -229,7 +233,20 @@ async function main() {
   const acc = r.accounted || {};
   for (const [k, label] of [["stuck", "STUCK (hit bounds — hand to human)"], ["remaining", "REMAINING (soft-cap reached — not started)"], ["blocked", "BLOCKED (env can't reach)"], ["gap", "GAP (verified SDK gap)"]])
     if (acc[k] && acc[k].length) { console.log(`  ${label}:`); for (const m of acc[k].slice(0, 24)) console.log("    · " + m); }
+  obsEvent(path.dirname(path.resolve(rp)), {
+    type: "verdict", src: "verdict-gate", ok: r.verdict === "PASS",
+    summary: `gate: ${r.verdict} — coverage ${r.coverage}%, ${r.missing.length} missing, ${r.failures.length} failing`,
+    data: { verdict: r.verdict, coverage: r.coverage, missing: r.missing.slice(0, 24), failures: r.failures.slice(0, 24) },
+  });
+  // VERDICT ARTIFACT — the only acceptable proof of "done". A run/stage may be journaled complete
+  // ONLY if this file exists and carries the gate's own exit code; agent prose (orchestrator OR
+  // human-in-the-loop) concludes nothing. Loop2 shipped a broken build precisely because the gate
+  // was never run and spot-checks were narrated as completion.
+  await fs.writeFile(path.join(path.dirname(path.resolve(rp)), "verdict.json"), JSON.stringify({
+    verdict: r.verdict, exitCode: STATUS_EXIT[r.verdict], coverage: r.coverage, t: new Date().toISOString(),
+    missing: r.missing.length, failures: r.failures.length,
+  }, null, 2) + "\n");
   process.exit(STATUS_EXIT[r.verdict]);
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });

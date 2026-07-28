@@ -44,6 +44,28 @@ client.injectCustomCss({ type: "link", value: "https://yourcdn.com/velt-override
 
 Pick A *or* B per project — don't do both for the same surface. (See [`03-getting-started.md`](../03-getting-started.md) §2.)
 
+#### The BASE: unstyled, always (`client.setUnstyledMode`)
+
+**Run policy (fixed): every customization run works STRICTLY on the unstyled base — there is no styled-vs-unstyled decision step.** Recent SDKs can strip **all of Velt's cosmetic styling at once** while keeping a derived *functional-only* layer (layout, positioning, show/hide behavior) — an **unstyled base** to build your own look on, instead of overriding the default look rule-by-rule. The structure build wires this as a standard host change. **Verified against the SDK types** (`setUnstyledMode` on the client, v6+):
+
+```tsx
+// client API — call once when the client is ready:
+const { client } = useVeltClient();
+useEffect(() => {
+  if (client) client.setUnstyledMode(true, { keepFunctionalStyles: true });
+}, [client]);
+// keepFunctionalStyles defaults to true; pass false for TOTAL removal (rarely what you want).
+// Fully reversible: setUnstyledMode(false) restores the styled default.
+```
+
+- **Scope: client-level.** One base per app/run — it cannot vary per surface. It applies to **every Velt component family alike**: wireframes and primitives are BOTH styled by default, and this API is the only unstyled switch for either.
+- **Why the unstyled base:** you write greenfield CSS from the design's exact values instead of fighting defaults with `!important` (fewer specificity battles; the override churn of Step 5 mostly disappears, and design values can never compound with un-audited default cosmetics).
+- **The obligation it creates:** there is no default-cosmetics safety net. Every state the design doesn't draw (hover, loading, empty, menus, focus) and every default sub-element inside a drawn surface renders functionally but RAW until styled. The undrawn-states + undrawn-sub-elements lists (S9's mandatory output) are styling WORK, not optional polish.
+- **Keep `keepFunctionalStyles: true`** — it preserves Velt's layout/positioning/visibility mechanics so wireframes + your CSS only own the cosmetics. `false` removes even those (true headless rendering; rarely what you want). Note the functional layer still carries some layout offsets — the dom-snapshot `defaultSpacing` audit covers them.
+- **Related but different:** `config: { globalStyles: false }` ([`reference/feature-flags.md`](../reference/feature-flags.md)) only skips loading Velt's global stylesheet at init — it does not strip component-level cosmetics and keeps no functional layer distinction. `setUnstyledMode` is the right tool.
+- You still handle shadow-DOM reachability (Step 1) for your own selectors, and variable theming (Step 2) still applies.
+- **Verify at run start:** capture the app's baseline WITH unstyled mode applied (the "default UI" to compare against is the unstyled base, never Velt's styled default).
+
 #### Shadow DOM & wireframes (root vs nested)
 
 **Verified in‑browser.** When you customize with **wireframes**, whether you still need `shadowDom={false}` depends on *which* wireframe you registered:

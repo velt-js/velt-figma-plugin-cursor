@@ -28,9 +28,30 @@
     {
       "intent": "sidebar header (title + filter/sort trigger)",
       "wireframe": "VeltCommentsSidebarWireframe header + filter dropdown",
-      "note": "Header ~48px, filter trigger ~28px. Supply the filter dropdown items explicitly.",
+      "note": "Supply the filter dropdown items explicitly. All sizes come from the design's spec nodes (never a remembered value). A filter-trigger set to inline stays at its glyph size \u2014 the trigger needs inline-flex + explicit w/h for its design box to apply.",
       "confidence": "confirmed",
       "seenOn": ["privado", "harvey"]
+    },
+    {
+      "intent": "comment thread connector line (vertical line in the avatar gutter linking a comment to its replies)",
+      "wireframe": "own-markup span inside ThreadCard (no Velt slot exists for it)",
+      "note": "Draw as own markup, absolutely positioned inside the SDK's .velt-thread-card--container (set it position:relative), 1px wide at the avatar's center column, from below the avatar through the inter-comment gap; hidden on the last comment. See sdk-gotchas own-markup-decoration-needs-explicit-box.",
+      "confidence": "tentative",
+      "seenOn": ["harvey (verified live 2026-07-21)"]
+    },
+    {
+      "intent": "single Reply affordance per thread/annotation (design shows ONE Reply at the card bottom)",
+      "wireframe": "VeltCommentDialogWireframe.ToggleReply (Body-level)",
+      "note": "VERIFIED SDK RENDER FACT: ThreadCard.Reply renders PER COMMENT — mapping a once-per-annotation Reply to it duplicates the affordance on every comment. The once-per-annotation Reply is the Body-level ToggleReply slot. Two independent planner runs split on this (one chose each); the wrong choice only surfaces as duplicate Replies at build time — treat this mapping as a fixed prior, never re-derive it from slot names.",
+      "confidence": "confirmed",
+      "seenOn": ["harvey (loop1 verified live)", "harvey (stage-3)"]
+    },
+    {
+      "intent": "composer send button glyph (any design that draws a send arrow)",
+      "wireframe": "VeltCommentDialogWireframe.Composer.ActionButton",
+      "note": "NEVER leave the send glyph to the Velt default on the assumption it matches — the default does NOT match drawn send arrows (verified). ActionButton is an OVERWRITE slot (children get replaced; injecting markup can kill submit) — supply the design's exported SVG via CSS mask/background on the slot's stable class, planned as a style rule, with the asset file named in the plan.",
+      "confidence": "confirmed",
+      "seenOn": ["harvey (stage-3 verified)", "harvey (loop1/loop2)"]
     }
   ]
 }

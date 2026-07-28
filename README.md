@@ -11,9 +11,11 @@ Every agent pins a **Claude model** in its frontmatter, and `rules/velt-customiz
 | Agent | Model |
 |---|---|
 | `velt-orchestrator` | `claude-opus-4-8-thinking` |
-| `velt-planner` | `claude-opus-4-8-thinking` (readonly) |
+| `velt-planner-structure` | `claude-opus-4-8-thinking` (readonly) |
+| `velt-planner-style` | `claude-opus-4-8-thinking` (readonly) |
 | `velt-builder` | `claude-opus-4-8-thinking` |
-| `velt-judge` | `claude-opus-4-8-thinking` (readonly) |
+| `velt-judge-2` | `claude-opus-4-8-thinking` (readonly; primary loop judge) |
+| `velt-judge` | `claude-opus-4-8-thinking` (readonly; legacy only) |
 
 If `claude-opus-4-8-thinking` isn't in your Cursor model picker yet, the rule's fallback applies: the nearest available Claude Opus/thinking model — never a non-Claude model.
 
@@ -71,7 +73,7 @@ Run a customization from the target app's directory with:
 /velt-customize-run <figma-loop-node-url> [--mode <approach>] [--cloud]
 ```
 
-Other commands: `/velt-customize-fix "<mismatch>"`, `/velt-customize-clear`, `/velt-customize-memory`.
+Other commands: `/velt-customize-fix "<mismatch>"`, `/velt-customize-clear`, `/velt-customize-memory`, `/velt-customize-replay`.
 
 ## Running headless in a cloud sandbox
 
@@ -103,11 +105,11 @@ In `--cloud`/CI, provide the token via the `FIGMA_TOKEN` env var (the keychain i
 
 ## The flow
 
-1. You provide: the **Figma Loop node** + run in the **target repo** (Velt is assumed already installed/authed/rendering).
-2. **Plan** (read-only): recognize which Velt component each design element is, pick the cheapest viable layer per surface, synthesize goals + the Connect Map.
-3. **Approach gate:** the plugin presents a **per-surface coverage matrix** and **waits for your approach choice** (`--mode` skips the wait) before building anything.
-4. **Build → Judge loop** (sequential, block by block — R16): the Builder implements one block; an independent, fresh-context Judge verifies it against the design in the browser (evidence required). Retry → escalate layer → SDK gap, with stuck-detection. Termination is **mechanical** — `scripts/verdict-gate-blocks.mjs`'s exit code, never an agent's say-so.
-5. **Report:** coverage (estimated vs actual), the SDK-gap report, screenshots, and the code under `components/velt/ui-customization/`.
+1. You provide: the **Figma Loop node** + the **live app URL** + run in the **target repo** (Velt is assumed already installed/authed/rendering).
+2. **Approach gate:** waits for your approach choice (`--mode` skips the wait) before planning.
+3. **Two-phase plan/build:** **plan-structure → structure build (skeleton on the unstyled base via `setUnstyledMode`) → DOM snapshot → plan-style → style build + demo-polish**.
+4. **Whole-design Judge-2** (chromatic Figma↔live + chrome probes) → **strict fix** until clean/plateau. Termination is **mechanical** — `scripts/verdict-gate-blocks.mjs`'s exit code, never an agent's say-so.
+5. **Report:** handoff + golden-path check, screenshots, and the code under `components/velt/ui-customization/`.
 
 ## Layout
 
@@ -135,10 +137,10 @@ node golden/run-golden.mjs     # offline golden checks
 
 - **Manifest:** `.cursor-plugin/plugin.json` (+ `.plugin/plugin.json`) instead of `.claude-plugin/plugin.json`.
 - **Commands:** filename-based (`/velt-customize-run` not `/velt-customize:run`); arguments are parsed from the trailing text (no `$ARGUMENTS`).
-- **Agents:** Cursor frontmatter — Claude model slugs, no `effort`, `readonly: true` on planner + judge.
-- **Verification driver:** Cursor's **native browser tool** (CDP `Runtime.evaluate` for the probes) replaces the `claude-in-chrome` MCP; there is **no `.mcp.json`**. The mechanical gate (`visual-diff` / `delta-compare` / `verdict-gate-blocks`) is unchanged.
+- **Agents:** Cursor frontmatter — Claude model slugs, no `effort`, `readonly: true` on planners + judges.
+- **Verification driver:** Cursor's **native browser tool** (CDP `Runtime.evaluate` for the probes) replaces the `claude-in-chrome` MCP; there is **no `.mcp.json`**. The mechanical gate (`judge2-chromatic` / chrome probes / `verdict-gate-blocks`) matches Claude.
 - **Rules:** `rules/*.mdc` — always-on Claude-model policy + core guardrails.
-- **`guide/`, `scripts/`, `skills/` knowledge, `templates/`, `manifest/`, `golden/`:** shared verbatim.
+- **`guide/`, `scripts/` (minus host exceptions), `knowledge/`, `templates/`, `manifest/`, `golden/`:** shared verbatim with the Claude plugin.
 
 ## Scope (v1)
 

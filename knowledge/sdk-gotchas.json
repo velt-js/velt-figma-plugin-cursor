@@ -181,6 +181,168 @@
       "seenOn": [
         "privado"
       ]
+    },
+    {
+      "id": "unstyled-base-supplies-no-layout",
+      "veltVersion": "6.x",
+      "component": "any surface on the unstyled base (setUnstyledMode(true,{keepFunctionalStyles:true}))",
+      "kind": "behavior",
+      "symptom": "Own-markup wrappers and slot hosts render with browser defaults (display:block/inline, gap:normal, no flex) \u2014 every row STACKS vertically. Measured on a clean build: 28 of ~40 real diffs on the simplest card were pure layout props (display/flex-direction/gap/justify-content/align-items/align-self/padding), and ALL 12 of the builder's appearance-pass fixes were layout reconstruction the plan never carried.",
+      "fix": "The style plan MUST carry the design's layout props for every composing container \u2014 the Figma auto-layout frames (brief nodeKind:'layout-frame') hold exactly these decls; map each frame's display/flex-direction/gap/justify/align/padding onto the live container it corresponds to. Layout left unplanned = the builder improvises it per run = inconsistent results.",
+      "confidence": "tentative",
+      "seenOn": [
+        "harvey (clean-run measured 2026-07-21)"
+      ]
+    },
+    {
+      "id": "avatar-subtree-32px-anchor",
+      "veltVersion": "6.x",
+      "component": "snippyly-user-avatar (ThreadCard.Avatar / Composer.Avatar internals)",
+      "kind": "behavior",
+      "selectorHints": [
+        "snippyly-user-avatar",
+        ".s-user-avatar-container",
+        ".s-user-avatar-initial-container"
+      ],
+      "symptom": "The SDK renders snippyly-user-avatar as a 32\u00d732 subtree with its visible initial-container anchored TOP-LEFT. Sizing/clipping only the slot HOST to the design's avatar size (overflow:hidden) crops the subtree to its top-left corner \u2014 renders as a dark irregular 'blob', not a circle.",
+      "fix": "Size the WHOLE chain to the design's avatar size and center each level: the slot host AND snippyly-user-avatar AND .s-user-avatar-container AND .s-user-avatar-initial-container (width/height/min-width + flex centering). Never clip the 32px subtree into a smaller box. Verified live: all four levels concentric at the design size, letter centered.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "harvey (measured live 2026-07-21, blob\u2192clean verified)"
+      ]
+    },
+    {
+      "id": "avatar-color-is-inline-style",
+      "veltVersion": "6.x",
+      "component": "user avatar initial container",
+      "kind": "behavior",
+      "selectorHints": [
+        ".s-user-avatar-initial-container",
+        ".velt-user-avatar--initial-container"
+      ],
+      "symptom": "The SDK writes the per-user avatar color as an INLINE style attribute (style=\"background-color: rgb(253,161,146)\") on .s-user-avatar-initial-container \u2014 a design's avatar fill rule silently loses to it and the SDK's default palette (salmon/etc.) ships.",
+      "fix": "A design-specified avatar fill needs !important to beat the inline style. If the design KEEPS per-user colors, do NOT override \u2014 record a defaultOk instead. The value is design-specific; never bake a fixed color globally.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "harvey (measured live: inline salmon \u2192 !important design fill applied)"
+      ]
+    },
+    {
+      "id": "avatar-initial-attr-painter-stripped",
+      "veltVersion": "6.x",
+      "component": "user avatar initial letter (unstyled base)",
+      "kind": "css-fix",
+      "selectorHints": [
+        ".s-user-avatar-initial",
+        ".velt-user-avatar--initial"
+      ],
+      "symptom": "The avatar initial <span> is EMPTY \u2014 the letter lives in its data-modal-author-initial attribute and Velt paints it via CSS content:attr(...). The unstyled base STRIPS that painter, so avatars render with no letter (a correctly-styled empty element, invisible to text checks).",
+      "cssFix": ".s-user-avatar-initial:empty::before, .velt-user-avatar--initial:empty::before { content: attr(data-modal-author-initial); }",
+      "confidence": "confirmed",
+      "seenOn": [
+        "harvey (verified live twice: empty span \u2192 rendered letter via ::before)"
+      ]
+    },
+    {
+      "id": "slot-clone-wrapper-blocks-flex",
+      "veltVersion": "6.x",
+      "component": "child-bearing slots (ToggleReply, Composer, \u2026)",
+      "kind": "behavior",
+      "selectorHints": [
+        ".vc-reply > div",
+        "div.velt-comment-dialog-composer"
+      ],
+      "symptom": "Velt clones a plain BLOCK div (often role=button, e.g. div.velt-comment-dialog-composer) BETWEEN the slot host and your supplied children \u2014 flex on the host never reaches the children, so an icon+label or avatar+input+send row STACKS even though the host has display:flex.",
+      "fix": "After flexing the slot host, inspect the live DOM for an intervening clone-wrapper and give IT the row layout too (e.g. `.vc-reply > div { display:flex; align-items:center; gap:<design> }`). The dom-snapshot lists these wrappers \u2014 the style plan should carry a disposition for each.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "harvey (ToggleReply verified live; Composer clone-wrapper verified in the prior build)"
+      ]
+    },
+    {
+      "id": "empty-composer-collapses",
+      "veltVersion": "6.x",
+      "component": "page-mode / dialog composer hosts",
+      "kind": "behavior",
+      "symptom": "A composer host whose internals haven't mounted (unselected card, empty state) collapses to ~18px \u2014 the design's ~40px input row renders as a squashed pill.",
+      "fix": "Give the composer host the design row's min-height (design-specific value from the spec node). If the design shows the composer ONLY in a selected state, scope its visibility to the stable selected condition instead of min-heighting every instance.",
+      "confidence": "tentative",
+      "seenOn": [
+        "harvey (measured 18px vs design 40px)"
+      ]
+    },
+    {
+      "id": "own-markup-decoration-needs-explicit-box",
+      "veltVersion": "n/a",
+      "component": "own-markup decorative elements (thread connector lines, spacers)",
+      "kind": "behavior",
+      "symptom": "An own-markup decorative <span> (e.g. the thread connector line in the avatar gutter) renders 0\u00d70 inline and is invisible \u2014 it has no intrinsic size and the plan carried no box for it.",
+      "fix": "Every decorative own-markup element needs explicit display + width/height + paint, and gutter/connector lines need position:absolute inside a position:relative SDK container (e.g. .velt-thread-card--container) with offsets derived from the design (avatar center column). Hide the trailing instance (:last-child) when the design shows no dangling connector.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "harvey (0\u00d70 \u2192 1px\u00d730-50px line verified live)"
+      ]
+    },
+    {
+      "id": "replyplaceholder-no-interpolation",
+      "veltVersion": "6.x",
+      "component": "VeltComments replyPlaceholder",
+      "kind": "behavior",
+      "symptom": "replyPlaceholder is a PLAIN STRING \u2014 a '{name}' token renders literally in the reply composer placeholder ('Reply to {name}\u2026'), it is never interpolated per-user.",
+      "fix": "Use a static placeholder string, or reproduce per-user text via wireframe tokens (velt-data) in own markup \u2014 never pass {tokens} into placeholder props.",
+      "confidence": "tentative",
+      "seenOn": [
+        "harvey (build-structure trial, live-verified)"
+      ]
+    },
+    {
+      "id": "options-collapse-clips-design-trigger",
+      "veltVersion": "6.x",
+      "component": "ThreadCard.Options / Options.Trigger",
+      "kind": "css-fix",
+      "selectorHints": [
+        ".vc-options",
+        ".vc-options-trigger",
+        ".options-trigger-container"
+      ],
+      "symptom": "Design kebab inside Options.Trigger is invisible (resolve may still show) after a prior patch collapsed .vc-options to 0\u00d70 overflow:hidden to hide the SDK default \u2022\u2022\u2022.",
+      "cssFix": "/* knowledge:options-collapse-clips-design-trigger — size Options host; hide only SDK \u2022\u2022\u2022 glyph */\n.vc-options { width: 16px !important; height: 16px !important; overflow: visible !important; }\n.vc-options svg.comment-dialog-options-dropdown-trigger { width: 0 !important; height: 0 !important; opacity: 0 !important; pointer-events: none !important; }\n.vc-options .options-trigger-container,\n.vc-options .mat-mdc-menu-trigger,\n.vc-options .v-dropdown-menu-trigger { width: 16px !important; height: 16px !important; overflow: visible !important; opacity: 1 !important; pointer-events: auto !important; }",
+      "fix": "Never zero the Options host or the mat trigger container when the design glyph lives inside Options.Trigger. Rest-hide via opacity on .vc-options; reveal on card/dialog hover.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "harvey"
+      ]
+    },
+    {
+      "id": "sidebar-flex-scrollport",
+      "veltVersion": "6.x",
+      "component": "comments sidebar list",
+      "kind": "css-fix",
+      "selectorHints": [
+        "velt-comments-sidebar",
+        ".vc-list",
+        "app-comment-sidebar-list.vc-list",
+        ".velt-sidebar-content"
+      ],
+      "symptom": "Long comment lists are clipped by the host rail with no working scroll — list/content grow with min-height:auto until overflow:hidden ancestors clip them.",
+      "cssFix": "/* knowledge:sidebar-flex-scrollport */\nvelt-comments-sidebar { height: 100% !important; max-height: 100% !important; min-height: 0 !important; overflow: hidden !important; }\n.vc-panel, app-comment-sidebar-panel.vc-panel { flex: 1 1 0 !important; min-height: 0 !important; overflow: hidden !important; height: 100% !important; }\n.vc-list, app-comment-sidebar-list.vc-list { flex: 1 1 0 !important; min-height: 0 !important; overflow: auto !important; }\n.velt-sidebar-content { flex: 0 0 auto !important; height: auto !important; overflow: visible !important; }",
+      "fix": "Scrollport = the list (flex:1 + min-height:0 + overflow:auto). Do not pin the sidebar to a mock frame height (e.g. 832px) that fights the host rail.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "harvey"
+      ]
+    },
+    {
+      "id": "composer-presence-has-hides-reply",
+      "veltVersion": "6.x",
+      "component": "ToggleReply / reply composer",
+      "kind": "behavior",
+      "symptom": "Body-level ToggleReply stays display:none on every thread because a CSS :has() keyed on composer NOT having inline style display:none — composer is always mounted and only hidden via a CSS class.",
+      "fix": "Hide Reply only under .velt-comment-dialog--selected / .selected. Never gate on :has(.vc-reply-composer:not([style*=\"display: none\"])).",
+      "confidence": "confirmed",
+      "seenOn": [
+        "harvey"
+      ]
     }
   ]
 }

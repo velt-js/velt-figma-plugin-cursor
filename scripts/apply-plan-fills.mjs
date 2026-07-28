@@ -6,10 +6,15 @@
 // subagent can never make; this script is the durable half of the return-in-message contract.
 //
 // Usage:
-//   node scripts/apply-plan-fills.mjs <phaseDir> <fills.json> [--assume-remaining]
+//   node scripts/apply-plan-fills.mjs <phaseDir> <fills.json> [--assume-remaining] [--stage structure|style]
 //
 // Applies: plan.json, connect-map.json, blocks.json annotations, briefs/*.probes.json fills,
 // briefs/*.smoke.json fills. Deletes every satisfied `_todo_*` key and prints the leftover count.
+//
+// --stage (two-phase planning) routes the plan artifact:
+//   --stage structure → planJson lands in plan-structure.json (connect-map.json as usual)
+//   --stage style     → planJson lands in plan-style.json (no connect-map expected — the style
+//                        plan's rules[] feed first-shot-css directly)
 //
 // --assume-remaining  DEAD-PLANNER FALLBACK: after applying whatever fills exist (pass an empty
 //   `{}` file if the planner returned nothing usable), clear every remaining `_todo` with the
@@ -35,6 +40,7 @@ import { promises as fs } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 import { validateDriveSteps } from "./measure-block.mjs";   // reject a prose/empty drive fill at persist time
+import { structureFingerprint } from "./brief-scaffold.mjs";   // stamp style plans with the structure they were planned on
 
 const readJson = async (p) => JSON.parse(await fs.readFile(p, "utf8"));
 const mustOpenBlock = (blk) => !!(blk && (blk.role === "flow" || /sidebar|comments-sidebar|dialog|panel|thread|comment-list|feed/i.test(`${blk.component || ""} ${blk.surface || ""} ${blk.state || ""} ${blk.familyId || ""}`)));
@@ -43,6 +49,19 @@ async function writeJson(p, o) {
   const tmp = `${p}.tmp-${process.pid}`;
   await fs.writeFile(tmp, JSON.stringify(o, null, 2) + "\n");
   await fs.rename(tmp, p);
+}
+
+// A registered wireframe tag exists post-registration only as a 0-size registry twin; the REAL
+// element mounts under the SDK's live tag. Measured live (both designs): sidebar parts mount as
+// `app-comment-sidebar-<x>`, everything else as `<base>-internal`. Emit comma alternatives so a
+// contract probe matches whichever exists.
+export function withLiveTagAlternatives(sel) {
+  const s = String(sel);
+  if (s.includes(",") || !s.endsWith("-wireframe")) return sel;
+  const base = s.slice(0, -"-wireframe".length);
+  const alts = [`${base}-internal`];
+  if (base.startsWith("velt-comments-sidebar-")) alts.push(`app-comment-sidebar-${base.slice("velt-comments-sidebar-".length)}`);
+  return [s, ...alts].join(", ");
 }
 
 function stripTodos(obj) {
@@ -66,21 +85,50 @@ function findTodos(obj, trail = "", out = []) {
 async function main() {
   const args = process.argv.slice(2);
   const assumeRemaining = args.includes("--assume-remaining");
-  const [phaseDir, fillsPath] = args.filter((a) => !a.startsWith("--"));
+  const stageIdx = args.indexOf("--stage");
+  const stage = stageIdx >= 0 ? args[stageIdx + 1] : null;
+  if (stage && !["structure", "style"].includes(stage)) { console.error(`✗ --stage must be structure|style, got '${stage}'`); process.exit(1); }
+  const [phaseDir, fillsPath] = args.filter((a, i) => !a.startsWith("--") && args[i - 1] !== "--stage");
   if (!phaseDir || !fillsPath) {
-    console.error("usage: apply-plan-fills.mjs <phaseDir> <fills.json> [--assume-remaining]");
+    console.error("usage: apply-plan-fills.mjs <phaseDir> <fills.json> [--assume-remaining] [--stage structure|style]");
     process.exit(1);
+  }
+  // GOLDEN-PATH: a thin/deterministic style plan is exactly how demos miss composed polish.
+  // --assume-remaining is allowed for structure briefs only — never for --stage style.
+  if (assumeRemaining && stage === "style") {
+    console.error("✗ --assume-remaining is FORBIDDEN with --stage style — re-dispatch velt-planner-style (or HALT). A deterministic/assumed style plan cannot enter the style build.");
+    process.exit(2);
   }
 
   const fills = await readJson(fillsPath);
   const briefsDir = path.join(phaseDir, "briefs");
   const out = { wrote: [], warnings: [], assumed: [] };
+  // the vcClass contract source for the adoption sync below — the fills' own plan, else the one on disk
+  const planForSync = fills.planJson || await readJson(path.join(phaseDir, "plan-structure.json")).catch(() => null);
 
-  // 1. plan.json + connect-map.json
-  if (fills.planJson) { await writeJson(path.join(phaseDir, "plan.json"), fills.planJson); out.wrote.push("plan.json"); }
+  // 1. plan artifact (+ connect-map.json when applicable). --stage routes the file: the structure
+  // planner's plan → plan-structure.json; the style planner's plan (rules[]) → plan-style.json.
+  const planFile = stage === "structure" ? "plan-structure.json" : stage === "style" ? "plan-style.json" : "plan.json";
+  // STYLE PLAN FINGERPRINT: stamp the plan with the structural shape of the snapshots it was made
+  // against — --lint-style refuses a stale plan after any structure change (see brief-scaffold).
+  if (stage === "style" && fills.planJson && !fills.planJson.structureFingerprint) {
+    const snapDir = path.join(phaseDir, "dom-snapshot");
+    const snaps = [];
+    for (const f of await fs.readdir(snapDir).catch(() => [])) {
+      if (f.endsWith(".json")) { const s = await readJson(path.join(snapDir, f)).catch(() => null); if (s && s.tree) snaps.push(s); }
+    }
+    if (snaps.length) fills.planJson.structureFingerprint = structureFingerprint(snaps);
+  }
+  if (fills.planJson) {
+    if (stage === "style" && !fills.planJson.generatedBy && !fills.planJson.authorship) {
+      fills.planJson.authorship = "planner";
+    }
+    await writeJson(path.join(phaseDir, planFile), fills.planJson);
+    out.wrote.push(planFile);
+  }
   else out.warnings.push("no planJson in fills");
   if (fills.connectMapJson) { await writeJson(path.join(phaseDir, "connect-map.json"), fills.connectMapJson); out.wrote.push("connect-map.json"); }
-  else out.warnings.push("no connectMapJson in fills");
+  else if (stage !== "style") out.warnings.push("no connectMapJson in fills");
 
   // 2. blocks.json annotations
   const blocksPath = path.join(phaseDir, "blocks.json");
@@ -118,6 +166,41 @@ async function main() {
     if (patch.gaps) probe.browser.gaps = patch.gaps;
     probe.layer = patch.layer ?? probe.layer ?? [];
     if (probe.layer === null) probe.layer = [];
+    // two-phase brief rows: structure briefs carry adoption[]; style briefs carry styleRows{}
+    if (patch.adoption) probe.adoption = patch.adoption;
+    if (patch.styleRows) probe.styleRows = { ...(probe.styleRows || {}), ...patch.styleRows };
+    // ADOPTION ownClass SYNC (build-structure trial finding): the scaffold auto-derives generic
+    // ownClass names (`.vc-trigger`) from slot leaf names, but the PLAN's vcClasses are the real
+    // contract (`.vc-filter-trigger`) — a literal probe against the stale names false-FAILs
+    // adoption. Rewrite each adoption row's ownClass from the plan's per-slot vcClass.
+    if (Array.isArray(probe.adoption) && planForSync) {
+      const bySlot = new Map();
+      for (const comp of planForSync.components || []) {
+        for (const s of comp.slots || []) {
+          if (s.slot && s.vcClass) bySlot.set(String(s.slot).replace(/\s*\(.*\)$/, ""), String(s.vcClass).replace(/^\./, ""));
+        }
+      }
+      for (const row of probe.adoption) {
+        const vc = bySlot.get(String(row.slot || "").replace(/\s*\(.*\)$/, ""));
+        if (vc) row.ownClass = "." + vc;
+      }
+      // rows for slots the plan never fills carry no vcClass — drop them (they'd assert nothing real)
+      probe.adoption = probe.adoption.filter((row) => bySlot.has(String(row.slot || "").replace(/\s*\(.*\)$/, "")) || !String(row.ownClass || "").startsWith(".vc-"));
+      // CONTRACT SELECTOR SYNC (v4 judge bug): contract entries are scaffolded with WIREFRAME tags,
+      // which post-registration exist only as 0-size REGISTRY TWINS — every part reported MISSING
+      // while the real element rendered fine. Extend each entry with the live mount-tag equivalents
+      // (measured on the live DOM, both designs): sidebar wireframe parts mount as
+      // `app-comment-sidebar-<x>`, dialog wireframe parts as `velt-comment-dialog-<x>-internal`.
+      if (probe.contract && Array.isArray(probe.contract.entries)) {
+        for (const e of probe.contract.entries) {
+          if (e.selector) e.selector = withLiveTagAlternatives(e.selector);
+          if (e.requiredAncestor) e.requiredAncestor = withLiveTagAlternatives(e.requiredAncestor);
+        }
+        if (probe.contract.surfaceSelector && String(probe.contract.surfaceSelector).endsWith("-wireframe") && probe.liveSelector) {
+          probe.contract.surfaceSelector = probe.liveSelector;
+        }
+      }
+    }
     stripTodos(probe);
     // POST-FILL GUARD: a prose/empty drive fill (the RUN-4 failure) must NOT slip through as lint-clean
     // just because stripTodos removed the _todo guard key. Re-validate and re-inject a _todo if the drive
@@ -179,4 +262,4 @@ async function main() {
   process.exit(missingSkeleton ? 2 : 0);
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });

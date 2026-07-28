@@ -86,6 +86,32 @@ export function compareProp(prop, expected, rendered, tol = {}) {
     const fam = String(expected).replace(/["']/g, "").split(",")[0].trim().toLowerCase();
     return { pass: String(rendered).toLowerCase().includes(fam), why: "family not in computed stack" };
   }
+  if (prop === "box-shadow" || prop === "text-shadow") {
+    // Canonical shadow compare (F5): computed style reorders colour-first and pads units
+    // ("rgb(228, 225, 221) 0px 0px 0px 1px" vs spec "0 0 0 1px #e4e1dd") — a string compare
+    // fails IDENTICAL values. Compare colour by ΔE and lengths within ±px, per shadow.
+    const split = (s) => String(s).split(/,(?![^(]*\))/).map((x) => x.trim()).filter((x) => x && x !== "none");
+    const es = split(expected), rs = split(rendered);
+    if (es.length !== rs.length) return { pass: false, why: `shadow count ${es.length}≠${rs.length}` };
+    for (let i = 0; i < es.length; i++) {
+      const colorTok = (s) => (s.match(/#[0-9a-f]{3,8}|rgba?\([^)]+\)|transparent/i) || [""])[0];
+      const et = colorTok(es[i]), rt = colorTok(rs[i]);
+      const ec = parseColor(et), rc = parseColor(rt);
+      if (!!ec !== !!rc) return { pass: false, why: `shadow ${i} colour presence differs` };
+      if (ec && rc) {
+        if ((ec.a === 0) !== (rc.a === 0)) return { pass: false, why: `shadow ${i} alpha differs` };
+        if (ciede2000(ec, rc) >= dE) return { pass: false, why: `shadow ${i} colour ΔE ${ciede2000(ec, rc).toFixed(2)}` };
+      }
+      const en = nums(es[i].replace(et, "")), rn = nums(rs[i].replace(rt, ""));
+      while (en.length < 4) en.push(0);
+      while (rn.length < 4) rn.push(0);
+      for (let j = 0; j < 4; j++) {
+        if (Math.abs((en[j] || 0) - (rn[j] || 0)) > px) return { pass: false, why: `shadow ${i} length[${j}] Δ${((en[j] || 0) - (rn[j] || 0)).toFixed(1)}px` };
+      }
+      if (/\binset\b/.test(es[i]) !== /\binset\b/.test(rs[i])) return { pass: false, why: `shadow ${i} inset differs` };
+    }
+    return { pass: true };
+  }
   if (LEN_PROPS.has(prop)) {
     const e = nums(expected), r = nums(rendered);
     if (e.length !== r.length) {
@@ -96,8 +122,14 @@ export function compareProp(prop, expected, rendered, tol = {}) {
     const ok = e.every((v, i) => Math.abs(v - r[i]) <= px);
     return { pass: ok, why: ok ? "" : `Δ ${e.map((v, i) => (v - r[i]).toFixed(0)).join(",")}px` };
   }
-  // font-weight: 500 vs "500"; flex/keywords: normalize whitespace + trailing units
-  const norm = (s) => String(s).trim().toLowerCase().replace(/\s+/g, " ").replace(/0px|0%/g, "0");
+  // font-weight: 500 vs "500"; flex/keywords: normalize whitespace + trailing units.
+  // F5: canonicalize embedded colour tokens to rgba() first — "#e4e1dd" and
+  // "rgb(228, 225, 221)" are the same value and must never fail a string compare.
+  const canonColors = (s) => String(s).replace(/#[0-9a-f]{3,8}\b|rgba?\([^)]+\)/gi, (tok) => {
+    const c = parseColor(tok);
+    return c ? `rgba(${c.r},${c.g},${c.b},${+c.a.toFixed(3)})` : tok;
+  });
+  const norm = (s) => canonColors(s).trim().toLowerCase().replace(/\s+/g, " ").replace(/0px|0%/g, "0");
   if (prop === "flex" || prop === "align-self") {
     return { pass: norm(rendered).startsWith(norm(expected).split(" ").slice(0, 2).join(" ")), expected, rendered };
   }
@@ -106,11 +138,25 @@ export function compareProp(prop, expected, rendered, tol = {}) {
 
 export function compareDecls(expected, rendered, tol) {
   const rows = [];
-  for (const prop of Object.keys(expected)) {
+  for (const prop of Object.keys(expected || {})) {
     const r = compareProp(prop, expected[prop], rendered[prop] ?? "", tol);
     rows.push({ property: prop, spec: expected[prop], rendered: rendered[prop] ?? "(missing)", pass: r.pass, note: r.delta || r.why || "" });
   }
   return rows;
+}
+
+/** Visible text compare for static chrome (placeholders/labels). Whitespace-normalized substring OK for dynamic Reply-to-{name}. */
+export function compareText(expected, rendered) {
+  const norm = (s) => String(s || "").replace(/\s+/g, " ").trim();
+  const e = norm(expected), r = norm(rendered);
+  if (!e) return { pass: true, note: "" };
+  if (!r) return { pass: false, why: "visible text empty — placeholder/label not painted" };
+  // Allow "{name}" templates: "Reply to " prefix match
+  if (e.includes("{") && e.includes("}")) {
+    const prefix = norm(e.replace(/\{[^}]+\}/g, "").trim());
+    return { pass: !prefix || r.toLowerCase().includes(prefix.toLowerCase()), why: "templated text prefix missing" };
+  }
+  return { pass: r.includes(e) || e.includes(r), why: "visible text mismatch" };
 }
 
 // ---- layout / geometry (surface-relative boxes) ----
@@ -153,14 +199,25 @@ export function verdictOf(elements, opts = {}) {
   for (const el of elements) {
     if (el.present === false) { diffs.push({ element: el.name, property: "(present)", spec: "rendered + supplied content", rendered: "MISSING", note: "mustSupply slot absent / element not found" }); continue; }
     for (const row of el.table || []) if (!row.pass) diffs.push({ element: el.name, ...row });
-    if (el.expectedBox) for (const row of compareBox(el.expectedBox, el.box, opts.tol)) if (!row.pass) diffs.push({ element: el.name, ...row });
+    if (el.expectedText) {
+      const tr = compareText(el.expectedText, el.renderedText ?? "");
+      if (!tr.pass) diffs.push({ element: el.name, property: "text", spec: el.expectedText, rendered: el.renderedText || "(empty)", pass: false, note: tr.why || "visible text mismatch" });
+    }
+    // box===null is a DELIBERATE "geometry not attributable" signal (collision / unresolved surface),
+    // already reported once as its own finding — don't re-emit four "no box" rows per element.
+    if (el.expectedBox && el.box !== null) for (const row of compareBox(el.expectedBox, el.box, opts.tol)) if (!row.pass) diffs.push({ element: el.name, ...row });
   }
+  const boxOfName = (n) => { const e = byName[n]; return e && e.box ? e.box : null; }; // null box (collision/unresolved) ⇒ not comparable
   for (const r of opts.relations || []) {
-    const res = compareRelation(byName[r.a] && byName[r.a].box, byName[r.b] && byName[r.b].box, r.type);
+    const a = boxOfName(r.a), b = boxOfName(r.b);
+    if (!a || !b) continue; // a referenced node's geometry is unattributable — skip, don't call it "broken"
+    const res = compareRelation(a, b, r.type);
     if (!res.pass) diffs.push({ element: r.a + " " + r.type + " " + r.b, property: "relation", spec: r.type, rendered: "broken", note: res.note });
   }
   for (const g of opts.gaps || []) {
-    const res = compareGap(byName[g.a] && byName[g.a].box, byName[g.b] && byName[g.b].box, g.axis || "y", g.expected, opts.tol);
+    const a = boxOfName(g.a), b = boxOfName(g.b);
+    if (!a || !b) continue;
+    const res = compareGap(a, b, g.axis || "y", g.expected, opts.tol);
     if (!res.pass) diffs.push({ element: g.a + "↔" + g.b, property: "gap." + (g.axis || "y"), spec: g.expected + "px", rendered: res.rendered, note: res.note });
   }
   // COVERAGE — what this spec actually asserted (element names + gap checks), pass OR fail. This is the
@@ -258,6 +315,7 @@ export const BROWSER_PROBE = `(function(SPEC){
   ${ciede2000.toString()}
   ${compareProp.toString()}
   ${compareDecls.toString()}
+  ${compareText.toString()}
   ${compareBox.toString()}
   ${compareRelation.toString()}
   ${compareGap.toString()}
@@ -268,17 +326,103 @@ export const BROWSER_PROBE = `(function(SPEC){
   COLOR_PROPS=new Set(COLOR_PROPS); LEN_PROPS=new Set(LEN_PROPS);
   if(Array.isArray(SPEC)) SPEC={elements:SPEC};
   function pick(sel){var ns=document.querySelectorAll(sel);for(var j=0;j<ns.length;j++){if(ns[j].getBoundingClientRect().width>0)return ns[j];}return null;}
-  var surf=SPEC.surfaceSelector?pick(SPEC.surfaceSelector):document.body;
+  // SURFACE RESOLUTION (v4 judge bug): a stale surfaceSelector (registry-twin wireframe tag) made
+  // pick() return null and boxes silently fell back to PAGE-ABSOLUTE coords — hundreds of garbage
+  // box.x rows. Try the fallback surface (liveSelector), and if NOTHING resolves, report ONE
+  // explicit surface-unresolved diff and SKIP box comparisons instead of emitting noise.
+  var surf=SPEC.surfaceSelector?pick(SPEC.surfaceSelector):null;
+  if(!surf&&SPEC.fallbackSurface)surf=pick(SPEC.fallbackSurface);
+  var surfaceUnresolved=!surf&&!!(SPEC.surfaceSelector||SPEC.fallbackSurface);
+  if(!surf)surf=document.body;
   var sr=surf?surf.getBoundingClientRect():{left:0,top:0};
+  // Resolve each element WITHIN the surface (v4 judge bug): document-wide pick() bound a card's
+  // header to the FIRST card on the page, not the card being measured — so boxes rebased against
+  // the wrong origin. Search inside surf first; fall back to document only if absent there.
+  function visMatches(root,sel){var out=[];try{var ns=(root||document).querySelectorAll(sel);}catch(e){return out;}for(var j=0;j<ns.length;j++){if(ns[j].getBoundingClientRect().width>0)out.push(ns[j]);}return out;}
   var els=[];
   var list=SPEC.elements||[];
-  for(var i=0;i<list.length;i++){var s=list[i];var el=pick(s.selector);
+  // SELECTOR-COLLISION handling (v4 judge precision): the style plan can collapse several DISTINCT
+  // spec nodes onto ONE class (e.g. 4 header sub-frames -> .vc-card__header). Measuring each spec
+  // box against the SAME live node yields a flood of garbage geometry rows. Group rows by selector;
+  // if the live DOM has as many visible matches as rows, ZIP positionally (spec order = DOM order);
+  // if it has FEWER, that's a real collision -> compare STYLE on the first match, SKIP geometry for
+  // the rest, and emit ONE actionable collision finding for the planner.
+  var groups={},order=[];
+  for(var i=0;i<list.length;i++){var sel=list[i].selector||('#__row'+i);if(!groups[sel]){groups[sel]=[];order.push(sel);}groups[sel].push(i);}
+  // PAINT/TEXT test: a row carries a distinct VISIBLE role only if it expects a paint or text prop.
+  // Figma auto-layout wrapper frames (only layout props: display/flex/gap/justify/align/padding)
+  // legitimately FLATTEN to one live element — that is expected, NOT a plan defect.
+  var PAINT_ROLE={'background':1,'background-color':1,'color':1,'border':1,'border-color':1,'border-width':1,'box-shadow':1,'fill':1,'stroke':1,'content':1,'font-size':1,'font-family':1,'font-weight':1,'line-height':1,'width':1,'height':1};
+  function isPainter(row){var e=row.expected||{};for(var k in e){if(PAINT_ROLE[k])return true;}return false;}
+  var collided=[];
+  for(var g=0;g<order.length;g++){var sel=order[g];var idxs=groups[sel];
+    if(idxs.length<2)continue;
+    // count DISTINCT painters among the colliding rows. A real role-collision needs >=2 painters
+    // (two visible elements collapsed onto one class). 0-1 painters ⇒ benign wrapper flatten.
+    var painters=0;for(var m=0;m<idxs.length;m++){if(isPainter(list[idxs[m]]))painters++;}
+    // also treat pure duplicate names (same node measured twice, e.g. avatar/avatar) as benign.
+    var uniqNames={};for(var m=0;m<idxs.length;m++)uniqNames[list[idxs[m]].name]=1;
+    var distinct=Object.keys(uniqNames).length;
+    if(painters>=2&&distinct>=2){
+      collided.push({selector:sel,specNodes:idxs.length,painters:painters,names:idxs.map(function(x){return list[x].name;})});
+    }
+  }
+  // geometry is unattributable for ANY selector shared by >1 row (real collision OR benign flatten);
+  // suppress boxes for all of them, but only REAL painter-collisions become reported findings.
+  var collidedSel={};for(var g=0;g<order.length;g++){if(groups[order[g]].length>1)collidedSel[order[g]]=true;}
+  // F4 PAINT-BINDING (v5 judge precision): a wireframe HOST element is often a transparent
+  // wrapper (bg transparent / radius 0 / pad 0) around the styled child that actually paints
+  // the card. Probing paint props on the host emits ~20 false container rows per run. When a
+  // row EXPECTS paint and the bound node paints nothing, walk down to the first descendant
+  // that paints (non-transparent bg / visible border / shadow / radius) and shares the host's
+  // box — and compare against THAT node.
+  var PAINT_EXPECT={'background':1,'background-color':1,'border':1,'border-color':1,'border-width':1,'border-radius':1,'box-shadow':1};
+  function expectsPaint(exp){for(var k in (exp||{})){if(PAINT_EXPECT[k])return true;}return false;}
+  function paintsAny(c){var bg=parseColor(c.backgroundColor);return (bg&&bg.a>0)||((parseFloat(c.borderTopWidth)||0)>0&&c.borderTopStyle!=='none')||(!!c.boxShadow&&c.boxShadow!=='none')||((parseFloat(c.borderTopLeftRadius)||0)>0);}
+  function descendToPainter(host){
+    var hb=host.getBoundingClientRect();var cand=host.querySelectorAll('*');
+    for(var ci=0;ci<cand.length&&ci<40;ci++){var d=cand[ci];var db=d.getBoundingClientRect();
+      if(db.width<hb.width*0.6||db.height<4)continue;
+      if(db.left<hb.left-4||db.top<hb.top-4||db.right>hb.right+4||db.bottom>hb.bottom+4)continue;
+      if(paintsAny(getComputedStyle(d)))return d;
+    }
+    return null;
+  }
+  for(var i=0;i<list.length;i++){var s=list[i];
+    var scope=(surf&&surf!==document.body)?surf:document;
+    var el=visMatches(scope,s.selector)[0]||visMatches(document,s.selector)[0]||null;
     if(!el){els.push({name:s.name,present:false,expectedBox:s.box});continue;}
+    var boundDescendant=null;
+    if(expectsPaint(s.expected)&&!paintsAny(getComputedStyle(el))){
+      var painted=descendToPainter(el);
+      if(painted){boundDescendant=((painted.className&&painted.className.toString)?painted.className.toString().split(/\\s+/)[0]:'')||(painted.tagName||'').toLowerCase();el=painted;}
+    }
     var cs=getComputedStyle(el),rendered={};
     for(var p in (s.expected||{})){rendered[p]=readProp(cs,p);}
     var r=el.getBoundingClientRect();
     var box={x:Math.round(r.left-sr.left),y:Math.round(r.top-sr.top),w:Math.round(r.width),h:Math.round(r.height)};
-    els.push({name:s.name,present:true,table:compareDecls(s.expected||{},rendered),box:box,expectedBox:s.box});
+    if(surfaceUnresolved)box=null;   // page-absolute boxes are garbage — never compare them
+    if(collidedSel[s.selector])box=null;   // shared class -> geometry not attributable
+    // rendered PAINT snapshot (for the build-over-build regression guard): read the live paint of
+    // this element regardless of whether the spec asserted it, so the guard can detect "was painted
+    // last build, transparent now" even when the current spec doesn't check that prop.
+    var paintSnap={};var PK=['background-color','border-top-width','box-shadow','fill','color','outline-style'];
+    for(var pk=0;pk<PK.length;pk++){try{paintSnap[PK[pk]]=readProp(cs,PK[pk]);}catch(e){}}
+    // Visible text for static chrome (placeholder/labels) — prefer textContent; contenteditable uses same.
+    var renderedText='';
+    if(s.expectedText){
+      try{
+        renderedText=(el.innerText||el.textContent||'').replace(/\\s+/g,' ').trim();
+        if(!renderedText){
+          var ph=el.getAttribute&& (el.getAttribute('placeholder')||el.getAttribute('data-placeholder')||'');
+          if(ph) renderedText=String(ph).trim();
+        }
+      }catch(e){renderedText='';}
+    }
+    els.push({name:s.name,present:true,table:compareDecls(s.expected||{},rendered),box:box,expectedBox:s.box,expectedText:s.expectedText||null,renderedText:renderedText,rendered:paintSnap,boundTo:boundDescendant,liveBox:{x:Math.round(r.left-sr.left),y:Math.round(r.top-sr.top),w:Math.round(r.width),h:Math.round(r.height)}});
+  }
+  if(surfaceUnresolved){
+    els.unshift({name:'(surface)',present:false,note:'surface selector unresolved: '+(SPEC.surfaceSelector||'')+(SPEC.fallbackSurface?' / '+SPEC.fallbackSurface:'')+' — box comparisons skipped; fix the brief surfaceSelector'});
   }
   var v=verdictOf(els,{relations:SPEC.relations,gaps:SPEC.gaps,tol:SPEC.tol});
   // gross-mismatch pre-check (deterministic, whole-surface): total content extent + present count
@@ -297,6 +441,17 @@ export const BROWSER_PROBE = `(function(SPEC){
     v.verdict='FAIL';
   }
   v.gross=gross;
+  // SELECTOR COLLISION IS NOT A DEFECT. A design→live mapping legitimately collapses many Figma
+  // auto-layout wrapper frames onto ONE live element (the live DOM is flatter than the design
+  // tree). Treating it as a defect + emitting a "split the class" fix-order is what drove the
+  // structural-split regression (card chrome moved onto a 0-height wrapper, black-box glyphs).
+  // We record collisions as ADVISORY metadata only — geometry for a shared selector was already
+  // nulled above (unattributable), and style props still compared on the shared element. Never a
+  // diff row, never a FAIL. A genuine "two DISTINCT painted things on one class" is caught by the
+  // unexpected-paint / overlap probes on real painted elements, not here.
+  if(collided.length)v.collisionsAdvisory=collided;
+  // compact per-element fingerprint for the regression guard (paint + live box + presence)
+  v.elements=els.filter(function(e){return e.name&&e.name!=='(surface)';}).map(function(e){return {name:e.name,present:e.present!==false,box:e.liveBox||null,rendered:e.rendered||{}};});
   return v;
 })`;
 
@@ -375,10 +530,15 @@ export const CONTRACT_PROBE = `(function(SPEC){
   function vis(el){return !!(el&&el.getBoundingClientRect&&el.getBoundingClientRect().width>0);}
   function pickAll(sel){var r=[];try{var ns=document.querySelectorAll(sel);}catch(e){return r;}for(var i=0;i<ns.length;i++)if(vis(ns[i]))r.push(ns[i]);return r;}
   var entries=SPEC.entries||[];var parts={};
+  // count LIVE mounts only — a match inside <velt-wireframe> is the registry twin, not a mount
+  function countAll(sel){try{var ns=document.querySelectorAll(sel);}catch(e){return 0;}var n=0;for(var i=0;i<ns.length;i++){if(!ns[i].closest('velt-wireframe'))n++;}return n;}
   for(var i=0;i<entries.length;i++){var e=entries[i];var els=pickAll(e.selector);
+    var mounted=countAll(e.selector);
     var ancestorOk=true;
     if(e.requiredAncestor&&els.length){try{ancestorOk=!!els[0].closest(e.requiredAncestor);}catch(_){ancestorOk=true;}}
-    parts[e.part]={present:els.length>0,count:els.length,ancestorOk:ancestorOk};
+    // "mounted but 0-size everywhere" is a HIDDEN part (undrawn state / collapsed), not an absent
+    // one — report it as present+hidden so MISSING means what it says: never mounted at all.
+    parts[e.part]={present:mounted>0,count:els.length,mounted:mounted,hidden:mounted>0&&els.length===0,ancestorOk:ancestorOk};
   }
   // phantom-interactive scan: an interactive node inside the surface that no Velt element owns
   var phantoms=[];
@@ -422,7 +582,9 @@ export const STABILITY_PROBE = `(function(SPEC){
   try{(surf||document).querySelectorAll('[contenteditable],input,textarea').forEach(function(n){if(vis(n)){n.dispatchEvent(new FocusEvent('focusout',{bubbles:true}));if(n.blur)n.blur();}});}catch(_){}
   void document.body.offsetHeight; // force synchronous reflow so the transient-keyed rule re-applies
   var results=targets.map(function(t){
-    if(!t.el||!t.before)return {name:t.name,present:false,shift:null,ok:false,note:'target not found/visible'};
+    // an undrawn target (menu item in a closed dropdown, hover-only affordance) is SKIPPED, not a
+    // failure — presence is the delta/contract probes' job; this probe only answers "does it move".
+    if(!t.el||!t.before)return {name:t.name,present:false,shift:null,ok:true,skipped:true,note:'target not drawn in this state — skipped (presence is delta/contract, not stability)'};
     var after=boxOf(t.el);var dx=after.x-t.before.x,dy=after.y-t.before.y;
     var ok=Math.abs(dx)<=tol&&Math.abs(dy)<=tol;
     return {name:t.name,present:true,before:t.before,after:after,shift:{dx:dx,dy:dy},ok:ok};
@@ -435,7 +597,7 @@ export const STABILITY_PROBE = `(function(SPEC){
 //   rendered.json = array of {present, rendered, box?} aligned to spec.elements
 // Used by golden/ to prove the engine FAILs known-bad styles AND known-bad geometry.
 import { pathToFileURL } from "node:url";
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const fs = await import("node:fs/promises");
   const [eF, rF] = process.argv.slice(2);
   if (eF && rF) {

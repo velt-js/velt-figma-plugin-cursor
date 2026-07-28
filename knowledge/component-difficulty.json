@@ -13,7 +13,7 @@
       "maxFixAttempts": null,
       "buildMinimal": false,
       "hardBudgetMinutes": 25,
-      "note": "Was HARD under STYLED Velt (default *-internal ThreadCard + heavy default styling to fight). UNSTYLED-VELT EXPERIMENT (local SDK build v1.1.1 via Requestly \u2014 comment-dialog + sidebar rendered UNSTYLED): the default-styling fight is removed, so ATTEMPT IT FULLY (buildMinimal:false) to fairly test whether unstyled makes it achievable \u2014 do NOT under-build the exact thing we're testing. STRICTNESS RESTORED: iterate the fix until it measures clean or plateaus (--budget governs, no hard 2-cap). Keep hardBudgetMinutes (firm wedge guard) \u2014 reliability risk is separate from difficulty. Revert difficulty\u2192'hard' + buildMinimal\u2192true if unstyled does NOT solve it.",
+      "note": "Was HARD under styled Velt (heavy default styling to fight). On the UNSTYLED base (now standard run policy) the default-styling fight is gone, so build it FULLY (buildMinimal:false) and iterate fixes until clean or plateau (--budget governs). Keep hardBudgetMinutes as the firm wedge guard \u2014 this family wedged a builder in every early run; reliability risk is separate from difficulty. Revert difficulty\u2192'hard' + buildMinimal\u2192true if it wedges again.",
       "confidence": "tentative",
       "seenOn": [
         "privado",

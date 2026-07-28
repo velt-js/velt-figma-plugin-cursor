@@ -294,6 +294,21 @@ Rule of thumb: **if a slot represents a *list of things*, don't try to relayout 
 - **Variables/tokens:** syntax in [`reference/wireframe-tokens.md`](../reference/wireframe-tokens.md); the full `{…}` catalog in [`reference/wireframe-variables.md`](../reference/wireframe-variables.md).
 - **Stateful CSS classes** (to style state without a slot): [`reference/css-classes.md`](../reference/css-classes.md).
 
+### 9. From a drawn mock to wireframes — the translation rules
+
+The most reliable route to a faithful wireframe is to **draw the surface as plain HTML/CSS first** (you own every element — fidelity is cheap and pixel-checkable against the design before Velt enters), then translate the mock into slot templates. A hand-drawn mock and a correct wireframe are near-isomorphic; the transform is six mechanical rules (verified against a reference build):
+
+1. **Data text → bare leaf slot.** Any text that is user data (name, time, message body, counts, avatar initials) is replaced by its leaf slot (`…ThreadCard.Name`, `.Time`, `.Message`, `MoreReply.Count`); the mock's hardcoded strings are exactly the markers for where data binds. Style via the slot's stable `velt-*` class.
+2. **Interactive wrapper → action slot, drawn icon kept.** A mock `<button>`/clickable never survives (interactivity is stripped — §6): its drawn SVG/label become the *children* of the proper action slot (`ResolveButton`, `Options.Trigger`, `ToggleReply`) or a `VeltButtonWireframe`.
+3. **Repetition → one template.** The mock unrolls loops (several comment copies); the wireframe declares ONE item template — Velt owns the loop (§7b). The diff between the mock's copies shows what is data vs structure.
+4. **Pure decoration stays plain markup.** Rail lines, dividers, layout wrappers carry over verbatim with their classes — no slot needed.
+5. **State variants → state classes, not extra templates.** The mock's `.is-hover`/`.is-selected` variant cards become `:hover`/stateful-class rules ([`reference/css-classes.md`](../reference/css-classes.md)) on the single template.
+6. **Mock scaffolding is discarded** (state-board chrome, section labels).
+
+Whatever the six rules leave unmapped is the **verify-live checklist**: slots that may not adopt children in the running SDK, defaultable sub-elements whose look must be confirmed, data interpolation. After mounting, verify **adoption** (your class actually renders inside the live host — a slot that ignores its template falls back to the default silently) and **selector binding** (every stylesheet selector matches a live element). Keep the mock: it is the per-element reference your deltas are measured against.
+
+> **Two‑phase ownership note (structure vs style).** The mock→translate flow above is **structure work**: elements, slots, enclosure, cardinality, `fillWith`, own‑markup class names. **Style placement is a separate, later decision** made against the *rendered* DOM: once the wireframe skeleton mounts, Velt inserts wrappers/internals your markup never declared, and any stylesheet written before seeing them mis‑lands (gaps defeated by a wrapper, un‑neutralized wrapper boxes, doubled default glyphs). So: build the skeleton first with **no cosmetic CSS**, snapshot the live DOM, and only then decide selectors (real, from the snapshot) and values (verbatim, from the design spec). The mock stays the structure/fidelity reference for both phases.
+
 ## Checklist
 
 - [ ] Exactly **one** `<VeltWireframe>` in the app.

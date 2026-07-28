@@ -28,6 +28,8 @@ import { promises as fs } from "node:fs";
 import { pathToFileURL } from "node:url";
 import path from "node:path";
 import { verdictGateBlocks, auditReportArtifacts } from "./verdict-gate-blocks.mjs";
+import { obsEvent, buildPlayerSafe } from "./obs.mjs";
+import { goldenPathProblems } from "./golden-path-check.mjs";
 
 const EXIT = { PASS: 0, FAIL: 2, INCOMPLETE: 3, STOPPED: 4 };
 // POSITIVE assertions that the UI is right — forbidden unless the gate verdict is PASS. Kept tight to
@@ -64,21 +66,35 @@ export async function buildHandoff(phaseDir, { maxRegionFill = 0.05 } = {}) {
   const reps = report.blocks || {};
   const rows = list.map((b) => ({ id: b.id, state: b.state || "", ...dispositionOf(b, reps[b.id]) }));
   const nUnver = rows.filter((x) => x.disp === "UNVERIFIED").length;
-  const verified = r.verdict === "PASS";                       // the ONLY state that may claim the UI is right
-  const accountedStop = r.verdict === "STOPPED" && !(r.missing || []).length;
+  const gpProblems = await goldenPathProblems(phaseDir);
+  const goldenOk = gpProblems.length === 0;
+  const verified = r.verdict === "PASS" && goldenOk;           // PASS alone is not golden-demo quality
+  const accountedStop = r.verdict === "STOPPED" && !(r.missing || []).length && goldenOk;
 
   const L = [];
   if (verified) {
-    L.push("# Phase handoff — PASS", "", "> Gate: **PASS** — every block was freshly measured and is clean.", "");
+    L.push("# Phase handoff — PASS", "", "> Gate: **PASS** — every block was freshly measured and is clean. Golden-path gates (host-wiring / style authorship / mechanism-checklist) also ok.", "");
   } else if (accountedStop) {
     L.push("# Phase handoff — STOPPED (accounted)", "",
       "> Gate: **STOPPED** — every block is accounted (PASS / verified BLOCKED / GAP), but the run hit its bounds. Hand to the human. This is NOT a claim that the whole design matches.", "");
   } else {
+    const gpNote = !goldenOk
+      ? ` Golden-path gates failing: ${gpProblems.map((p) => p.gate).join(", ")} — this is NOT golden-demo quality (host props / thin style plan / DEMO-POLISH checklist).`
+      : "";
     L.push("# ⚠️ NOT VERIFIED — the UI is UNCONFIRMED and likely has defects", "",
-      `> **The gate did NOT pass (verdict: ${r.verdict}).** ${nUnver} of ${rows.length} block(s) were not freshly verified — e.g. the surface never opened, or was never measured. **Nothing below claims the UI matches the design; do NOT treat this as done.**`,
+      `> **The gate did NOT pass (verdict: ${r.verdict}).** ${nUnver} of ${rows.length} block(s) were not freshly verified — e.g. the surface never opened, or was never measured.${gpNote} **Nothing below claims the UI matches the design; do NOT treat this as done.**`,
       "> To actually verify: resolve a real measurement browser (`node scripts/browser-endpoint.mjs`), make sure each brief OPENS + asserts its surface, and re-run — a PASS requires a fresh passing measurement for every block.", "");
   }
   L.push(`**Gate verdict:** \`${r.verdict}\` (exit ${EXIT[r.verdict]}) · block coverage ${r.coverage}% of ${list.length}`, "");
+
+  L.push("## Golden-path gates (demo quality)", "");
+  if (goldenOk) {
+    L.push("- ✓ host-wiring · style-plan authorship · mechanism-checklist", "");
+  } else {
+    L.push("> These gates separate a STOPPED/noise plateau from the human golden demo. They must be green before calling the run demo-ready.", "");
+    for (const p of gpProblems) L.push(`- ✗ **${p.gate}**: ${p.note}`);
+    L.push("");
+  }
 
   L.push("## Per-block disposition", "", "| Block | State | Disposition | Why / evidence |", "|---|---|---|---|");
   for (const x of rows) L.push(`| \`${x.id}\` | ${x.state} | ${x.disp} | ${(x.note || x.evidence || "").toString().slice(0, 120)} |`);
@@ -94,7 +110,14 @@ export async function buildHandoff(phaseDir, { maxRegionFill = 0.05 } = {}) {
   // INVARIANT: no positive UI claim unless PASS. We control the text, so this should never trip — but a
   // future edit that reintroduces optimistic language must fail here, not ship.
   if (!verified && FORBIDDEN.test(md)) throw new Error("write-handoff invariant broken: an optimistic UI claim appears in a non-PASS handoff");
-  return { md, verdict: r.verdict, exit: EXIT[r.verdict], rows, verified };
+  // Golden-path fail demotes exit so orchestrators cannot treat a pixel-gate PASS/STOPPED as demo-ready.
+  let exit = EXIT[r.verdict];
+  let verdictOut = r.verdict;
+  if (!goldenOk && (r.verdict === "PASS" || r.verdict === "STOPPED")) {
+    verdictOut = "INCOMPLETE";
+    exit = EXIT.INCOMPLETE;
+  }
+  return { md, verdict: verdictOut, exit, rows, verified, goldenOk, goldenPathProblems: gpProblems };
 }
 
 async function main() {
@@ -105,8 +128,12 @@ async function main() {
   const fill = +argv("--max-region-fill", "0.05");
   const { md, verdict, exit } = await buildHandoff(phaseDir, { maxRegionFill: fill });
   await fs.writeFile(out, md);
+  obsEvent(phaseDir, { type: "handoff", src: "write-handoff", ok: verdict === "PASS", summary: `handoff written — gate ${verdict}`, data: { verdict, out: path.basename(out) } });
+  // the run's last act regenerates the replay player so obs/player.html is always current
+  const player = buildPlayerSafe(phaseDir);
   console.error(`${verdict === "PASS" ? "✓" : "⚠"} handoff written (gate=${verdict}) → ${path.relative(process.cwd(), out)}${verdict === "PASS" ? "" : " — NOT VERIFIED banner is authoritative; do not claim done"}`);
+  if (player) console.error(`▶ run replay: ${path.relative(process.cwd(), player.outPath)} (${player.events} events) — open directly or 'node scripts/obs.mjs serve ${phaseDir}'`);
   process.exit(exit);
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });

@@ -62,14 +62,40 @@ export function instructions(port = 9222) {
   ].join("\n");
 }
 
+// --launch: run a DEDICATED measurement browser (playwright server) and print its ws. For apps
+// whose auth is self-contained (demo user-select sign-in) this is preferable to attaching to the
+// user's personal Chrome: zero tab pollution, immune to personal-browser state (a live run hit a
+// wedge where playwright could no longer attach to a long-lived Chrome session even though raw CDP
+// answered), and killable without touching the user's browser. Runs until killed — start it as a
+// background task and pin the printed ws. NOT for apps needing the user's real logged-in session.
+async function launchServer({ headed = false, port = 9223 } = {}) {
+  const candidates = [process.env.PLAYWRIGHT_CORE, "playwright-core",
+    (process.env.HOME || "") + "/.claude/skills/gstack/node_modules/playwright-core/index.js"].filter(Boolean);
+  let chromium = null;
+  for (const c of candidates) { try { const m = await import(c); chromium = (m.default || m).chromium; break; } catch { /* next */ } }
+  if (!chromium) { console.error("✗ playwright-core not found — `npm i -D playwright-core` or set $PLAYWRIGHT_CORE"); process.exit(3); }
+  // CDP-port launch (NOT launchServer): over CDP every connection shares the browser's DEFAULT
+  // context, so the one-tab-per-run reuse works across separate script invocations — a
+  // launchServer browser gives each connection its own ephemeral context and the tab/auth die
+  // with every call (measured). This mirrors a user Chrome with --remote-debugging-port, but
+  // dedicated and disposable.
+  const browser = await chromium.launch({ headless: !headed, args: [`--remote-debugging-port=${port}`] });
+  const ws = await fromHttp(`http://127.0.0.1:${port}`);
+  if (!ws) { console.error(`✗ launched browser did not expose CDP on :${port}`); await browser.close(); process.exit(3); }
+  process.stdout.write(ws + "\n");
+  console.error(`▶ dedicated measurement browser running (${headed ? "headed" : "headless"}, CDP :${port}). Pin the ws above as browserWs; kill this process at run end.`);
+  await new Promise(() => {});   // hold until killed
+}
+
 async function main() {
   const a = process.argv.slice(2);
   const port = Number((a[a.indexOf("--port") + 1]) || 9222) || 9222;
   const quiet = a.includes("--quiet");
+  if (a.includes("--launch")) return launchServer({ headed: a.includes("--headed") });
   const ws = await resolveEndpoint({ port });
   if (ws) { process.stdout.write(ws + "\n"); process.exit(0); }
   if (!quiet) console.error(instructions(port));
   process.exit(3);
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) main();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main();

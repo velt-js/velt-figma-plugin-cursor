@@ -18,6 +18,7 @@
 
 import { appendFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
+import { obsEvent } from "./obs.mjs";
 
 const a = process.argv.slice(2);
 const argv = (k) => { const i = a.indexOf(k); return i >= 0 ? a[i + 1] : undefined; };
@@ -57,6 +58,7 @@ mkdirSync(phaseDir, { recursive: true });
 const t = new Date().toTimeString().slice(0, 8);
 appendFileSync(path.join(phaseDir, "progress.log"),
   `[${t}] setup started — phase ${phaseId} (preflight next; lines will stream here)\n`);
+obsEvent(phaseDir, { type: "run.start", src: "phase-init", summary: `phase ${phaseId} initialized — preflight next`, data: { phaseId } });
 
 const rel = path.relative(process.cwd(), phaseDir) || ".";
 console.error(`✓ heartbeat live: ${rel}/progress.log`);

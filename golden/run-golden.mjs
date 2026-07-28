@@ -13,15 +13,28 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { compareDecls, verdictOf, BROWSER_PROBE, LAYER_PROBE, reconcilePlan, mountMapDiff, CONTRACT_PROBE, STABILITY_PROBE } from "../scripts/delta-compare.mjs";
+import { compareDecls, compareProp, compareText, verdictOf, BROWSER_PROBE, LAYER_PROBE, reconcilePlan, mountMapDiff, CONTRACT_PROBE, STABILITY_PROBE } from "../scripts/delta-compare.mjs";
 import { verdictGateBlocks } from "../scripts/verdict-gate-blocks.mjs";
 import { assignIcons, normalizeBoxes } from "../scripts/figma-extract.mjs";
 import { verdictGate } from "../scripts/verdict-gate.mjs";
 import { buildChecklist } from "../scripts/build-checklist.mjs";
+import { selectorTokensExist, snapshotCorpus, planSpecValueConflicts, planStructureProblems, structureFingerprint, styleCoverageGaps, nodeKindOf, textContentOf, isStaticChromeText, scaffoldProbes, probeBindingProblems, deriveThreadStructureContracts, stylePlanAuthorshipProblems } from "../scripts/brief-scaffold.mjs";
+import { evaluateInvariantResult } from "../scripts/structural-invariants.mjs";
+import { classifyDiff, issueKey, workOrderPriority, isTemplatedMiss, boxIoU } from "../scripts/emit-judge-defects.mjs";
+import { collectRequiredWiring, evaluateHostSource, checkPropInSource } from "../scripts/verify-host-wiring.mjs";
+import { applicableChecklist, evaluateChecklistDoc } from "../scripts/mechanism-checklist.mjs";
+import { goldenPathProblems } from "../scripts/golden-path-check.mjs";
+import { findRegressions, fingerprintBlock } from "../scripts/regression-guard.mjs";
+import { selectorMatchesSnapshots, repairSelector, repairDrive } from "../scripts/drive-repair.mjs";
+import { skeletonProblems } from "../scripts/skeleton-check.mjs";
+import { SNAPSHOT_FN } from "../scripts/dom-snapshot.mjs";
+import { calibrateJudgeValidation } from "./judge-validation.mjs";
+import { calibrateDefectContract } from "./defect-contract.mjs";
+import { calibrateCompiledOracle } from "./compiled-oracle.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const GUIDE = path.join(ROOT, "guide");
-const EXPECTED_DIR = path.join(ROOT, "golden", "expected");
+
+
 const CALIB_DIR = path.join(ROOT, "golden", "calibration");
 const CALIB_LAYOUT_DIR = path.join(ROOT, "golden", "calibration-layout");
 
@@ -110,7 +123,7 @@ async function calibrateIconResolver() {
 }
 
 // Calibrate the ACTUAL injected probe STRING (not the imported helpers). The Judge ships
-// `BROWSER_PROBE` into the page via the browser tool (CDP Runtime.evaluate); if any module-scope identifier the
+// `BROWSER_PROBE` into the page via the Cursor browser tool; if any module-scope identifier the
 // toString-assembled functions close over (e.g. `nums`) isn't inlined, the probe throws at
 // runtime and the importing tests never notice. So execute the real string against a tiny
 // fake DOM (no deps) and assert it runs end-to-end on style (length!) + layout.
@@ -477,50 +490,431 @@ function calibrateContentIndependentGate() {
   return true;
 }
 
-async function guideText() {
-  // concatenate all guide/reference + key guide pages once, for fast substring checks
-  const files = [];
-  async function walk(d) {
-    for (const e of await fs.readdir(d, { withFileTypes: true })) {
-      const full = path.join(d, e.name);
-      if (e.isDirectory()) await walk(full);
-      else if (e.name.endsWith(".md")) files.push(full);
+// Calibrate the TWO-PHASE planning gates (loop1 fix set):
+// (a) a style-plan selector whose tokens exist in NO dom-snapshot must be caught by the style lint
+//     (a guessed selector binds to nothing and fails silently — half of a verified run's defects);
+// (b) the snapshot's overlap scan (executed as the REAL injected string on a fake DOM) must catch a
+//     planted extra glyph — the source the suppression rows are built from;
+// (c) a plan-style value that CONFLICTS with its cited spec node must emit a plan-error(style)
+//     conflict (the '#f1efec paraphrase' failure class — decls are verbatim, never paraphrased).
+function calibrateTwoPhase() {
+  const problems = [];
+
+  // (a) selector-reality lint
+  const snapshots = [{
+    tree: {
+      tag: "velt-comments-sidebar-wireframe", classes: ["velt-sidebar"], box: { x: 0, y: 0, w: 354, h: 800 }, visible: true, paints: {},
+      children: [
+        { tag: "div", classes: ["vc-card", "velt-thread-card"], box: { x: 0, y: 0, w: 322, h: 64 }, visible: true, paints: {}, children: [] },
+      ],
+    },
+  }];
+  const corpus = snapshotCorpus(snapshots);
+  if (selectorTokensExist(".vc-card:hover", corpus).length) problems.push("a REAL snapshot selector (.vc-card:hover) must pass the token check");
+  if (selectorTokensExist("velt-comments-sidebar-wireframe .velt-thread-card", corpus).length) problems.push("a real tag+class combo must pass the token check");
+  const missing = selectorTokensExist(".velt-guessed-internal > .vc-card", corpus);
+  if (!missing.includes(".velt-guessed-internal")) problems.push(`a GUESSED selector must be caught with the missing token named; got ${JSON.stringify(missing)}`);
+
+  // (b) the REAL snapshot string catches a planted extra glyph (overlap) + zero-size content
+  const cs = (over) => Object.assign({ display: "block", visibility: "visible", opacity: "1", backgroundColor: "rgba(0, 0, 0, 0)", borderTopWidth: "0px", borderTopStyle: "none", borderTopColor: "rgb(0,0,0)", boxShadow: "none", outlineWidth: "0px", outlineStyle: "none", outlineColor: "rgb(0,0,0)", borderTopLeftRadius: "0px" }, over || {});
+  const mkEl = (tag, classes, r, styles) => {
+    const el = { tagName: tag.toUpperCase(), nodeType: 1, classList: classes, id: "", _r: r, _s: cs(styles), children: [], childNodes: [],
+      getBoundingClientRect() { return this._r; }, querySelectorAll: () => [] };
+    return el;
+  };
+  const rect = (x, y, w, h) => ({ left: x, top: y, width: w, height: h });
+  const surf = mkEl("div", ["vc-slot"], rect(0, 0, 100, 40));
+  const designGlyph = mkEl("svg", ["vc-send-icon"], rect(10, 10, 16, 16));
+  const defaultGlyph = mkEl("svg", ["s-send-default"], rect(12, 10, 16, 16));   // planted extra — overlaps
+  // planted DEFAULT-SPACING internal (the loop2 compounded-indent class): an SDK element with
+  // non-zero computed padding must land in the defaultSpacing hint for a mandatory disposition.
+  const spacedInternal = mkEl("div", ["velt-thread-card--message"], rect(0, 30, 100, 10), { paddingLeft: "48px", paddingTop: "0px", paddingRight: "0px", paddingBottom: "0px", marginTop: "12.8px" });
+  surf.children = [designGlyph, defaultGlyph, spacedInternal];
+  const doc = { querySelectorAll: (sel) => (sel === ".vc-slot" ? [surf] : []), querySelector: (sel) => (sel === ".vc-slot" ? surf : null) };
+  const gcs = (n) => n._s;
+  let snap;
+  try {
+    const run = new Function("document", "getComputedStyle", "sel", "depth", "return (" + SNAPSHOT_FN + ")(sel, depth);");
+    snap = run(doc, gcs, ".vc-slot", 10);
+  } catch (e) { problems.push("SNAPSHOT_FN string threw at runtime (free var missing): " + e.message); }
+  if (snap && !(snap.hints && snap.hints.overlaps.length === 1)) problems.push(`the overlap scan must catch the planted extra glyph (1 overlap); got ${JSON.stringify(snap && snap.hints && snap.hints.overlaps)}`);
+  const ds = snap && snap.hints && snap.hints.defaultSpacing;
+  if (!(ds && ds.length === 1 && /velt-thread-card--message/.test(ds[0].selector) && /48px/.test(ds[0].spacing.padding || "")))
+    problems.push(`the default-spacing scan must catch the planted SDK padding (velt-thread-card--message 48px, the loop2 compounded-indent class); got ${JSON.stringify(ds)}`);
+
+  // (c) plan-vs-spec value conflict ⇒ plan-error(style) (the '#f1efec paraphrase' case)
+  const specNode = { id: "369:29469", cssDecls: { background: "#ffffff", border: "1px solid #f1efec" } };
+  const badRule = { selector: ".vc-composer", specNodeId: "369:29469", purpose: "style", decls: { background: "#f1efec" } };
+  const conflicts = planSpecValueConflicts(badRule, specNode);
+  if (conflicts.length !== 1 || conflicts[0].attribution !== "plan-error(style)" || conflicts[0].prop !== "background")
+    problems.push(`the paraphrased bg must emit ONE plan-error(style) conflict on 'background'; got ${JSON.stringify(conflicts)}`);
+  const goodRule = { selector: ".vc-composer", specNodeId: "369:29469", purpose: "style", decls: { background: "#FFFFFF", padding: "12px" } };
+  if (planSpecValueConflicts(goodRule, specNode).length) problems.push("verbatim values (case-insensitive) + composed extra props must NOT conflict");
+  const neutralizeRule = { selector: ".velt-wrapper", specNodeId: "369:29469", purpose: "neutralize-wrapper", decls: { background: "transparent" } };
+  if (planSpecValueConflicts(neutralizeRule, specNode).length) problems.push("neutralize-wrapper rules are exempt from the verbatim check (their decls are the zeroing set)");
+
+  // (d) structure-plan completeness: a leaf planned WITHOUT its container chain (the graded-trial
+  //     gap class: List/Threads/ThreadCard missing while their leaves were planned) must be caught
+  //     by name; the complete plan passes; own-markup pseudo-slots are flagged as hygiene.
+  const miniManifest = { components: { VeltCommentDialogWireframe: {
+    rootWireframe: "velt-comment-dialog-wireframe",
+    slots: [
+      { reactPath: "VeltCommentDialogWireframe.Threads", role: "container", tag: "velt-comment-dialog-threads-wireframe" },
+      { reactPath: "VeltCommentDialogWireframe.ThreadCard", role: "container", tag: "velt-comment-dialog-thread-card-wireframe" },
+      { reactPath: "VeltCommentDialogWireframe.ThreadCard.Name", role: "item", tag: "velt-comment-dialog-thread-card-name-wireframe" },
+    ],
+    contract: { parts: [{ part: "ThreadCard", selector: ".tc", requiredAncestorHint: "velt-comment-dialog-threads-wireframe" }] },
+  } } };
+  const gappyPlan = { components: [{ id: "dialog", veltComponents: { wireframe: "VeltCommentDialogWireframe" }, slots: [
+    { slot: "VeltCommentDialogWireframe.ThreadCard.Name", fillWith: "name" },
+    { slot: "VeltCommentDialogWireframe.header-title (own markup)", fillWith: "Comments" },
+  ] }] };
+  const gaps = planStructureProblems(gappyPlan, miniManifest);
+  if (!gaps.some((p) => p.kind === "missing-container" && p.missing === "VeltCommentDialogWireframe.ThreadCard"))
+    problems.push(`a leaf without its container chain must flag the missing container by name; got ${JSON.stringify(gaps)}`);
+  if (!gaps.some((p) => p.kind === "not-a-slot")) problems.push("an own-markup pseudo-slot row must be flagged as not-a-slot hygiene");
+  const fullPlan = { components: [{ id: "dialog", veltComponents: { wireframe: "VeltCommentDialogWireframe" }, slots: [
+    { slot: "VeltCommentDialogWireframe.Threads" },
+    { slot: "VeltCommentDialogWireframe.ThreadCard" },
+    { slot: "VeltCommentDialogWireframe.ThreadCard.Name", fillWith: "name" },
+  ] }] };
+  if (planStructureProblems(fullPlan, miniManifest).length) problems.push(`a complete container chain must pass; got ${JSON.stringify(planStructureProblems(fullPlan, miniManifest))}`);
+
+  // (e) drive verify-and-repair (the build-structure trial class: 5/8 planner drives dead against
+  //     the REAL DOM, every fix derivable from the snapshot) — a nesting-wrong descendant selector
+  //     must repair to its matching suffix; a comment-only eval stub must be removed; a truly-dead
+  //     .vc- selector must be unrepairable; host-app chrome must be exempt (outside the snapshot).
+  const driveSnap = [{ tree: {
+    tag: "div", classes: ["vc-list"], children: [
+      { tag: "div", classes: ["vc-card"], children: [] },
+      { tag: "div", classes: ["vc-reply"], children: [] },   // Body-level sibling, NOT card-nested
+    ],
+  } }];
+  if (!selectorMatchesSnapshots(".vc-list .vc-reply", driveSnap)) problems.push("a real descendant chain must match the snapshot tree");
+  if (selectorMatchesSnapshots(".vc-card .vc-reply", driveSnap)) problems.push("a nesting-WRONG chain (.vc-card .vc-reply when Reply is a sibling) must NOT match");
+  const driveBrief = { drive: { steps: [
+    { action: "click", selector: ".hw-sidebar-toggle" },
+    { action: "eval", js: "/* assumed→verify-live: seed 1 reply */" },
+    { action: "waitFor", selector: ".vc-list .vc-card ~ .vc-reply" },
+  ], assert: ".vc-card .vc-reply" } };
+  const driveRep = repairDrive(driveBrief, driveSnap);
+  if (driveBrief.drive.assert !== ".vc-reply") problems.push(`the nesting-wrong assert must repair to its matching suffix '.vc-reply'; got '${driveBrief.drive.assert}'`);
+  if (driveBrief.drive.steps.some((s) => s.action === "eval")) problems.push("a comment-only eval stub must be removed from the drive");
+  if (driveRep.hostChrome.length !== 1) problems.push(`host-app chrome (.hw-sidebar-toggle) must be exempt, not failed; got ${JSON.stringify(driveRep.hostChrome)}`);
+  if (repairSelector(".vc-card .velt-nonexistent", driveSnap)) problems.push("a truly-dead selector must stay unrepairable (never guessed)");
+
+  // (f) skeleton-check (the loop2 build-structure classes): a planned class absent from the DOM
+  //     must be caught; a class bound only to a 0-size twin must be caught; a design ROW rendered
+  //     as a COLUMN (the stacked-header) must be caught; the correct skeleton passes.
+  const skelPlan = { components: [{ slots: [
+    { slot: "W.Header", vcClass: "vc-card__header", specNodeId: "1:1", role: "container" },
+    { slot: "W.MoreReply", vcClass: "vc-morereply", specNodeId: null, role: "container" },
+  ] }], vcClasses: { card: { "vc-thread-connector": "1px rail" } } };
+  const skelSpec = new Map([["1:1", { id: "1:1", cssDecls: { display: "flex", "flex-direction": "row", "align-items": "center" } }]]);
+  const stackedSnap = [{ blockId: "b1", tree: { tag: "div", classes: ["vc-panel"], box: { x: 0, y: 0, w: 320, h: 600 }, children: [
+    { tag: "div", classes: ["vc-card__header"], box: { x: 0, y: 0, w: 300, h: 90 }, children: [
+      { tag: "div", classes: ["vc-avatar"], box: { x: 0, y: 0, w: 300, h: 32 }, children: [] },
+      { tag: "span", classes: ["vc-name"], box: { x: 0, y: 36, w: 300, h: 20 }, children: [] },
+      { tag: "span", classes: ["vc-time"], box: { x: 0, y: 60, w: 300, h: 16 }, children: [] },
+    ] },
+    { tag: "velt-more-reply", classes: ["vc-morereply"], box: { x: 0, y: 0, w: 0, h: 0 }, children: [] },   // 0-size twin only
+  ] } }];
+  const skelProblems = skeletonProblems(skelPlan, stackedSnap, skelSpec);
+  if (!skelProblems.some((p) => p.kind === "missing-class" && p.class === "vc-thread-connector")) problems.push(`a planned class absent from the DOM must be caught by name; got ${JSON.stringify(skelProblems.map((p) => p.kind + ":" + p.class))}`);
+  if (!skelProblems.some((p) => p.kind === "zero-size-class" && p.class === "vc-morereply")) problems.push("a planned class bound only to a 0-size twin must be caught (the mis-mounted-template class)");
+  if (!skelProblems.some((p) => p.kind === "arrangement" && p.class === "vc-card__header" && p.want === "row" && p.got === "column")) problems.push("a design ROW rendered as a COLUMN (the stacked header) must be caught from geometry alone");
+  const rowSnap = [{ blockId: "b1", tree: { tag: "div", classes: ["vc-panel"], box: { x: 0, y: 0, w: 320, h: 600 }, children: [
+    { tag: "div", classes: ["vc-card__header"], box: { x: 0, y: 0, w: 300, h: 20 }, children: [
+      { tag: "div", classes: ["vc-avatar"], box: { x: 0, y: 0, w: 20, h: 20 }, paints: { background: "rgb(51,63,64)" }, children: [] },
+      { tag: "span", classes: ["vc-name"], box: { x: 28, y: 2, w: 90, h: 16 }, text: "Wilson", children: [] },
+      { tag: "span", classes: ["vc-time"], box: { x: 124, y: 2, w: 24, h: 16 }, text: "1m", children: [] },
+    ] },
+    { tag: "velt-more-reply", classes: ["vc-morereply"], box: { x: 0, y: 40, w: 266, h: 33 }, text: "Show 2 replies", children: [] },
+    { tag: "div", classes: ["vc-thread-connector"], box: { x: 9, y: 20, w: 1, h: 40 }, children: [] },
+  ] } }];
+  if (skeletonProblems(skelPlan, rowSnap, skelSpec).length) problems.push(`a correct skeleton must pass skeleton-check; got ${JSON.stringify(skeletonProblems(skelPlan, rowSnap, skelSpec))}`);
+  // hollow-container (the v4 empty-composer class): a sized container with NO visible content
+  // anywhere inside must be caught; the content-bearing one (above) passes.
+  const hollowSnap = JSON.parse(JSON.stringify(rowSnap));
+  const hdr = hollowSnap[0].tree.children[0];
+  hdr.children.forEach((c) => { delete c.text; c.paints = {}; c.box = { ...c.box, w: 0, h: 0 }; });
+  const hollow = skeletonProblems(skelPlan, hollowSnap, skelSpec, { presenceOnly: true });
+  if (!hollow.some((p) => p.kind === "hollow-container" && p.class === "vc-card__header")) problems.push(`a sized container with no visible content must be caught as hollow-container; got ${JSON.stringify(hollow.map((p) => p.kind + ":" + p.class))}`);
+
+  // (g2) style coverage (the v3 raw-chrome class): a visible painted element claimed by NO rule
+  //      must be flagged; a claimed one and a defaultOk-excused one must pass; ancestor claims count.
+  const covSnap = [{ blockId: "b1", tree: { tag: "div", classes: ["vc-panel"], box: { x: 0, y: 0, w: 320, h: 600 }, visible: true, paints: {}, children: [
+    { tag: "div", classes: ["vc-card"], box: { x: 0, y: 0, w: 300, h: 90 }, visible: true, paints: { background: "rgb(255,255,255)" }, children: [
+      { tag: "span", classes: ["vc-name"], box: { x: 28, y: 8, w: 90, h: 16 }, visible: true, paints: {}, text: "Wilson", children: [] },
+      { tag: "span", classes: ["vc-time-inherits"], box: { x: 124, y: 8, w: 24, h: 16 }, visible: true, paints: {}, text: "1m", children: [] },
+      { tag: "div", classes: ["s-inner-chip"], box: { x: 28, y: 40, w: 60, h: 18 }, visible: true, paints: { background: "rgb(200,200,200)" }, children: [] },
+    ] },
+    { tag: "velt-composer", classes: ["velt-composer-strip"], box: { x: 0, y: 100, w: 300, h: 18 }, visible: true, paints: { border: "1px solid rgb(0,0,0)" }, children: [] },   // raw, unclaimed
+    { tag: "div", classes: ["velt-scrollbar-chrome"], box: { x: 310, y: 0, w: 8, h: 600 }, visible: true, paints: { background: "rgb(240,240,240)" }, children: [] },   // excused
+  ] } }];
+  const covRules = [{ selector: ".vc-card" }, { selector: ".vc-name" }];
+  const covGaps = styleCoverageGaps(covRules, covSnap, [{ selector: ".velt-scrollbar-chrome", reason: "native scrollbar ok" }]);
+  if (!(covGaps.length === 2 && covGaps.some((g) => /velt-composer/.test(g.selector)) && covGaps.some((g) => /s-inner-chip/.test(g.selector))))
+    problems.push(`coverage must flag the raw unclaimed painted elements (composer strip + inner chip) and ONLY those — text under a claimed ancestor inherits, defaultOk excuses; got ${JSON.stringify(covGaps)}`);
+  if (styleCoverageGaps([{ selector: ".velt-composer-strip" }, { selector: ".s-inner-chip" }, ...covRules], covSnap, [{ selector: ".velt-scrollbar-chrome", reason: "native scrollbar ok" }]).length) problems.push("rules claiming the painted elements must clear their coverage gaps");
+
+  // (g) structure fingerprint (the stale-style-plan gate): applying CSS (boxes/paints change) must
+  //     NOT change it; a markup regroup MUST; transient state classes must not.
+  const fpBase = structureFingerprint(rowSnap);
+  const restyled = JSON.parse(JSON.stringify(rowSnap));
+  restyled[0].tree.children[0].box = { x: 0, y: 0, w: 298, h: 24 };   // style build moved boxes
+  restyled[0].tree.children[0].children[1].classes.push("velt-comment-dialog--selected");   // transient state
+  if (structureFingerprint(restyled) !== fpBase) problems.push("box/paint/state-class changes must NOT change the structure fingerprint (a style build must not invalidate its own plan)");
+  const regrouped = JSON.parse(JSON.stringify(rowSnap));
+  regrouped[0].tree.children[0].children = [{ tag: "div", classes: ["vc-card__header-row"], box: { x: 0, y: 0, w: 300, h: 20 }, children: regrouped[0].tree.children[0].children }];
+  if (structureFingerprint(regrouped) === fpBase) problems.push("a markup regroup MUST change the structure fingerprint (the stale-plan gate's trigger)");
+  const dataGrew = JSON.parse(JSON.stringify(rowSnap));
+  dataGrew[0].tree.children.splice(1, 0, JSON.parse(JSON.stringify(dataGrew[0].tree.children[0])));   // another identical card posted (smoke test data)
+  if (structureFingerprint(dataGrew) !== fpBase) problems.push("REPEATED same-shape siblings (new comment posted during verification) must NOT change the fingerprint — data growth is not a structure change");
+
+  // (h) nodeKind classification (the v4 root cause): a Figma auto-layout wrapper (only layout props)
+  //     is "layout-frame" (flattens live, no own selector/box); a painted box is "paint"; a glyph
+  //     fill is "paint"; text is "text". Misclassifying scaffolding as a real element is the 49%-noise
+  //     + collision-split regression source.
+  if (nodeKindOf({ cssDecls: { display: "flex", "flex-direction": "row", gap: "8px", "align-items": "center" } }) !== "layout-frame") problems.push("a pure auto-layout wrapper (display/flex/gap/align only) must classify as layout-frame");
+  if (nodeKindOf({ cssDecls: { background: "#fff", "border-radius": "8px", "box-shadow": "0 0 0 1px #0001" } }) !== "paint") problems.push("a painted box (background/radius/shadow) must classify as paint");
+  if (nodeKindOf({ type: "VECTOR", cssDecls: { fill: "#1a1917", width: "12px", height: "12px" } }) !== "paint") problems.push("a glyph with a fill must classify as paint");
+  if (nodeKindOf({ text: { content: "Wilson" }, cssDecls: { color: "#1a1917", "font-size": "12px" } }) !== "text") problems.push("a text run must classify as text");
+
+  // (i) selector-collision is NOT a defect (the v4 regression): the REAL BROWSER_PROBE, run over a
+  //     DOM where 2 layout-frame rows share one live class, must NOT FAIL on collision and must NOT
+  //     emit a selector-collision diff row — only advisory metadata.
+  {
+    const cs2 = () => ({ display: "flex", gap: "8px", getPropertyValue(p) { return this[p] || ""; } });
+    const rect2 = (w, h) => ({ left: 0, top: 0, width: w, height: h, right: w, bottom: h });
+    const header = { tagName: "DIV", classList: ["vc-card__header"], _r: rect2(300, 20), getBoundingClientRect() { return this._r; }, closest: () => null };
+    const panel = { tagName: "DIV", classList: ["vc-panel"], _r: rect2(320, 200), getBoundingClientRect() { return this._r; }, closest: () => null };
+    const doc2 = { body: panel, querySelectorAll: (sel) => (sel === ".vc-panel" ? [panel] : sel === ".vc-card__header" ? [header] : []), querySelector: (sel) => (sel === ".vc-panel" ? panel : null) };
+    const spec = { surfaceSelector: ".vc-panel", elements: [
+      { name: "item", selector: ".vc-card__header", expected: { display: "flex" } },               // layout-frame A
+      { name: "profile-picture-and-name", selector: ".vc-card__header", expected: { gap: "8px" } }, // layout-frame B (same live element)
+    ] };
+    try {
+      const run = new Function("document", "getComputedStyle", "SPEC", "return (" + BROWSER_PROBE + ")(SPEC);");
+      const res = run(doc2, cs2, spec);
+      if ((res.diffs || []).some((d) => d.property === "selector-collision")) problems.push("selector-collision must NOT be emitted as a diff row (benign design→live flatten)");
+    } catch (e) { problems.push("BROWSER_PROBE threw on the collision calibration: " + e.message); }
+  }
+
+  // (j) regression guard (the missing build-over-build gate): a painted+sized element going
+  //     transparent/collapsed is a regression; an IMPROVEMENT (fewer diffs, newly painted) is not.
+  {
+    const baseline = { b1: { els: {
+      card: { paint: true, box: true, present: true },
+      avatar: { paint: true, box: true, present: true },
+      msg: { paint: false, box: true, present: true },
+    }, diffCount: 5 } };
+    const current = { b1: { els: {
+      card: { paint: false, box: true, present: true },   // REGRESSION: lost paint (border/bg gone)
+      avatar: { paint: true, box: false, present: true },  // REGRESSION: box collapsed to 0
+      msg: { paint: true, box: true, present: true },       // improvement: now painted (must NOT flag)
+    }, diffCount: 3 } };                                     // fewer diffs overall (improvement)
+    const regs = findRegressions(baseline, current);
+    const hard = regs.filter((r) => !r.advisory);
+    if (!hard.some((r) => r.kind === "paint-lost" && r.element === "card")) problems.push("regression guard must flag a painted element going transparent (the lost-card-border class)");
+    if (!hard.some((r) => r.kind === "box-collapsed" && r.element === "avatar")) problems.push("regression guard must flag a sized element collapsing to 0 (the chrome-on-0-height-wrapper class)");
+    if (hard.some((r) => r.element === "msg")) problems.push("regression guard must NOT flag an IMPROVEMENT (element newly painted) as a regression");
+    // a strictly-better build (no paint/box loss) must produce zero hard regressions
+    const betterOnly = findRegressions(baseline, { b1: { els: { card: { paint: true, box: true, present: true } }, diffCount: 2 } }).filter((r) => !r.advisory);
+    if (betterOnly.length) problems.push("a strictly-improved build must produce no hard regressions");
+  }
+
+  if (problems.length) { for (const p of problems) console.error("  ✗ two-phase-calibration: " + p); return false; }
+  console.log(`✓ Two-phase gates calibrated — guessed style-plan selector caught by name; the REAL snapshot string flags the planted extra glyph (suppression-row source); plan-vs-spec value conflict emits plan-error(style); leaf-without-container-chain caught by name (the graded-trial gap class); nesting-wrong drive selector repaired to its snapshot-real suffix; skeleton-check catches missing/zero-size planned classes + design-row-rendered-as-column (the stacked header); structure fingerprint survives restyling but trips on a markup regroup (the stale-style-plan gate); nodeKind classifies layout-frame/paint/text; selector-collision is advisory-not-defect; regression guard catches paint-lost/box-collapsed but never punishes improvements`);
+  return true;
+}
+
+/** Accuracy-plan calibrations: expectedTexts from n.text.content, compareText, probe misbind, coverage floor, invariants. */
+async function calibrateAccuracyFixes() {
+  const problems = [];
+
+  // (a) textContentOf reads object OR string
+  if (textContentOf({ text: { content: "Comment or tag others with @" } }) !== "Comment or tag others with @")
+    problems.push("textContentOf must read n.text.content objects (extractor shape)");
+  if (textContentOf({ text: "Hello" }) !== "Hello") problems.push("textContentOf must still accept bare strings");
+
+  // (b) expectedTexts derives from object text on chrome nodes
+  const slice = [
+    { id: "root", name: "Frame", cssDecls: { display: "flex" } },
+    { id: "p1", name: "Placeholder", cssDecls: { color: "#848079", "font-size": "14px" }, text: { content: "Comment or tag others with @", family: "Poppins" } },
+    { id: "m1", name: "Message body", cssDecls: { color: "#1a1917", "font-size": "14px" }, text: { content: "This is a long example comment that should NOT be fixture-gated as chrome", family: "Poppins" } },
+  ];
+  const brief = scaffoldProbes({ id: "b1", role: "state", figmaNodeId: "root", component: "VeltCommentDialogWireframe" }, slice, {
+    name: "VeltCommentDialogWireframe",
+    contract: { parts: [
+      { part: "ThreadCard", selectorHint: "velt-comment-dialog-thread-card-wireframe", requiredAncestorHint: "velt-comment-dialog-threads-wireframe" },
+      { part: "Reply", selectorHint: "velt-comment-dialog-thread-card-reply-wireframe", requiredAncestorHint: "velt-comment-dialog-thread-card-wireframe" },
+    ] },
+    slots: [],
+  });
+  if (!(brief.fixture.expectedTexts || []).includes("Comment or tag others with @"))
+    problems.push(`scaffold must put placeholder chrome into expectedTexts; got ${JSON.stringify(brief.fixture.expectedTexts)}`);
+  if ((brief.fixture.expectedTexts || []).some((t) => /long example comment/i.test(t)))
+    problems.push("long message bodies must NOT enter expectedTexts (data, not chrome)");
+  const ph = (brief.browser.elements || []).find((e) => e.name === "placeholder");
+  if (!ph?.expectedText) problems.push("placeholder element must carry expectedText for delta-compare");
+  if (!(brief.coverage?.minAssert >= 2)) problems.push("coverage.minAssert must be stamped on briefs");
+  if (!deriveThreadStructureContracts({ name: "VeltCommentDialogWireframe", contract: { parts: [{ part: "Reply" }, { part: "ThreadCard" }] } }).some((c) => c.part === "Reply.insideCard"))
+    problems.push("deriveThreadStructureContracts must emit Reply.insideCard");
+
+  // (c) compareText gates empty placeholder
+  const empty = compareText("Comment or tag others with @", "");
+  if (empty.pass) problems.push("compareText must FAIL on empty rendered placeholder");
+  const ok = compareText("Comment or tag others with @", "Comment or tag others with @");
+  if (!ok.pass) problems.push("compareText must PASS on exact match");
+
+  // (d) probeBindingProblems catches Placeholder → .vc-message
+  const badBrief = { browser: { elements: [{ name: "placeholder", selector: ".vc-message", expected: { color: "#1a1917" }, sourceNodeId: "p1" }] } };
+  const binds = probeBindingProblems(badBrief, new Map([["p1", { id: "p1", cssDecls: { color: "#848079" }, text: { content: "Comment or tag others with @" } }]]));
+  if (!binds.some((p) => p.kind === "placeholder-misbound")) problems.push("probeBindingProblems must catch Placeholder → .vc-message");
+  if (!binds.some((p) => p.kind === "probe-value-conflict" && p.prop === "color")) problems.push("probeBindingProblems must catch color conflict vs designSpec");
+
+  // (e) coverage floor uses minAssert from report
+  const rich = verdictGateBlocks(
+    { blocks: [{ id: "b1", role: "state", familyId: "fam", component: "Card" }] },
+    { blocks: { b1: {
+      built: true, driven: true, capturePng: "c.png", framePng: "f.png",
+      visualDiff: { diffPct: 0, regions: [] },
+      deltaCompare: { ok: true, diffs: [], checked: ["a", "b", "c"], gaps: [], coverage: { paintText: 10, minAssert: 6 } },
+      stability: { ok: true, targets: [] },
+    } } },
+  );
+  if (rich.verdict !== "INCOMPLETE" || !rich.missing.some((m) => /need ≥6|too thin/.test(m)))
+    problems.push(`coverage floor must INCOMPLETE when checked(3) < minAssert(6); got ${rich.verdict} ${JSON.stringify(rich.missing)}`);
+
+  // (f) structural invariant: reply outside card
+  const inv = evaluateInvariantResult({ cards: 1, replies: 1, composers: 1, problems: [{ kind: "reply-outside-card" }] }, { expectCards: true });
+  if (inv.ok) problems.push("evaluateInvariantResult must FAIL on reply-outside-card");
+
+  // (g) isStaticChromeText — instructional placeholder yes; sentence-like "Placeholder" body no
+  if (!isStaticChromeText({ name: "Placeholder", text: { content: "Comment or tag others with @" } }))
+    problems.push("placeholder must count as static chrome text");
+  if (isStaticChromeText({ name: "Placeholder", text: { content: "Make sure to update the NDA to our standards." } }))
+    problems.push("sentence-like message bodies named Placeholder must NOT count as chrome");
+
+  // (h) painted root surface stays measurable (card/panel chrome on the frame)
+  const withRoot = scaffoldProbes(
+    { id: "dlg", role: "state", figmaNodeId: "root", component: "VeltCommentDialogWireframe" },
+    [
+      { id: "root", name: "Single Comment Dialog", cssDecls: { display: "flex", "border-radius": "12px", "box-shadow": "0 0 0 1px #e0e0e0", background: "#fff", width: "320px" }, box: { x: 0, y: 0, w: 320, h: 200 } },
+      { id: "p1", name: "Placeholder", cssDecls: { color: "#848079" }, text: { content: "Comment or tag others with @" } },
+    ],
+    { name: "VeltCommentDialogWireframe", contract: { parts: [] }, slots: [] },
+  );
+  if (!(withRoot.browser.elements || []).some((e) => e.surfaceRoot || e.sourceNodeId === "root"))
+    problems.push("painted root surfaces must be scaffolded as measurable elements");
+
+  // (i) emit-judge-defects classification — no silent drop; avatar→plan; layout-frame→noise;
+  // content-height→noise ONLY below the F9 severity floor (>30% off surfaces as layout-spacing)
+  const av = classifyDiff({ element: "avatar", property: "background", spec: "#eee", rendered: "transparent" }, { nodeKind: "paint" });
+  if (av.attribution !== "plan-error(style)") problems.push("avatar diffs must be plan-error(style)");
+  const lf = classifyDiff({ element: "frame-1", property: "padding", spec: "8px", rendered: "0px" }, { nodeKind: "layout-frame" });
+  if (lf.attribution !== "noise") problems.push("layout-frame padding must be noise ledger, not silent drop");
+  const chSmall = classifyDiff({ element: "(gross)", property: "content-height", spec: "100px", rendered: "110px" }, {});
+  if (chSmall.attribution !== "noise") problems.push("content-height within floor must be noise (data-density)");
+  const chBig = classifyDiff({ element: "(gross)", property: "content-height", spec: "100px", rendered: "400px" }, {});
+  if (chBig.attribution !== "builder-error" || chBig.severityFloor !== true)
+    problems.push("F9: content-height >30% off must cross the severity floor to builder-error, not noise");
+  const gapBig = classifyDiff({ element: "card↔card", property: "gap.y", spec: "16px", rendered: "8px" }, {});
+  if (gapBig.attribution !== "builder-error" || gapBig.severityFloor !== true)
+    problems.push("F9: gap 2x off spec must cross the severity floor");
+  if (workOrderPriority({ issueKey: "x.gap.y", property: "gap.y", severityFloor: true }).label !== "layout-spacing")
+    problems.push("F9: severity-floor rows must rank P1 layout-spacing");
+  const dataText = classifyDiff({ element: "name", property: "text", spec: "Reply", rendered: "Me" }, {});
+  if (dataText.attribution !== "noise") problems.push("F5: user-data text rows (name/timestamp) must be noise — data is never a defect");
+  const phText = classifyDiff({ element: "composer-placeholder", property: "text", spec: "Comment or tag others", rendered: "" }, {});
+  if (phText.attribution !== "builder-error") problems.push("placeholder text rows must stay builder-error");
+  const key = issueKey({ element: "iconbutton", property: "box.w" });
+  if (!/\.size$/.test(key)) problems.push("width/height must collapse to issueKey …size");
+  if (workOrderPriority({ issueKey: "host-wiring.collapsedComments" }).tier !== "P0")
+    problems.push("host-wiring must be workOrder P0");
+  if (workOrderPriority({ issueKey: "x.content-height", property: "content-height", element: "(gross)" }).tier !== "P3")
+    problems.push("content-height (below floor) must be workOrder P3");
+  // F1: templated region ids can never rank as composed-vision P0
+  if (workOrderPriority({ issueKey: "composed.flow.visual-chrome-0", composed: false, unnamedRegion: true }).tier !== "P1")
+    problems.push("F1: unnamed regions must rank P1, never P0");
+  if (!isTemplatedMiss({ id: "visual-chrome-0", issue: "significant chrome mismatch vs Figma in region 24,132 288x60" }))
+    problems.push("F1: region-templated glance rows must be detected as laundered");
+  if (isTemplatedMiss({ id: "card-border-chrome", issue: "thread cards render as a flat divider list — no border/radius" }))
+    problems.push("F1: named semantic misses must NOT be flagged as templated");
+  // F6: box IoU identity
+  if (boxIoU({ x: 0, y: 0, w: 100, h: 100 }, { x: 5, y: 5, w: 100, h: 100 }) < 0.8)
+    problems.push("F6: near-identical boxes must exceed IoU 0.8");
+  if (boxIoU({ x: 0, y: 0, w: 100, h: 100 }, { x: 200, y: 200, w: 50, h: 50 }) !== 0)
+    problems.push("F6: disjoint boxes must have IoU 0");
+  // F5: canonical comparisons — identical box-shadow written two ways must PASS
+  const shadowSame = compareProp("box-shadow", "0 0 0 1px #e4e1dd", "rgb(228, 225, 221) 0px 0px 0px 1px");
+  if (!shadowSame.pass) problems.push("F5: identical box-shadow (hex vs rgb, colour-first) must pass canonical compare");
+  const shadowDiff = compareProp("box-shadow", "0 4px 12px rgba(0,0,0,.04)", "none");
+  if (shadowDiff.pass !== false) problems.push("F5: missing shadow must still fail");
+  const bgSame = compareProp("border-width", "1px #e4e1dd", "1px rgb(228, 225, 221)");
+  if (!bgSame.pass) problems.push("F5: embedded colour tokens must canonicalize in default string compare");
+
+  // (j) style-plan thin authorship must fail closed (no deterministic spec-join)
+  const thin = stylePlanAuthorshipProblems({
+    generatedBy: "orchestrator deterministic spec-join (style planner looped)",
+    rules: Array.from({ length: 28 }, (_, i) => ({ selector: `.vc-x${i}`, decls: { color: "#000" } })),
+  }, { blocks: Array.from({ length: 8 }, (_, i) => ({ id: `b${i}` })) });
+  if (!thin.some((p) => p.kind === "thin-authorship")) problems.push("deterministic generatedBy must be refused by stylePlanAuthorshipProblems");
+
+  // (k) host-wiring prop presence + required collection
+  const hostSrc = `export function X(){ return (<><VeltCustomization/><VeltComments shadowDom={false} collapsedComments commentPlaceholder="Hi" /><VeltCommentsSidebar embedMode pageMode shadowDom={false} /></>); }`;
+  if (checkPropInSource(hostSrc, "VeltComments", "collapsedComments", true) !== true) problems.push("checkPropInSource must see bare boolean collapsedComments");
+  const req = collectRequiredWiring({
+    components: [{ id: "c", veltComponents: { onComponent: "VeltComments" }, hostProps: [{ prop: "collapsedComments", value: true }] }],
+  }, { alwaysOn: [{ id: "velt-customization-mount", check: "<VeltCustomization />" }] });
+  const ev = evaluateHostSource([{ file: "x.tsx", text: hostSrc }], req);
+  if (ev.missing.length) problems.push("evaluateHostSource should find customization mount + collapsedComments");
+
+  // (l) mechanism checklist requires recorded pass/na
+  const appl = applicableChecklist({ checklist: [{ id: "sidebar-list-scrolls", surface: "comments sidebar" }] }, [{ id: "flow", familyId: "flows", component: "sidebar" }]);
+  const badCheck = evaluateChecklistDoc({ items: [] }, appl);
+  if (badCheck.ok) problems.push("empty mechanism checklist must not evaluate ok");
+  const goodCheck = evaluateChecklistDoc({ items: [{ id: "sidebar-list-scrolls", status: "pass", evidence: "scrollTop=200" }] }, appl);
+  if (!goodCheck.ok) problems.push("recorded pass must evaluate ok");
+
+  // (m) host-chrome notes → noise ledger
+  const hc = classifyDiff({ element: "filter", property: "box.x", spec: "0", rendered: "15", note: "host-chrome offset (R18 out of shared-stylesheet scope)" }, { nodeKind: "paint" });
+  if (hc.attribution !== "noise") problems.push("host-chrome offset note must classify as noise");
+
+  // (n) golden-path-check fails closed on thin style + missing host/checklist
+  {
+    const tmp = await fs.mkdtemp(path.join(ROOT, "golden", ".gp-"));
+    try {
+      await fs.writeFile(path.join(tmp, "blocks.json"), JSON.stringify({ blocks: [{ id: "flow", component: "sidebar" }] }));
+      await fs.writeFile(path.join(tmp, "plan-style.json"), JSON.stringify({
+        generatedBy: "orchestrator deterministic spec-join",
+        rules: Array.from({ length: 40 }, (_, i) => ({ selector: `.a${i}`, decls: { color: "#000" } })),
+      }));
+      await fs.writeFile(path.join(tmp, "host-wiring.json"), JSON.stringify({ ok: false, missing: [{ prop: "collapsedComments" }] }));
+      const gps = await goldenPathProblems(tmp);
+      if (!gps.some((p) => p.gate === "host-wiring")) problems.push("goldenPathProblems must flag host-wiring");
+      if (!gps.some((p) => p.gate === "style-plan")) problems.push("goldenPathProblems must flag thin style authorship");
+      if (!gps.some((p) => p.gate === "mechanism-checklist")) problems.push("goldenPathProblems must flag missing mechanism-checklist");
+    } finally {
+      await fs.rm(tmp, { recursive: true, force: true }).catch(() => {});
     }
   }
-  await walk(GUIDE);
-  return (await Promise.all(files.map((f) => fs.readFile(f, "utf8")))).join("\n");
+
+  if (problems.length) { for (const p of problems) console.error("  ✗ accuracy-fixes: " + p); return false; }
+  console.log("✓ Accuracy-fix calibrations — expectedTexts; compareText; placeholder misbind; coverage; thread contracts; structural invariants; emit; golden-path authorship/host/checklist");
+  return true;
 }
 
 async function main() {
-  const text = await guideText();
-  const catalog = await fs.readFile(path.join(GUIDE, "reference", "component-catalog.md"), "utf8");
-  const fixtures = (await fs.readdir(EXPECTED_DIR)).filter((f) => f.endsWith(".expected.json"));
-
   let failed = 0;
-  for (const file of fixtures) {
-    const exp = JSON.parse(await fs.readFile(path.join(EXPECTED_DIR, file), "utf8"));
-    const problems = [];
+  // (the June golden-design fixtures — designs/ + expected/ — were removed 2026-07-22; the
+  // calibration suites below are the regression net. Guide integrity is check-guide.mjs's job.)
 
-    if (!catalog.includes(exp.surface)) problems.push(`surface not in component-catalog: ${exp.surface}`);
-    if (!["css", "wireframe", "primitive", "headless", "mixed"].includes(exp.layer))
-      problems.push(`invalid layer: ${exp.layer}`);
-    for (const id of exp.identifiers || []) {
-      if (!text.includes(id)) problems.push(`identifier not found in guide (R10 drift!): ${id}`);
-    }
-
-    if (problems.length) {
-      failed++;
-      console.error(`✗ ${exp.design}`);
-      for (const p of problems) console.error("    - " + p);
-    } else {
-      console.log(`✓ ${exp.design} — surface + ${exp.identifiers.length} identifiers verified in guide (expect ${exp.expectedVerdict})`);
-    }
-  }
-
-  console.log("\n--- E2E checklist (run with the live plugin + Cursor's browser tool + the playground) ---");
-  console.log("  1. Serve the target app; confirm Cursor's native browser tool can reach it (design intake is REST — no Figma MCP).");
+  console.log("\n--- E2E checklist (run with the live plugin + Chrome + the playground) ---");
+  console.log("  1. Serve the target app; connect the Cursor's native browser tool (design intake is REST — no Figma MCP).");
   console.log("  2. `node scripts/figma-extract.mjs token status` — a Figma token is REQUIRED for REST extraction (no MCP fallback).");
-  console.log("  3. /velt-customize-run against the Figma frame → Planner EXTRACTS a designSpec + emits a Connect Map.");
+  console.log("  3. /velt-customize against the Figma frame → Planner EXTRACTS a designSpec + emits a Connect Map.");
   console.log("  4. At the MANDATORY approach gate, state or confirm the approach (--mode, else halt-and-ask).");
   console.log("  5. Build executes the Connect Map: every mustSupply slot supplied (icons from exported SVGs), host props set, exact cssDecls applied.");
   console.log("  6. Judge MEASURES per block: cheap delta-compare + probes every iteration, expensive capture + visual-diff at iter-1 + PASS-candidate. PASS only when style+layout deltas are empty AND no significant visual region AND contract+stability clean, across ALL blocks (Flows + State).");
@@ -548,9 +942,19 @@ async function main() {
   if (!contentIndepCalibrated) failed++;
   const stabilityCalibrated = calibrateStabilityGate();
   if (!stabilityCalibrated) failed++;
+  const twoPhaseCalibrated = calibrateTwoPhase();
+  if (!twoPhaseCalibrated) failed++;
+  const accuracyCalibrated = await calibrateAccuracyFixes();
+  if (!accuracyCalibrated) failed++;
+  const judgeValidationCalibrated = await calibrateJudgeValidation();
+  if (!judgeValidationCalibrated) failed++;
+  const defectContractCalibrated = await calibrateDefectContract();
+  if (!defectContractCalibrated) failed++;
+  const compiledOracleCalibrated = await calibrateCompiledOracle();
+  if (!compiledOracleCalibrated) failed++;
 
   if (failed) { console.error(`\n✗ golden offline guard FAILED for ${failed} check(s)`); process.exit(1); }
-  console.log(`\n✓ golden offline guard passed (${fixtures.length} designs + style & layout Judge calibration; all identifiers valid in the guide)`);
+  console.log(`\n✓ golden offline guard passed (probe/gate/judge calibration suites all green)`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

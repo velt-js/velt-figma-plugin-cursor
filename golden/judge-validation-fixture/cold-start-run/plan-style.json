@@ -1,0 +1,50 @@
+{
+  "tokens": {
+    "font-family": "'Poppins'"
+  },
+  "rules": [
+    {
+      "selector": ".vc-list",
+      "decls": {
+        "display": "flex",
+        "flex-direction": "column",
+        "gap": "16px"
+      },
+      "specNodeId": "369:29437",
+      "purpose": "style"
+    },
+    {
+      "selector": ".vc-body",
+      "decls": {
+        "gap": "4px",
+        "padding": "12px",
+        "width": "322px",
+        "border-radius": "8px"
+      },
+      "specNodeId": "369:29568",
+      "purpose": "style"
+    },
+    {
+      "selector": ".vc-dialogcontainer",
+      "decls": {
+        "gap": "16px",
+        "padding": "12px",
+        "width": "322px",
+        "border-radius": "8px"
+      },
+      "specNodeId": "369:29438",
+      "purpose": "style"
+    },
+    {
+      "selector": ".vc-composer",
+      "decls": {
+        "padding": "8px 10px",
+        "border-radius": "8px",
+        "border": "1px solid #1a1917"
+      },
+      "state": "selected",
+      "specNodeId": "369:29637",
+      "purpose": "style"
+    }
+  ]
+}

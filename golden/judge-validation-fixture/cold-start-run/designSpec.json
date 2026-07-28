@@ -1,0 +1,18 @@
+{
+  "probeExpectations": {
+    "single-card-height": {
+      "expected": 112,
+      "unit": "px"
+    }
+  },
+  "blocks": {
+    "state-comment-thread-components-single-comment-dialog": {
+      "frameRegion": {
+        "x": 0,
+        "y": 0,
+        "w": 322,
+        "h": 112
+      }
+    }
+  }
+}

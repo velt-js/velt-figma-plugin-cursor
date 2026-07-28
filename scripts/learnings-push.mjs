@@ -38,15 +38,30 @@ function git(args, cwd) {
   return execFileSync("git", args, { cwd, stdio: ["ignore", "pipe", "pipe"], encoding: "utf8" }).trim();
 }
 
+// VERIFIED-ONLY gate (knowledge-update lifecycle): a candidate ships only if its fix was
+// VERIFIED (implement → find issue → fix → re-measure clean → learn). Entries journaled as
+// hypotheses (`verified:false` / missing) are run-local plan-lessons, never published — an
+// unverified observation in the knowledge base is how wrong "facts" (e.g. a mis-measured
+// 0-height wrapper) get baked into every future run. Unverified entries are REPORTED so the
+// wrap-up can see what was left on the table.
 function collectGeneral(learnings) {
   const out = [];
+  const skipped = [];
+  const take = (kind, e) => {
+    if (e?.verified === true) out.push({ kind, ...e });
+    else skipped.push({ kind, statement: (e.statement || e.note || "").slice(0, 90) });
+  };
   for (const e of learnings.general || []) {
-    if (e && typeof e === "object" && (e.statement || e.note)) out.push({ kind: "general", ...e });
+    if (e && typeof e === "object" && (e.statement || e.note)) take("general", e);
   }
   for (const kind of ["tokens", "mappings", "naming", "corrections", "gaps"]) {
     for (const e of learnings[kind] || []) {
-      if (e && typeof e === "object" && String(e.scope || "").toLowerCase() === "general") out.push({ kind, ...e });
+      if (e && typeof e === "object" && String(e.scope || "").toLowerCase() === "general") take(kind, e);
     }
+  }
+  if (skipped.length) {
+    console.log(`· ${skipped.length} UNVERIFIED general observation(s) NOT published (fix never re-measured clean):`);
+    for (const s of skipped) console.log(`    - [${s.kind}] ${s.statement}`);
   }
   return out;
 }

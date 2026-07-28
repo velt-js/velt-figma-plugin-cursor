@@ -1,0 +1,107 @@
+{
+  "_doc": "GOLDEN-PATH host wiring — how a human-polished demo gets structure props that CSS cannot fake. Builder + orchestrator MUST load this (node scripts/knowledge.mjs host-wiring) during structure build. R18's exception: Connect-Map / plan-structure hostProps + the unstyled base + <VeltCustomization/> ARE the integration — APPLY and KEEP them (do not temporary-apply-and-revert).",
+  "doctrine": {
+    "authority": "plan-structure.json components[].hostProps (design-gated, R24) + always-on infra below. Structure a prop produces (Show N replies, placeholders, page-mode composer variant) must never be attempted in CSS.",
+    "applyPolicy": "APPLY + KEEP + VERIFY. Never list a required prop as BLOCKED/manual-only without first running verify-host-wiring.mjs --apply and re-checking. Temporary-apply-revert is ONLY for exploratory non-plan host chrome — not for plan hostProps.",
+    "verifyScript": "scripts/verify-host-wiring.mjs",
+    "when": [
+      "After plan-structure lint passes, BEFORE build-structure families complete (orchestrator runs verify; builder applies if missing).",
+      "After structure build, BEFORE dom-snapshot (missing collapsedComments → wrong skeleton → poisoned style plan).",
+      "At builder-self-audit / handoff — exit 2 blocks style/judge progress."
+    ]
+  },
+  "alwaysOn": [
+    {
+      "id": "unstyled-base",
+      "check": "client.setUnstyledMode(true, { keepFunctionalStyles: true })",
+      "where": "host Velt setup (useVeltClient effect)",
+      "why": "Pipeline snapshots, style plan, and judge assume the unstyled base."
+    },
+    {
+      "id": "velt-customization-mount",
+      "check": "<VeltCustomization /> (or equivalent) mounted once near VeltComments",
+      "where": "host collaboration root",
+      "why": "Wireframe registry never loads without the mount (R1)."
+    },
+    {
+      "id": "shadow-dom-false",
+      "check": "shadowDom={false} on customized Velt hosts",
+      "where": "VeltComments / VeltCommentsSidebar (and any surface receiving class CSS)",
+      "why": "Class CSS cannot pierce shadow DOM."
+    }
+  ],
+  "structureProps": [
+    {
+      "prop": "collapsedComments",
+      "pairsWith": ["collapsedRepliesPreview"],
+      "on": "VeltComments",
+      "designCue": "Show N replies / MoreReply / first+last collapsed teaser",
+      "produces": "MoreReply divider + collapsed reply structure"
+    },
+    {
+      "prop": "collapsedRepliesPreview",
+      "pairsWith": ["collapsedComments"],
+      "on": "VeltComments",
+      "designCue": "last reply previewed under Show N control",
+      "produces": "first + Show N + last preview"
+    },
+    {
+      "prop": "commentPlaceholder",
+      "on": "VeltComments",
+      "designCue": "page-mode / new-comment composer placeholder copy",
+      "produces": "visible placeholder text (not CSS)"
+    },
+    {
+      "prop": "replyPlaceholder",
+      "on": "VeltComments",
+      "designCue": "reply composer placeholder (often author-templated)",
+      "produces": "visible reply placeholder"
+    },
+    {
+      "prop": "pageMode",
+      "on": "VeltCommentsSidebar",
+      "designCue": "composer at sidebar level, no pin anchors in the Loop",
+      "produces": "page-mode sidebar + page composer"
+    },
+    {
+      "prop": "embedMode",
+      "on": "VeltCommentsSidebar",
+      "designCue": "docked panel (not floating overlay)",
+      "produces": "embedded sidebar chrome"
+    },
+    {
+      "prop": "pageModeComposerVariant",
+      "on": "VeltCommentsSidebar",
+      "value": "pageModeComposer",
+      "designCue": "pageMode sidebar with a designed page-level composer (ALWAYS when pageMode is set)",
+      "produces": "page-mode composer wireframe mounts (without this the composer is 0-height / empty — CSS cannot invent it)",
+      "requiredWhen": "pageMode=true"
+    }
+  ],
+  "traps": [
+    {
+      "id": "r18-misread-as-never-touch-host",
+      "symptom": "Show N replies / placeholders missing; defects attributed BLOCKED host-change.",
+      "cause": "Agents treat R18 as 'never edit host' and only list props in the handoff.",
+      "fix": "R18 forbids non-Velt host chrome changes. Plan hostProps + unstyled + VeltCustomization are required integration — bake them, verify with verify-host-wiring.mjs.",
+      "confidence": "confirmed",
+      "seenOn": ["harvey"]
+    },
+    {
+      "id": "css-cannot-fake-more-reply",
+      "symptom": "Builder tries to CSS-fake a Show N replies control.",
+      "cause": "collapsedComments + collapsedRepliesPreview not on <VeltComments>.",
+      "fix": "Set both props on the host; then style the MoreReply slot.",
+      "confidence": "confirmed",
+      "seenOn": ["harvey"]
+    },
+    {
+      "id": "page-mode-composer-variant-unregistered",
+      "symptom": "pageModeComposerVariant is set on VeltCommentsSidebar but page-mode composer stays 320×0 / body display:none / no input in DOM.",
+      "cause": "The variant string (e.g. pageModeComposer) was never registered as <VeltCommentDialogWireframe variant=\"…\"> inside <VeltWireframe>. Velt falls back to an empty default dialog shell.",
+      "fix": "APPLY the host prop AND register a matching VeltCommentDialogWireframe variant (PageModeComposer wireframe) in VeltCustomization. Prop alone is not enough. Verify live: composer box non-zero + contenteditable present + placeholder visible.",
+      "confidence": "confirmed",
+      "seenOn": ["harvey"]
+    }
+  ]
+}

@@ -20,7 +20,10 @@
 //           means empty text masks and false visual diffs downstream)
 //         · designSpec.json has nodes
 //         · if connect-map.json exists: firstShotCss() over it yields ≥1 rule and at least one
-//           entry carries cssDecls (0 rules = the run-2 failure — HALT, fix the map or the script)
+//           entry carries cssDecls (0 rules = the run-2 failure — HALT, fix the map or the script).
+//           TWO-PHASE EXCEPTION: when plan-structure.json exists the connect map is structure-only
+//           (plan-structure is forbidden to carry cssDecls), so the map is checked structurally and
+//           the stylesheet contract is enforced against plan-style.json instead.
 //
 // Exit codes: 0 = all contracts hold · 2 = violation(s), each printed with a plain-language fix ·
 //             1 = usage/internal error.
@@ -30,7 +33,7 @@ import { execFile } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { firstShotCss, normalizeEntries } from "./first-shot-css.mjs";
+import { firstShotCss, normalizeEntries, stylePlanCss } from "./first-shot-css.mjs";
 
 const SCRIPTS = path.dirname(fileURLToPath(import.meta.url));
 const run = (args, cwd) => new Promise((res) => execFile("node", args, { cwd }, (err, stdout, stderr) => res({ code: err ? (err.code ?? 1) : 0, stdout, stderr })));
@@ -73,6 +76,15 @@ const FIXTURE_DESIGN_SPEC = {
   assets: [], iconAssignments: {}, unassignedIcons: [],
 };
 const FIXTURE_BLOCKS = { blocks: [{ id: "state-composer-default", role: "state", figmaNodeId: "1:100", component: "composer" }] };
+// two-phase: the style planner's plan-style.json shape (rules[] — selector real, decls verbatim)
+const FIXTURE_STYLE_PLAN = {
+  tokenMap: { "--velt-accent": "#6c5ce7" },
+  rules: [
+    { selector: ".vc-composer", decls: { padding: "12px 16px", background: "#ffffff", border: "1px solid #f1efec" }, specNodeId: "1:100", purpose: "style", state: "default", blockIds: ["state-composer-default"] },
+    { selector: "velt-comment-composer-wireframe > div", decls: { padding: "0", margin: "0" }, purpose: "neutralize-wrapper", state: "default", blockIds: ["state-composer-default"] },
+    { selector: ".vc-card", decls: { background: "#faf9f7" }, specNodeId: "1:101", purpose: "state-rule", state: "hover", blockIds: ["state-composer-default"] },
+  ],
+};
 
 async function selftest() {
   const problems = [];
@@ -103,6 +115,24 @@ async function selftest() {
       // fixture: :root + 3 entry sub-rules (composer root+button, thread-card root) = 4 rule blocks
       if (countRules(cssFam) < 4) problems.push(`first-shot-css.mjs emitted ${countRules(cssFam)} rule(s) for the FAMILIES fixture that must yield 4 — families{}/prop-object normalization regressed (the run-2 silent 0-rule failure)`);
     }
+    // 1c. plan-style.json (two-phase): the CLI must emit a stylesheet with rules, hover pseudo
+    // appended mechanically, and HALT (≠0) on an empty rules[] — never a silent no-op.
+    const spP = path.join(tmp, "plan-style.json");
+    const spCssP = path.join(tmp, "style-plan.css");
+    await fs.writeFile(spP, JSON.stringify(FIXTURE_STYLE_PLAN, null, 2));
+    const fscSp = await run([path.join(SCRIPTS, "first-shot-css.mjs"), spP, "--out", spCssP], tmp);
+    if (fscSp.code !== 0) problems.push(`first-shot-css.mjs CLI failed on the golden plan-style.json (exit ${fscSp.code}): ${fscSp.stderr.trim() || fscSp.stdout.trim()} — the two-phase style-plan contract regressed`);
+    else {
+      const spCss = await fs.readFile(spCssP, "utf8").catch(() => "");
+      // fixture: :root + 3 rules = 4 rule blocks
+      if (countRules(spCss) < 4) problems.push(`first-shot-css.mjs emitted ${countRules(spCss)} rule(s) for a plan-style fixture that must yield 4 — the rules[] consumption drifted`);
+      if (!spCss.includes(".vc-card:hover")) problems.push("first-shot-css.mjs no longer appends :hover for state:'hover' rules whose selector carries no pseudo");
+      if (!spCss.includes("!important")) problems.push("first-shot-css.mjs style-plan output lost !important (R9b)");
+    }
+    const emptySpP = path.join(tmp, "plan-style-empty.json");
+    await fs.writeFile(emptySpP, JSON.stringify({ rules: [] }));
+    const fscEmpty = await run([path.join(SCRIPTS, "first-shot-css.mjs"), emptySpP, "--out", path.join(tmp, "empty.css")], tmp);
+    if (fscEmpty.code === 0) problems.push("first-shot-css.mjs exited 0 on an EMPTY plan-style.json (0 rules) — the silent-no-op HALT contract regressed");
     // 2. spec-slice: the designSpec/blocks contract — every block must get a NON-THIN brief.
     const specP = path.join(tmp, "designSpec.json");
     const blocksP = path.join(tmp, "blocks.json");
@@ -135,6 +165,23 @@ async function check(phaseDir) {
     else if ((brief.nodeCount ?? (brief.nodes || []).length) <= 2) problems.push(`block '${b.id}': THIN slice (${brief.nodeCount} nodes) — text masks will be empty and visual diffs false; fix the designSpec/frameId keying before building`);
   }
 
+  // two-phase runs split VALUES out of the connect map: plan-structure.json carries structure only
+  // (cssDecls are forbidden there), and plan-style.json is the stylesheet authority.
+  const twoPhase = await exists(path.join(phaseDir, "plan-structure.json"));
+
+  // two-phase: plan-style.json → first-shot contract (0 rules = HALT, same as the connect map)
+  const spP = path.join(phaseDir, "plan-style.json");
+  if (await exists(spP)) {
+    const sp = await loadJson(spP, null);
+    if (!sp) problems.push("plan-style.json exists but is not valid JSON");
+    else {
+      const stats = {};
+      const rules = countRules(stylePlanCss(sp, stats));
+      if (!stats.entries || !stats.entryRules || !rules) problems.push("plan-style.json yields 0 stylesheet rules — an empty/malformed style plan; HALT and fix before dispatching the style builder");
+      else console.log(`✓ first-shot over plan-style.json: ${rules} rule(s) from ${stats.entries} plan rules`);
+    }
+  }
+
   const cmP = path.join(phaseDir, "connect-map.json");
   if (await exists(cmP)) {
     const cm = await loadJson(cmP, null);
@@ -142,12 +189,21 @@ async function check(phaseDir) {
     else {
       // normalizeEntries flattens BOTH shapes (entries[] and families{}) — count what the generator sees
       const entries = normalizeEntries(cm);
-      const withDecls = entries.filter((e) => Object.values(e._groups).some((d) => String(d).trim()));
-      if (entries.length && !withDecls.length) problems.push("connect-map.json: no entry carries usable cssDecls — first-shot will be empty and the builder will re-discover every value (the run-2 failure); fix the Planner's map");
-      const stats = {};
-      const rules = countRules(firstShotCss(cm, {}, stats));
-      if (!rules || (stats.entries > 0 && stats.entryRules === 0)) problems.push("first-shot-css over this connect-map.json yields 0 entry rules — schema drift or an empty map; HALT and fix before dispatching any builder");
-      else console.log(`✓ first-shot over connect-map.json: ${rules} rule(s) (${stats.entryRules} entry rule(s)) from ${entries.length} entries`);
+      if (twoPhase) {
+        // TWO-PHASE: plan-structure is FORBIDDEN to carry cssDecls (values are the style planner's,
+        // checked above against plan-style.json). Validate the map STRUCTURALLY here instead.
+        const withSlot = entries.filter((e) => String(e.slot || "").trim());
+        if (!entries.length) problems.push("connect-map.json has no entries — the structure plan mapped nothing; fix the Planner's map");
+        else if (!withSlot.length) problems.push("connect-map.json: no entry names a slot — a structure map without slots builds nothing; fix the Planner's map");
+        else console.log(`✓ connect-map.json (structure stage): ${entries.length} entries, ${withSlot.length} with a slot — CSS values deferred to plan-style.json`);
+      } else {
+        const withDecls = entries.filter((e) => Object.values(e._groups).some((d) => String(d).trim()));
+        if (entries.length && !withDecls.length) problems.push("connect-map.json: no entry carries usable cssDecls — first-shot will be empty and the builder will re-discover every value (the run-2 failure); fix the Planner's map");
+        const stats = {};
+        const rules = countRules(firstShotCss(cm, {}, stats));
+        if (!rules || (stats.entries > 0 && stats.entryRules === 0)) problems.push("first-shot-css over this connect-map.json yields 0 entry rules — schema drift or an empty map; HALT and fix before dispatching any builder");
+        else console.log(`✓ first-shot over connect-map.json: ${rules} rule(s) (${stats.entryRules} entry rule(s)) from ${entries.length} entries`);
+      }
     }
   }
   return problems;
@@ -170,4 +226,4 @@ async function main() {
   }
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch((e) => { console.error("✗ " + e.message); process.exit(1); });

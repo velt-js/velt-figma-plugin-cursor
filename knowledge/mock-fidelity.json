@@ -1,0 +1,55 @@
+{
+  "_doc": "Empirical rules for drawing a PIXEL-FAITHFUL HTML/CSS mock from a designSpec slice (the builder's free-draw / mode=structure step 0a). These are TOOL/RENDER learnings, NOT Velt SDK facts — they belong in the plugin knowledge base, never in guide/ (which is Velt SDK documentation). The builder reads these before drawing a mock; the mechanical gate is scripts/trials.mjs (Δspec < 2% vs a same-renderer spec image). Every class below was VERIFIED to hold across 3 structurally different designs (comment threads, composer states, reactions/context/page-mode footer) — a class that only held on one design was demoted to `conditional` or dropped.",
+  "validatedAcross": ["design-369-29362", "design-370-29828", "design-351-15578"],
+  "gate": { "metric": "Δspec (visual-diff vs a Chrome-rendered image of the exact spec nodes — same rasterizer/fonts, so ~0% is achievable and every red pixel is a real error)", "passUnderPct": 2.0, "note": "The figma-PNG diff carries a 4-11% cross-rasterizer glyph floor and is ADVISORY only; never gate on it. Text-dense blocks legitimately reach ~1.8% Δspec (text-outline drift with zero structural offset) — that is the physics floor, not slop." },
+  "classes": [
+    {
+      "id": "border-box-when-edge-anchored",
+      "scope": "universal",
+      "statement": "A Figma 'inside' border does NOT consume layout space; a CSS border does. For any frame carrying BOTH border and padding, use box-sizing:border-box AND subtract the border width from the padding (spec padding:8px 10px + border:1px → CSS padding:7px 9px) so edge-anchored children land at their spec x/y.",
+      "appliesWhen": "content is edge-anchored (left/top aligned). Symmetric justify/align:center self-cancels the offset, so centered content does NOT need it.",
+      "seenOn": ["design-369-29362", "design-370-29828", "design-351-15578"]
+    },
+    {
+      "id": "root-border-is-box-shadow",
+      "scope": "universal",
+      "statement": "A decorative border on a ROOT/large container shifts its entire flex flow inward by the border width, while the spec places children at absolute (0,0). Use an inset box-shadow (or outline) instead of a real CSS border for purely decorative root/frame edges.",
+      "seenOn": ["design-369-29362", "design-370-29828"]
+    },
+    {
+      "id": "font-verify-and-fit-shim",
+      "scope": "universal",
+      "statement": "The design font is NOT always web-available (design 1 was literally Poppins; design 2 used 'TT Interphases Pro', which 404s from Google Fonts and falls back to Inter with wider glyphs). READ the actual font-family from the spec node; if it is not web-loadable, the fallback changes glyph metrics and text wraps to a different line count — you MUST run the font-fit shim (shrink font-size in ~0.25px steps until the rendered line count matches the spec's box.h / line-height). Missing this caused an 11.5% failure, not a marginal one. This is the same root cause as the loop2 'everything renders serif' bug.",
+      "seenOn": ["design-370-29828", "design-351-15578"]
+    },
+    {
+      "id": "fixed-height-text-rows",
+      "scope": "universal",
+      "statement": "Single-line text whose line-height exceeds its box (e.g. a title at line-height 24 in a 20px row) must sit in a fixed-height flex row with align-items:center and be allowed to overflow — never clamp the line-height. Multi-line text (box.h == n lines × line-height) switches to plain wrapping block flow.",
+      "seenOn": ["design-369-29362", "design-351-15578"]
+    },
+    {
+      "id": "honor-real-insets",
+      "scope": "universal",
+      "statement": "Honor real 1px sub-frame insets exactly from the spec box; never blanket-shift the whole mock to chase a score, and never normalize near-identical sibling widths (e.g. Type frames at 89/90/93/110px stay verbatim). A global translate/transform offset is FORBIDDEN — if a score won't drop, a specific child box is wrong; fix that box.",
+      "seenOn": ["design-369-29362", "design-370-29828", "design-351-15578"]
+    },
+    {
+      "id": "shared-name-different-skin",
+      "scope": "universal",
+      "statement": "A shared component NAME is not a shared skin. Design 3's 'Status banner' rendered as three different looks (bordered context field / borderless reply-summary wrapper / small colored reaction pill). Read EACH instance's own cssDecls; never infer appearance from a sibling with the same name.",
+      "seenOn": ["design-351-15578"]
+    },
+    {
+      "id": "absent-layout-frames-need-absolute",
+      "scope": "conditional",
+      "statement": "A Figma frame with NO auto-layout properties in its cssDecls positions its children by absolute coordinates — reproduce those children with position:absolute from their spec boxes. Also applies to genuinely decorative elements that sit OUTSIDE the flex flow (thread connector lines, the composer text caret as a 1×16 bar at its GIF-mask box, a show-N-replies chevron left of the row's text padding, a page-mode-composer toolbar gap bridged by an explicit spacer). NOT a blanket rule — most elements sit in normal flex flow (design 3 needed almost none).",
+      "seenOn": ["design-369-29362", "design-370-29828"]
+    }
+  ],
+  "harnessNotes": [
+    "score against the SPEC-RENDER reference (ref-spec/, same renderer), not the Figma PNG.",
+    "capture the mock and the reference through the identical rounded-clip path (scripts/trials.mjs clipShot) — element .screenshot() rounds a fractional bbox height UP, which inflated small blocks by ~1px (2.5% on a 40px block) until fixed.",
+    "neutralize the page/board background to white so a block's undrawn pixels compare equal on both sides."
+  ]
+}

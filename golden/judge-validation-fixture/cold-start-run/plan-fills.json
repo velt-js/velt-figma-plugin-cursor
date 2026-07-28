@@ -1,0 +1,24 @@
+{
+  "hostProps": [
+    {
+      "prop": "commentPlaceholder",
+      "value": "Comment or tag others with @"
+    },
+    {
+      "prop": "replyPlaceholder",
+      "value": "Reply to Wilson..."
+    }
+  ],
+  "nodes": [
+    {
+      "vcClass": ".vc-body",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 322,
+        "h": 112
+      },
+      "specNodeId": "369:29568"
+    }
+  ]
+}
