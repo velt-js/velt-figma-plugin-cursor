@@ -7,13 +7,13 @@
   "mockScreenshot": null,
   "liveScreenshot": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png",
   "status": "appearance-reviewed",
-  "visionReviewedAt": "2026-07-29T09:37:46.782Z",
+  "visionReviewedAt": "2026-07-29T10:25:06.836Z",
   "visionMissCount": 0,
   "needsReGlance": false,
   "liveCaptureFingerprint": {
     "sha256": "130fd39bda84566e3be3beaf54ec858fba87ea00e22d45b1980eb3403196897c",
-    "mtime": "2026-07-29T09:37:46.724Z",
+    "mtime": "2026-07-29T10:25:06.784Z",
     "path": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png"
   },
-  "at": "2026-07-29T09:37:46.783Z"
+  "at": "2026-07-29T10:25:06.837Z"
 }

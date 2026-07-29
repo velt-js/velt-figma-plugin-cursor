@@ -12,8 +12,10 @@ It ships WITH the plugin (committed here), so every client that updates the plug
 
 ## How it GROWS (the learning loop)
 1. Each run journals general candidates (scope:"general") and `learnings-push.mjs` pushes them to the
-   plugin repo's `plugin-learnings` branch (one file per run, non-fatal).
-2. **A maintainer reviews `plugin-learnings` periodically** and merges corroborated learnings HERE.
+   central learnings repo — `velt-js/velt-figma-plugin-learnings`, `candidates/<harness>/`, one file
+   per run, non-fatal. One inbox for BOTH plugins (Claude Code + Cursor), so "seen in ≥2 runs"
+   corroboration counts across harnesses. Runs never read that repo — runtime priors are HERE only.
+2. **A maintainer reviews the learnings repo periodically** and merges corroborated learnings HERE.
    - Promote only what's **general** (true on a different app) — the corroboration test is `seenOn` ≥ multiple DIFFERENT designs.
    - Before merging, `node golden/run-golden.mjs` must still pass (a learning that regresses a golden design is rejected).
    - Key each fact by `veltVersion`; on an SDK bump, re-validate (stale entries are ignored until re-confirmed).
