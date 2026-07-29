@@ -237,10 +237,17 @@ async function main() {
         const surf = [...document.querySelectorAll(surfSel)].find((e) => { const r = e.getBoundingClientRect(); return r.width > 4 && r.height > 4; });
         if (!surf) return false;
         const probe = (contentSel && [...document.querySelectorAll(contentSel)].find((e) => { const r = e.getBoundingClientRect(); return r.width > 4 && r.height > 4; })) || surf;
+        // SCROLL-POSITION GUARD (found live): a docked list that auto-scrolls to its newest item leaves
+        // the FIRST content row far outside the viewport (measured firstCardY = -8115 on a 40-card doc).
+        // The clamped probe point below then lands on whatever happens to sit at the viewport edge —
+        // the app's own header — and the surface is reported "occluded" when it is merely scrolled away.
+        // Bring the probe into view FIRST so this tests paint-truth rather than scroll position.
+        try { probe.scrollIntoView({ block: "center", inline: "nearest" }); } catch { /* detached */ }
         const r = probe.getBoundingClientRect();
         // hit-test a point solidly INSIDE the probe near its top-left content area (not the empty center)
-        const x = Math.min(r.x + Math.min(r.width / 2, 40), innerWidth - 2);
-        const y = Math.min(r.y + Math.min(r.height / 2, 12), innerHeight - 2);
+        const clamp = (v, hi) => Math.max(2, Math.min(v, hi - 2));
+        const x = clamp(r.x + Math.min(r.width / 2, 40), innerWidth);
+        const y = clamp(r.y + Math.min(r.height / 2, 12), innerHeight);
         const hit = document.elementFromPoint(x, y);
         if (!hit) return false;
         if (surf === hit || surf.contains(hit) || probe === hit || probe.contains(hit)) return true;

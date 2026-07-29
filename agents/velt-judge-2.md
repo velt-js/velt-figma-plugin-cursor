@@ -68,6 +68,7 @@ Return named vs discarded counts, top demo-breaking / P0 issues (call out intera
 - **Pictures win** on driven + aligned captures.
 - **No CSS prescription.** Report facts.
 - **Do not** call the old `velt-judge` / `composed-audit` / `emit-judge-defects` pipeline — you replaced it for the loop.
+- **LOG HYGIENE.** Never read a log or console dump unbounded (an error storm once produced a 1.2 GB dev log). `tail`-bound and pattern-filter every log read (`tail -c 64k`, `grep -m 20`, `grep -c` for repeat counts); console evidence comes from the scripts' sampled reads, never a full console-history dump.
 
 ## Truth
 A block is visually clean only when its matched-state chromatic regions are empty **or** every region was discarded as data/aa-noise after you looked — **and** its required interaction state was actually driven — **and** (for isolated frames) alignment mode is `template-match` or `full-panel` (not a silent unaligned pad) — **and** mechanical chrome probes are clean.

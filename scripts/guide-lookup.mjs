@@ -34,7 +34,14 @@ const SECTION_INDEXED = new Set([
   "reference/css-variables.md",
   "reference/primitives.md",
   "reference/data-models.md",
+  "reference/wireframe-variables.md",   // per-component ## sections — a builder needs ONE surface's variables, not the 23-component catalog
 ]);
+
+// guide/rules.md is RULE-INDEXED, not section-indexed: it is read ONLY via the `rules`
+// subcommand (per-ID slices from RULE_INDEX — base + approach + role + the items' stamped
+// ruleIds), never whole. Its one non-rule section (the Quick gate checklist) is extracted
+// via `section rules.md "Quick gate"` (judge only).
+const RULE_INDEXED = new Set(["rules.md"]);
 
 // surface → the behaviors file that owns it (see each file's own scope line).
 const SURFACE_BEHAVIORS = {
@@ -56,8 +63,13 @@ const SURFACE_BEHAVIORS = {
 };
 
 const FEATURE_FILES = {
-  comments: ["features/comment-surfaces.md", "features/mentions-and-autocomplete.md"],
+  // reactions.md rides with comments: reaction slots (ReactionPin/Reactions/ReactionTool) live on the
+  // comment thread-card, and its default-reaction-id list is otherwise unreachable (the `reactions`
+  // SURFACE key routes to presence-reactions.md, which is the video/presence picker) — a comments
+  // builder once escalated a solvable thumbs-up blocker because no route surfaced these ids.
+  comments: ["features/comment-surfaces.md", "features/mentions-and-autocomplete.md", "features/reactions.md"],
   notifications: ["features/notifications.md"],
+  reactions: ["features/reactions.md"],
 };
 
 // per-approach reference sets (the Builder's procedure + identifier sources for that layer).
@@ -70,7 +82,7 @@ const APPROACH_FILES = {
   wireframes: [
     ["approaches/wireframes.md", "the per-layer procedure"],
     ["reference/wireframe-components.md", "only this surface's slot tree + the appendix rows you map"],
-    ["reference/wireframe-variables.md", "the {…} variable catalog"],
+    ["reference/wireframe-variables.md", "only this surface's component section of the {…} variable catalog"],
     ["reference/wireframe-tokens.md", "the {…} syntax"],
   ],
   primitives: [
@@ -103,17 +115,17 @@ function roleFiles({ role, approaches, feature, surface }) {
     add("reference/css-variables.md", "token mapping (Figma vars → --velt-*) — sections only");
     add("reference/data-models.md", "ONLY when judging primitives/headless feasibility — sections only");
     add("edge-cases-and-limitations.md", "coverage-matrix achievability");
-    add("rules.md", "R0–R30 — the constraints the plan must encode");
+    add("rules.md", "the applicable rule slices (base + plan) — via the rules subcommand, never whole");
   } else if (role === "build") {
     add("build-methodology.md", "Step 2 — structure, then small pixel-perfect patches");
     add("build-gotchas.md", "the traps — read BEFORE building");
-    add("rules.md", "R0–R30 (the item's ruleIds if stamped)");
+    add("rules.md", "the stamped ruleIds' slices — via the rules subcommand, never whole");
     for (const ap of approaches) for (const [rel, why] of APPROACH_FILES[ap] || []) add(rel, why);
     if (approaches.length > 1) add("approaches/combining-approaches.md", "mixing layers on one surface");
     if (surface && SURFACE_BEHAVIORS[surface]) add(SURFACE_BEHAVIORS[surface], "what the surface's props do at runtime");
   } else if (role === "judge") {
     add("verifying-a-customization.md", "the what-to-verify flow + verdicts");
-    add("rules.md", "the Quick gate checklist (static rules scan)");
+    add("rules.md", "rule slices + the Quick gate checklist — via the rules/section subcommands, never whole");
     add("reference/manifest.md", "mustSupply / roles / layout / contract — the expectations");
     if (surface && SURFACE_BEHAVIORS[surface]) add(SURFACE_BEHAVIORS[surface], "expected default behaviors to drive");
     add("debugging.md", "ONLY on a non-render (app-vs-build triage)");
@@ -248,17 +260,20 @@ async function filesCmd(opts) {
   for (const [rel, why] of entries) {
     const ok = await fs.access(path.join(GUIDE, rel)).then(() => true, () => false);
     if (!ok) { console.error(`⚠ routing table names a missing guide file: ${rel} (fix guide-lookup.mjs or the guide)`); continue; }
-    resolved.push({ file: `guide/${rel}`, why, sectionIndexed: SECTION_INDEXED.has(rel) });
+    resolved.push({ file: `guide/${rel}`, why, sectionIndexed: SECTION_INDEXED.has(rel), ruleIndexed: RULE_INDEXED.has(rel) });
   }
   if (opts.json) { console.log(JSON.stringify({ role, approaches, feature: opts.feature || null, surface: opts.surface || null, files: resolved }, null, 2)); return; }
 
   console.log(`Reading list — role=${role}${approaches.length ? " approach=" + approaches.join("+") : ""}${opts.feature ? " feature=" + opts.feature : ""}${opts.surface ? " surface=" + opts.surface : ""}`);
   resolved.forEach((e, i) => {
-    console.log(`  ${String(i + 1).padStart(2)}. ${e.file}${e.sectionIndexed ? "  [SECTION-INDEXED]" : ""}`);
+    console.log(`  ${String(i + 1).padStart(2)}. ${e.file}${e.ruleIndexed ? "  [RULE-INDEXED]" : e.sectionIndexed ? "  [SECTION-INDEXED]" : ""}`);
     console.log(`      ${e.why}`);
-    if (e.sectionIndexed) console.log(`      → node scripts/guide-lookup.mjs section ${e.file.replace(/^guide\//, "")} "<component/slot/class>"`);
+    if (e.ruleIndexed) {
+      console.log(`      → node scripts/guide-lookup.mjs rules --role ${role}${approaches.length ? " --approach " + approaches.join(",") : ""}   # per-ID slices (+ the items' stamped ruleIds)`);
+      if (role === "judge") console.log(`      → node scripts/guide-lookup.mjs section rules.md "Quick gate"   # the shipping checklist`);
+    } else if (e.sectionIndexed) console.log(`      → node scripts/guide-lookup.mjs section ${e.file.replace(/^guide\//, "")} "<component/slot/class>"`);
   });
-  console.log(`\nRule: read ONLY these files. [SECTION-INDEXED] files are read ONLY via the section subcommand — never whole.`);
+  console.log(`\nRule: read ONLY these files. [SECTION-INDEXED] files are read ONLY via the section subcommand, [RULE-INDEXED] (rules.md) ONLY via the rules subcommand — never whole.`);
 }
 
 // ---- main ----

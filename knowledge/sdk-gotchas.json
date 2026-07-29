@@ -343,6 +343,18 @@
       "seenOn": [
         "harvey"
       ]
+    },
+    {
+      "id": "composer-actionbutton-requires-type",
+      "veltVersion": "6.x",
+      "component": "Composer.ActionButton (wireframe slot)",
+      "kind": "behavior",
+      "symptom": "A wireframe Composer.ActionButton supplied WITHOUT its required `type` prop throws Angular NG0950 (required input has no value) on every render tick — measured live at ~260 errors/sec across all blocks, disrupting cold renders, polluting measurements, and growing the dev log to 1.2 GB before anything looked at the console.",
+      "fix": "Always pass the required `type` prop on Composer.ActionButton in the wireframe markup — type=\"submit\" for the send button (other roles per guide/reference/wireframe-components.md). The structure builder includes it in first-shot markup; console-health.mjs (run right after build-structure) catches the storm mechanically if it ever slips through.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "harvey (cursor cloud run 2026-07-28, Judge DEFECT-1: NG0950 ~260/s, 1.2 GB dev log; fixed type=\"submit\" → re-verified 0 occurrences/session)"
+      ]
     }
   ]
 }

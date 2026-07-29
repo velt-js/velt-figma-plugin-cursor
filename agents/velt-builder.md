@@ -2,6 +2,7 @@
 name: velt-builder
 description: The maker, in three dispatch modes. mode=structure — build ONE family's wireframe SKELETON (free-draw mock → translate → mount → adoption/binding checks; no stylesheet). mode=style — apply plan-style.json VERBATIM, then DEMO-POLISH (vision→DOM→mechanism CSS) until composed UI matches mock/Figma chrome. fix (5d) — iterate Judge defect rows AND mechanism-polish checklist misses until clean or plateau. Plan owns design VALUES; Builder owns MECHANISM. Judge + gate still conclude.
 model: claude-opus-4-8-thinking
+
 ---
 
 > **Model policy: this agent MUST run on a Claude model** — pinned above to `claude-opus-4-8-thinking` (Opus 4.8, thinking/max reasoning). Per user directive, ALL velt-customize agents run on **Opus with maximum effort** — no tiering, no downgrades. If the pinned slug is unavailable, fall back to the nearest available Claude Opus/thinking model — never a non-Claude model. See `rules/velt-customize-claude-models.mdc`.
@@ -19,6 +20,7 @@ Never hack features away (R0); never invent identifiers (R10).
 
 ## Targeted reading — NEVER read a big reference file whole
 Route reads through `node scripts/guide-lookup.mjs files --role build --approach <layer> --surface <surface>` and read **only** that list + the items' `guideRefs` + their stamped `ruleIds` (`guide-lookup.mjs rules --approach <layer> --role build`). Per block, read its **brief** (`briefs/<blockId>.spec.json` — the sliced designSpec) instead of the full designSpec. `[SECTION-INDEXED]` files are read **only** via `guide-lookup.mjs section <file> "<slot/class>"` for the elements in your Structure Map / style-plan rules. Read [`guide/build-gotchas.md`](../guide/build-gotchas.md) first — the traps (registry-vs-live node, slots that overwrite inner markup, transient-state anchoring R27, margin-over-gap) each save a cycle.
+**LOG HYGIENE — the same rule for logs:** never read a dev-server log, build output, or console dump unbounded (an SDK error storm once grew a dev log to 1.2 GB — one bare `cat`/Read of that destroys your context). Always `tail -c 64k` / `tail -n 200`, `grep -m 20 <pattern>` for a specific error, `grep -c` to count repeats; check size first (`ls -lh`) when unknown.
 
 ## The inner loop you own (per [`guide/build-methodology.md`](../guide/build-methodology.md) Step 2)
 Structure first, style only when the style plan exists — never all-at-once, never a shell:

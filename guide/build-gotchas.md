@@ -6,7 +6,18 @@ Discovered the hard way building a real customization. Each cost a cycle; knowin
 - **Inspect the LIVE rendered node, not the registry template.** A wireframe is cloned: the `velt-*-wireframe` custom-element tags are the hidden registry copy (0-size, empty). `document.querySelector('.vc-x')` may hit that copy. Always pick the element with `getBoundingClientRect().width > 0` (the visible clone) and read *its* classes/computed styles. Measuring the wrong node is how you "verify" something that's actually broken.
 
 ## Wireframe clone behavior
-- **Some slots OVERWRITE their inner markup with their own label.** `ToggleReply` replaced custom `<svg/> + <span>Reply</span>` with a plain "Reply" text node; `CopyLink` did the same. **Fix:** don't nest icons in those slots — inject the icon via CSS `::before` (a data-URI SVG on your `.vc-*` class), which survives the clone.
+- **Some slots OVERWRITE their inner markup with their own label.** `ToggleReply` replaced custom `<svg/> + <span>Reply</span>` with a plain "Reply" text node; `CopyLink` did the same. **Two verified fixes:** (a) inject the icon via CSS `::before` (a data-URI SVG on your `.vc-*` class), which survives the clone; or (b) **the official-sample pattern** — put the custom icon in a plain SIBLING wrapper *next to* the slot's `.Text` subslot, never inside the slot itself:
+  ```tsx
+  <VeltIf condition="{annotation.comments.length} === 1">
+    <span className="my-reply-icon"><ReplyIcon /></span>
+    <VeltCommentDialogWireframe.ToggleReply.Text />
+  </VeltIf>
+  <VeltIf condition="{annotation.comments.length} > 1">
+    <VeltCommentDialogWireframe.ToggleReply.Count />
+    <VeltCommentDialogWireframe.ToggleReply.Text />
+  </VeltIf>
+  ```
+  (verified in `sample-apps/apps/react/self-hosting/forms/page-mode-demo` — also shows the reply-count variant gating on `{annotation.comments.length}`). If you use a different reply slot (e.g. `ThreadCard.Reply`) with nested children, **live-verify the children survive adoption** before certifying — overwrite behavior is per-slot and only `ToggleReply`/`CopyLink` are confirmed either way.
 - **Wireframe MARKUP changes need a FULL page reload to take effect — not just new wireframes.** CSS edits hot-reload fine, but the `<VeltWireframe>` registry is built at mount: changing an existing template's markup (e.g. switching the composer's send to a self-closing `ActionButton`, or swapping Cancel to a `VeltButtonWireframe`) **re-renders under Fast Refresh but does NOT re-register the template** — the browser keeps rendering the OLD wireframe, so your fix "doesn't work" until a hard reload. After ANY `*Wf.tsx` change: hard-reload (Cmd-Shift-R), re-auth, reopen — and verify in a freshly-loaded tab, never a hot-reloaded one. (This masked a *correct* composer-submit fix as "still broken".)
 - **Container slots drop undeclared children** — declare the full child tree you intend to use.
 - **`velt-if`/`velt-class` attributes on plain HTML elements NEVER fire (R28).** A `velt-if="…"` on a `<div>`/`<span>` (or a helper spread like `{...veltIf("…")}`) survives the clone as inert markup — the element renders unconditionally, the class never toggles, nothing errors. Directives resolve **only on Velt elements**. Gate custom HTML by wrapping it in `<VeltIf condition="{…}">`; toggle classes via `velt-class` on a Velt wireframe element or key CSS off Velt's own state classes (e.g. `.velt-composer-open`, the submit button's `:disabled`).

@@ -1,11 +1,11 @@
 {
   "stage": "judge",
   "run": "cold-start-run",
-  "generatedAt": "2026-07-28T15:10:33.896Z",
+  "generatedAt": "2026-07-29T09:37:46.819Z",
   "emitter": "emit-judge-defects.mjs",
   "buildFingerprint": {
     "sha256": "130fd39bda84566e3be3beaf54ec858fba87ea00e22d45b1980eb3403196897c",
-    "mtime": "2026-07-28T15:10:33.809Z",
+    "mtime": "2026-07-29T09:37:46.724Z",
     "path": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png"
   },
   "doctrine": "FORWARD the vision record; never regenerate P0s from pixel regions. VISION/COMPOSED + HOST/MECHANISM first (P0). Unnamed visual-diff regions are P1. Delta micro-rows are P2. Data-density is noise UNLESS above the F9 severity floor. P0 packets carry live+figma CROPS — text alone is insufficient.",
@@ -269,7 +269,7 @@
     "evidenceSource": "degraded-source",
     "connected": false,
     "hoverBlocked": [],
-    "at": "2026-07-28T15:10:33.932Z"
+    "at": "2026-07-29T09:37:46.860Z"
   },
   "builderPackets": [
     {

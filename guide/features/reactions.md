@@ -24,6 +24,27 @@ No general config props beyond the custom emoji set. Replace the default reactio
 ```
 (Malformed `customReactions` JSON silently no‑ops.)
 
+## Default reaction ids (valid without any `customReactions` config)
+
+When no `customReactions` is configured, the live reaction set is Velt's built‑in emoji map. Its keys are **stable, hardcodable reaction ids** — valid anywhere a `reactionId` is accepted (`ReactionPin reactionId=`, `Reactions excludeReactionIds=`, `ReactionMap` keys):
+
+**`THUMBS_UP`, `THUMBS_DOWN`, `HEART_FACE`, `TEARS_OF_JOY`, `EYES`, `FIRE`, `RAISED_HANDS`**
+
+*Verified:* the official Velt sample (`sample-apps/apps/react/self-hosting/forms/page-mode-demo`) hardcodes `reactionId="THUMBS_UP"` with zero reaction config, and the same keys are confirmed as the built‑in emoji set in [`presence-reactions.md`](../reference/behaviors/presence-reactions.md) (`emojiSelected`). **You do NOT need to enumerate the live reaction set** (the picker resists programmatic opening and the ids are not in the DOM as `[data-reaction-id]`) — if the app configures no `customReactions`, use these ids directly; this is not an R10 violation, the ids above are verified SDK constants.
+
+## Pattern — pin ONE specific reaction (the "persistent thumbs‑up" design)
+
+A design that draws a permanent thumbs‑up affordance on every comment (even ones with zero reactions) plus a generic add‑reaction tool is built with **`ReactionPin` bound to a specific id, and that id excluded from the reactions row**:
+
+```tsx
+<VeltCommentDialogWireframe.ThreadCard.ReactionPin reactionId="THUMBS_UP" />
+<VeltCommentDialogWireframe.ThreadCard.Reactions excludeReactionIds={['THUMBS_UP']} />
+```
+
+- `ReactionPin` **without** `reactionId` is a *display* of reactions already on the comment — it renders 0×0 on a comment with none (live‑verified), so it can never be the design's persistent affordance.
+- `ReactionPin` **with** `reactionId` pins that one reaction as a standing affordance.
+- `excludeReactionIds` on the `Reactions` row prevents the pinned reaction rendering twice (once as the pin, once in the row). Do not additionally declare the composite reactions‑row + `ReactionTool` side by side — the row already contains its own add tool (double add‑affordance).
+
 ## CSS — stateful classes
 
 (Override with `!important`, R9b.)
