@@ -98,6 +98,31 @@ What's happening, and why it's different from `<VeltComments>`:
 
 > Single known thread? You can skip the loop and render one `<VeltCommentDialog annotationId={id} fullExpanded defaultCondition={false} />` directly.
 
+### Scoping — `annotationId` / `commentId` (two ways)
+
+Dialog primitives resolve which thread (and optionally which comment) they bind to in **either** of these external modes — pick one; both are first-class:
+
+**1. Standalone — pass ids on the primitive itself.**
+
+```tsx
+<VeltCommentDialogCloseButton annotationId={a.annotationId} />
+{/* comment-scoped leaf (message, time, …): */}
+<VeltCommentDialogThreadCardMessage annotationId={a.annotationId} commentId={c.commentId} />
+```
+
+**2. Context wrapper — pass ids once; nested primitives inherit them.**
+
+`VeltCommentDialogContextWrapper` broadcasts `annotationId` plus any extra attributes (e.g. `commentId`) to children. Prefer this when composing several primitives for the same thread/comment so you don't repeat the ids on every leaf.
+
+```tsx
+<VeltCommentDialogContextWrapper annotationId={a.annotationId} commentId={c.commentId}>
+  <VeltCommentDialogThreadCardMessage />
+  <VeltCommentDialogThreadCardTime />
+</VeltCommentDialogContextWrapper>
+```
+
+Lookup priority when both are present: **wrapper context wins**, then the primitive's own attribute/prop. Nested wrappers merge — a child wrapper can override `commentId` while inheriting `annotationId` from a parent. React: typed prop is `annotationId`; `commentId` (and similar context attrs) pass through as kebab-case HTML attributes on the custom element. See [`reference/component-definitions.md`](../reference/component-definitions.md) → *Comment dialog — config sub-components*.
+
 ### `default-condition` — you control show/hide (primitives only)
 
 Every primitive has an **internal visibility condition** — it decides on its own whether to render (e.g. a `VeltCommentDialog` shows only when its annotation is "selected"/open). The **`defaultCondition`** prop lets you **bypass that internal gate** and force the component to render regardless, so **you** own the show/hide logic from your side:
@@ -207,3 +232,4 @@ To restyle the **item internals** (icon/name layout), register the item's wirefr
 - [ ] Features trimmed with **props**, not `display:none`.
 - [ ] `shadowDom={false}` if styling.
 - [ ] Your UI‑library wrappers go *around* the primitive (not custom interactivity *inside* a wireframe).
+- [ ] Each composed dialog primitive is scoped — `annotationId` (and `commentId` when comment-scoped) on the primitive **or** on a surrounding `VeltCommentDialogContextWrapper`.

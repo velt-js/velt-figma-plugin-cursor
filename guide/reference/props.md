@@ -330,6 +330,17 @@ Prop names and types are verbatim from each component's props interface in `@vel
 | editReplyPlaceholder | `string` | Edit-reply placeholder. |
 | anonymousEmail | `boolean` | Per-dialog override for anonymous email mentions in this annotation context. |
 
+### VeltCommentDialogContextWrapper
+
+`IVeltCommentDialogContextWrapperProps` (extends HTML attrs; index signature allows passthrough)
+
+| Prop | Type | Description / when to use |
+|---|---|---|
+| annotationId | `string` | Annotation context broadcast to nested dialog primitives (the typed React prop → `annotation-id`). |
+| commentId | `number \| string` | Optional. Passthrough → `comment-id` on the custom element; scopes nested comment-level leaves (message, time, …) to that comment. Not a separate typed field — accepted via the props index / HTML attrs. |
+
+> **Scoping:** either put `annotationId` / `commentId` on this wrapper (children inherit) **or** pass them on each primitive — see [`approaches/primitives.md`](../approaches/primitives.md) → *Scoping — annotationId / commentId*. Other kebab context attrs on the wrapper (e.g. `comment-index`) also merge into child context.
+
 ### VeltMultiThreadCommentDialog
 
 `IVeltMultiThreadCommentDialogProps` (extends HTML attrs)
