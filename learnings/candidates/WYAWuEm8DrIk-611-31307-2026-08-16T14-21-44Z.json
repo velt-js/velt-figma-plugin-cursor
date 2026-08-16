@@ -1,0 +1,300 @@
+{
+  "runId": "WYAWuEm8DrIk-611-31307-2026-08-16T14-21-44Z",
+  "phaseId": "WYAWuEm8DrIk-611-31307",
+  "app": "ai-harvey-implementation",
+  "mode": "strictly primitives",
+  "node": "611-31307",
+  "pluginSha": "9de2463",
+  "publishedAt": "2026-08-16T14:21:44.121Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "general",
+      "statement": "At @veltdev/react 6.0.0-beta.15 the React primitive wrappers destructure only their declared props plus children (no spread), so className/style are dropped and never reach the custom element even though the prop types extend HTMLAttributes and therefore typecheck. Put every contract class on your own markup and address primitives by their custom-element tag name.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Live DOM: all four primitive-assigned classes absent from the rendered custom elements while the same classes on customer markup were present. Confirmed again on every later family.",
+      "seenOn": [
+        "harvey-figma-611-31307"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "R1 hand-placed children DO project into Velt primitives at 6.0.0-beta.15, even though manifest/velt-primitives.json records availability.published:false (PR #4506 unmerged). The SDK logs '[Velt] Children passed to <tag> replace its default content'.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "A throwaway span rendered as a direct child of VeltCommentsSidebarV2 measured 16.8x24 with text 'R1'; projection survived three primitive levels.",
+      "seenOn": [
+        "harvey-figma-611-31307"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "Some container primitives render 0x0 and SILENTLY DISCARD hand-placed children unless given defaultCondition={false}. Confirmed for VeltCommentSidebarV2PageModeComposer and VeltCommentDialogThreadCardReply. Probe live before concluding a primitive is ungated.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Page-mode composer: present but empty at 0x0 without the prop, populated with it. Reply: 0x0 and childless without, 42x40 with the icon and label kept.",
+      "seenOn": [
+        "harvey-figma-611-31307"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "VeltCommentDialogComposerActionButton rejects children at runtime ('<velt-comment-dialog-composer-action-button> does not support children') while manifest/velt-primitives.json records acceptsChildren:true — a sync-primitives.mjs drift. Its type='submit' is what makes it render the real submit control.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "SDK console message; and with no type the primitive mounts as div[role=group] with nine empty slots and zero height.",
+      "seenOn": [
+        "harvey-figma-611-31307"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "A repeating container primitive (e.g. VeltCommentSidebarV2List) needs ONE always-present child element. Given a bare async row array it starts empty on first render, the SDK keeps its own default rows, and every item then renders twice — once as the SDK's *-internal and once as yours.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "0 velt-comment-dialog-internal nodes after hoisting a stable wrapper div; duplicated rows before.",
+      "seenOn": [
+        "harvey-figma-611-31307"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "Velt's span.velt-sidebar-filter-dropdown-container stops click propagation before it reaches React's delegated root listener, so a React onClick on any child of the filter trigger never fires. Attach a native listener on your own element via a ref instead.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Instrumented every ancestor: the event reached indices 0-3 and never index 4 or document. After the native listener the menu went from absent to 150.7x239 on a real click and closed on an outside click.",
+      "seenOn": [
+        "harvey-figma-611-31307"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "The SidebarV2 family exports its ROOT as plural (VeltCommentsSidebarV2) and all 55 child parts as SINGULAR (VeltCommentSidebarV2*). Grepping for the plural appears to show plural children, but those matches are the IVeltCommentsSidebarV2*Props interface names.",
+      "category": "mapping-pattern",
+      "scope": "general",
+      "verified": true,
+      "evidence": "The export list in node_modules/@veltdev/react/index.d.ts; a plural child import fails to resolve.",
+      "seenOn": [
+        "harvey-figma-611-31307"
+      ],
+      "destination": "guide"
+    },
+    {
+      "kind": "general",
+      "statement": "verify-host-wiring.mjs matched hosts with `<VeltCommentsSidebar\\b`, which does not match `<VeltCommentsSidebarV2` (no word boundary between r and V). It reported every plan host prop missing on a host that carried them all, and --apply would have baked sidebar props onto <VeltComments>. Since a strictly-primitives sidebar plan REQUIRES the V2 host, this blocked the mode outright.",
+      "category": "pipeline-trap",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Gate reported 6 missing props on a host carrying all 6; with a tag-alias fallback --apply inserted exactly one genuinely missing item.",
+      "seenOn": [
+        "harvey-figma-611-31307"
+      ],
+      "destination": "script"
+    },
+    {
+      "kind": "general",
+      "statement": "delta-compare.mjs documents that selector collision is not a defect and nulls GEOMETRY for any selector shared by more than one row, but it still compared STYLE on those rows. Figma auto-layout wrapper frames that flatten onto one live element then contradict each other (column/gap 4 vs row/gap 8) and produce a permanent unfixable FAIL. Suppressing layout-only props for colliding non-painter rows removes it without weakening painter checks.",
+      "category": "pipeline-trap",
+      "scope": "general",
+      "verified": true,
+      "evidence": "flow-2 went from 21 residual delta rows to 7 with no app change; every suppressed row was a paint-free auto-layout frame.",
+      "seenOn": [
+        "harvey-figma-611-31307"
+      ],
+      "destination": "script"
+    },
+    {
+      "kind": "general",
+      "statement": "A Figma VECTOR's stroke is serialised by the extractor as `border: <weight> solid <colour>`, which is unreadable on an SVG <path> (every path reports 0px solid). The readable equivalents are `stroke` and `stroke-width`. Likewise a row bound to the <svg> element reads fill:none because the export's fill lives on the child path.",
+      "category": "pipeline-trap",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Repointing the rows at the ink path (and swapping border -> stroke/stroke-width) turned a block of 'unparseable colour' rows clean with no CSS change.",
+      "seenOn": [
+        "harvey-figma-611-31307"
+      ],
+      "destination": "script"
+    },
+    {
+      "kind": "general",
+      "statement": "figma-extract.mjs exports icon SVGs only with the --svg flag; without it designSpec.json carries icons:{} and assets:[] and a builder will hand-reconstruct glyphs (an R17 violation that no pixel gate reliably catches).",
+      "category": "pipeline-trap",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Re-running with --svg produced 21 assets including the filter, send-arrow, keycap and empty-state illustration; the header glyph reconstruction was replaced with the verbatim export.",
+      "seenOn": [
+        "harvey-figma-611-31307"
+      ],
+      "destination": "guide"
+    },
+    {
+      "kind": "general",
+      "statement": "After a long Turbopack HMR session useCurrentUser() returns null on a page that was not hard-reloaded even though the app is signed in. Any verification pass on a Next dev server must hard-reload before judging Velt-client-derived content.",
+      "category": "model-reliability",
+      "scope": "general",
+      "verified": true,
+      "evidence": "A false negative that briefly implicated the commented-out authProvider; disproved by hard reload, and the state driver now reloads first.",
+      "seenOn": [
+        "harvey-figma-611-31307"
+      ],
+      "destination": "guide"
+    },
+    {
+      "kind": "general",
+      "statement": "V1 comment surfaces have no primitive layer (168 wireframe slots with no counterpart), so a strictly-primitives comments sidebar REQUIRES moving the host from VeltCommentsSidebar to VeltCommentsSidebarV2. V2 types embedMode as a string; the SDK coerces it via (embedMode ? 'true' : 'false').",
+      "category": "mapping-pattern",
+      "scope": "general",
+      "verified": true,
+      "evidence": "check-primitive-reachability: comment-v1 MODE_BLOCKED, sidebar -> SidebarV2 OK. IVeltCommentSidebarV2Props.embedMode?: string; esm/index.js coerces it.",
+      "seenOn": [
+        "harvey-figma-611-31307"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "mappings",
+      "element": "The SidebarV2 family exports its ROOT as plural (VeltComment",
+      "velt": "VeltCommentsSidebarV2 family",
+      "scope": "general",
+      "verified": true,
+      "note": "The SidebarV2 family exports its ROOT as plural (VeltCommentsSidebarV2) and all 55 child parts as SINGULAR (VeltCommentSidebarV2*). Grepping for the plural appears to show plural children, but those matches are the IVeltCommentsSidebarV2*Props interface names.",
+      "evidence": "The export list in node_modules/@veltdev/react/index.d.ts; a plural child import fails to resolve."
+    },
+    {
+      "kind": "mappings",
+      "element": "V1 comment surfaces have no primitive layer (168 wireframe s",
+      "velt": "VeltCommentsSidebarV2 family",
+      "scope": "general",
+      "verified": true,
+      "note": "V1 comment surfaces have no primitive layer (168 wireframe slots with no counterpart), so a strictly-primitives comments sidebar REQUIRES moving the host from VeltCommentsSidebar to VeltCommentsSidebarV2. V2 types embedMode as a string; the SDK coerces it via (embedMode ? 'true' : 'false').",
+      "evidence": "check-primitive-reachability: comment-v1 MODE_BLOCKED, sidebar -> SidebarV2 OK. IVeltCommentSidebarV2Props.embedMode?: string; esm/index.js coerces it."
+    },
+    {
+      "kind": "naming",
+      "what": "vc-* contract classes live on customer markup only",
+      "scope": "general",
+      "verified": true,
+      "note": "The SDK drops className on primitives, so every contract class must sit on your own element and primitives are addressed by custom-element tag name.",
+      "evidence": "Live DOM at @veltdev/react 6.0.0-beta.15."
+    },
+    {
+      "kind": "corrections",
+      "what": "At @veltdev/react 6.0.0-beta.15 the React primitive wrappers",
+      "scope": "general",
+      "verified": true,
+      "note": "At @veltdev/react 6.0.0-beta.15 the React primitive wrappers destructure only their declared props plus children (no spread), so className/style are dropped and never reach the custom element even though the prop types extend HTMLAttributes and therefore typecheck. Put every contract class on your own markup and address primitives by their custom-element tag name.",
+      "evidence": "Live DOM: all four primitive-assigned classes absent from the rendered custom elements while the same classes on customer markup were present. Confirmed again on every later family.",
+      "destination": "knowledge"
+    },
+    {
+      "kind": "corrections",
+      "what": "R1 hand-placed children DO project into Velt primitives at 6",
+      "scope": "general",
+      "verified": true,
+      "note": "R1 hand-placed children DO project into Velt primitives at 6.0.0-beta.15, even though manifest/velt-primitives.json records availability.published:false (PR #4506 unmerged). The SDK logs '[Velt] Children passed to <tag> replace its default content'.",
+      "evidence": "A throwaway span rendered as a direct child of VeltCommentsSidebarV2 measured 16.8x24 with text 'R1'; projection survived three primitive levels.",
+      "destination": "knowledge"
+    },
+    {
+      "kind": "corrections",
+      "what": "Some container primitives render 0x0 and SILENTLY DISCARD ha",
+      "scope": "general",
+      "verified": true,
+      "note": "Some container primitives render 0x0 and SILENTLY DISCARD hand-placed children unless given defaultCondition={false}. Confirmed for VeltCommentSidebarV2PageModeComposer and VeltCommentDialogThreadCardReply. Probe live before concluding a primitive is ungated.",
+      "evidence": "Page-mode composer: present but empty at 0x0 without the prop, populated with it. Reply: 0x0 and childless without, 42x40 with the icon and label kept.",
+      "destination": "knowledge"
+    },
+    {
+      "kind": "corrections",
+      "what": "VeltCommentDialogComposerActionButton rejects children at ru",
+      "scope": "general",
+      "verified": true,
+      "note": "VeltCommentDialogComposerActionButton rejects children at runtime ('<velt-comment-dialog-composer-action-button> does not support children') while manifest/velt-primitives.json records acceptsChildren:true — a sync-primitives.mjs drift. Its type='submit' is what makes it render the real submit control.",
+      "evidence": "SDK console message; and with no type the primitive mounts as div[role=group] with nine empty slots and zero height.",
+      "destination": "knowledge"
+    },
+    {
+      "kind": "corrections",
+      "what": "A repeating container primitive (e.g. VeltCommentSidebarV2Li",
+      "scope": "general",
+      "verified": true,
+      "note": "A repeating container primitive (e.g. VeltCommentSidebarV2List) needs ONE always-present child element. Given a bare async row array it starts empty on first render, the SDK keeps its own default rows, and every item then renders twice — once as the SDK's *-internal and once as yours.",
+      "evidence": "0 velt-comment-dialog-internal nodes after hoisting a stable wrapper div; duplicated rows before.",
+      "destination": "knowledge"
+    },
+    {
+      "kind": "corrections",
+      "what": "Velt's span.velt-sidebar-filter-dropdown-container stops cli",
+      "scope": "general",
+      "verified": true,
+      "note": "Velt's span.velt-sidebar-filter-dropdown-container stops click propagation before it reaches React's delegated root listener, so a React onClick on any child of the filter trigger never fires. Attach a native listener on your own element via a ref instead.",
+      "evidence": "Instrumented every ancestor: the event reached indices 0-3 and never index 4 or document. After the native listener the menu went from absent to 150.7x239 on a real click and closed on an outside click.",
+      "destination": "knowledge"
+    },
+    {
+      "kind": "corrections",
+      "what": "verify-host-wiring.mjs matched hosts with `<VeltCommentsSide",
+      "scope": "general",
+      "verified": true,
+      "note": "verify-host-wiring.mjs matched hosts with `<VeltCommentsSidebar\\b`, which does not match `<VeltCommentsSidebarV2` (no word boundary between r and V). It reported every plan host prop missing on a host that carried them all, and --apply would have baked sidebar props onto <VeltComments>. Since a strictly-primitives sidebar plan REQUIRES the V2 host, this blocked the mode outright.",
+      "evidence": "Gate reported 6 missing props on a host carrying all 6; with a tag-alias fallback --apply inserted exactly one genuinely missing item.",
+      "destination": "script"
+    },
+    {
+      "kind": "corrections",
+      "what": "delta-compare.mjs documents that selector collision is not a",
+      "scope": "general",
+      "verified": true,
+      "note": "delta-compare.mjs documents that selector collision is not a defect and nulls GEOMETRY for any selector shared by more than one row, but it still compared STYLE on those rows. Figma auto-layout wrapper frames that flatten onto one live element then contradict each other (column/gap 4 vs row/gap 8) and produce a permanent unfixable FAIL. Suppressing layout-only props for colliding non-painter rows removes it without weakening painter checks.",
+      "evidence": "flow-2 went from 21 residual delta rows to 7 with no app change; every suppressed row was a paint-free auto-layout frame.",
+      "destination": "script"
+    },
+    {
+      "kind": "corrections",
+      "what": "A Figma VECTOR's stroke is serialised by the extractor as `b",
+      "scope": "general",
+      "verified": true,
+      "note": "A Figma VECTOR's stroke is serialised by the extractor as `border: <weight> solid <colour>`, which is unreadable on an SVG <path> (every path reports 0px solid). The readable equivalents are `stroke` and `stroke-width`. Likewise a row bound to the <svg> element reads fill:none because the export's fill lives on the child path.",
+      "evidence": "Repointing the rows at the ink path (and swapping border -> stroke/stroke-width) turned a block of 'unparseable colour' rows clean with no CSS change.",
+      "destination": "script"
+    },
+    {
+      "kind": "corrections",
+      "what": "figma-extract.mjs exports icon SVGs only with the --svg flag",
+      "scope": "general",
+      "verified": true,
+      "note": "figma-extract.mjs exports icon SVGs only with the --svg flag; without it designSpec.json carries icons:{} and assets:[] and a builder will hand-reconstruct glyphs (an R17 violation that no pixel gate reliably catches).",
+      "evidence": "Re-running with --svg produced 21 assets including the filter, send-arrow, keycap and empty-state illustration; the header glyph reconstruction was replaced with the verbatim export.",
+      "destination": "guide"
+    },
+    {
+      "kind": "gaps",
+      "what": "A new thread cannot be posted from a hand-composed page-mode composer",
+      "scope": "general",
+      "verified": true,
+      "note": "Typing enables Velt's own submit button and a real pointer click lands inside it, but nothing posts; the published submitComment({targetComposerElementId}) behaves identically. No console error, no toast.",
+      "evidence": "/agent/repos/ai-harvey-implementation/.velt-customize/phases/WYAWuEm8DrIk-611-31307/builder-findings-flows.json"
+    },
+    {
+      "kind": "gaps",
+      "what": "The native text caret has no DOM element",
+      "scope": "general",
+      "verified": true,
+      "note": "A Figma design that mocks the caret as a rect can only be expressed as caret-color.",
+      "evidence": "/agent/repos/ai-harvey-implementation/.velt-customize/phases/WYAWuEm8DrIk-611-31307/evidence/caret-native-no-element.md"
+    }
+  ]
+}
