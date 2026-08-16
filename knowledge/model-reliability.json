@@ -5,13 +5,43 @@
       "agent": "velt-planner",
       "observation": "Observed planner wedging (zero writes / zero heartbeats for 8+ min, repeated across two attempts) in an earlier configuration. Under the current Opus-max directive (all agents run Opus at max effort), treat any planner silence past the dead-agent threshold as a wedge and invoke the dead-planner fallback (assumed fills) + ONE firm respawn — do NOT wait out two full stage windows.",
       "confidence": "tentative",
-      "seenOn": ["privado-run2"]
+      "seenOn": [
+        "privado-run2"
+      ]
     },
     {
       "agent": "velt-builder",
       "observation": "Builders wedge most often on the comment-thread/comment-dialog family (the known-hard block). Combine with component-difficulty: build that family MINIMAL and enforce the firm kill+respawn on a heartbeat-silence past the hard budget so one wedged builder can't stall the whole run.",
       "confidence": "confirmed",
-      "seenOn": ["privado", "privado-run2", "harvey"]
+      "seenOn": [
+        "privado",
+        "privado-run2",
+        "harvey"
+      ]
+    },
+    {
+      "agent": "velt-planner-primitives",
+      "observation": "Plans a correct compose tree and reasons well about SDK internals, but will anchor R2 context on a container-shaped tag that is not a registered element. Gate every planned primitive on registered:true.",
+      "confidence": "tentative",
+      "seenOn": [
+        "harvey primitives run 2026-08-13"
+      ]
+    },
+    {
+      "agent": "measurement/drives",
+      "observation": "A drive that OPENS a surface is not a drive that reaches a STATE. Six card-state blocks all captured the first (single-comment) thread and every gate stayed green. Scope liveSelector to the instance that exhibits the state (:has() predicates) and assert the STATE marker, not the surface.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "harvey primitives run 2026-08-13"
+      ]
+    },
+    {
+      "agent": "measurement/drives",
+      "observation": "dom-snapshot reuses ONE page across blocks, so drive steps must be idempotent. Bare toggle clicks made block 1 open the sidebar and block 2 close it: 1/8 captured in batch vs 1/1 in isolation.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "harvey primitives run 2026-08-13"
+      ]
     }
   ]
 }

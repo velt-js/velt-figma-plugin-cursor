@@ -65,7 +65,7 @@
       "veltVersion": "6.x",
       "component": "composer / velt-composer-open",
       "kind": "behavior",
-      "symptom": "velt-composer-open is a one-way SDK state with no revert prop \u2014 once opened it cannot be programmatically reverted, so a flow that needs the collapsed state after opening can't reach it.",
+      "symptom": "velt-composer-open is a one-way SDK state with no revert prop — once opened it cannot be programmatically reverted, so a flow that needs the collapsed state after opening can't reach it.",
       "fix": "Anchor collapsed-state layout/visibility on a STABLE selector, not on toggling velt-composer-open back off (R27). Treat 'return to collapsed' as unreachable and blocker it rather than grinding.",
       "confidence": "confirmed",
       "seenOn": [
@@ -78,7 +78,7 @@
       "veltVersion": "6.x",
       "component": "any VeltWireframe registration",
       "kind": "behavior",
-      "symptom": "Velt clones wireframe TEMPLATES into the plain DOM carrying the .vc-* classes but DROPS the velt-*-wireframe tag \u2014 so a probe/selector keyed to the wireframe tag dies at runtime.",
+      "symptom": "Velt clones wireframe TEMPLATES into the plain DOM carrying the .vc-* classes but DROPS the velt-*-wireframe tag — so a probe/selector keyed to the wireframe tag dies at runtime.",
       "fix": "Key every runtime selector to a stable velt-* class or your own .vc-* class, never the velt-*-wireframe registry tag (which exists only in the 0-size registry twin).",
       "confidence": "confirmed",
       "seenOn": [
@@ -91,8 +91,8 @@
       "veltVersion": "n/a",
       "component": "measurement harness / any content-bearing surface (comments, notifications, lists)",
       "kind": "measurement",
-      "symptom": "Whole-surface pixel-diff of a LIVE list against the Figma frame is invalid: the design is DUMMY data (e.g. 2 example comments, made-up names/timestamps) and the app is REAL data (e.g. 11 comments, real text/users). The count/text/avatars/times NEVER match, so pixel-diff either false-FAILs every content-bearing surface (regions everywhere) or gets waved off as 'artifact' \u2014 which hides real style defects (the RUN-3 hole: a missing inter-card gap + wrong reaction icons shipped while delta-compare passed on a spec that never checked them).",
-      "fix": "Verify CONTENT-INDEPENDENT style, not screenshots. deltaCompare (per-element computed style + box + inter-card GAP) is the AUTHORITY \u2014 it checks the look of ONE card template, identical whether the app shows 2 cards or 200. Whole-surface visualDiff is ADVISORY only: spot a region, then confirm it as a concrete delta assertion (which gates). NEVER flag content (comment count, message text, names, timestamps, reaction counts). The gate rejects a delta spec that covered too little as INCOMPLETE: brief-scaffold auto-derives the inter-card gap + per-slot style elements from the design slice; reaction/action icon identity is icon-lint. A data-controlled single-card capture may set dataMatched to re-enable pixel gating.",
+      "symptom": "Whole-surface pixel-diff of a LIVE list against the Figma frame is invalid: the design is DUMMY data (e.g. 2 example comments, made-up names/timestamps) and the app is REAL data (e.g. 11 comments, real text/users). The count/text/avatars/times NEVER match, so pixel-diff either false-FAILs every content-bearing surface (regions everywhere) or gets waved off as 'artifact' — which hides real style defects (the RUN-3 hole: a missing inter-card gap + wrong reaction icons shipped while delta-compare passed on a spec that never checked them).",
+      "fix": "Verify CONTENT-INDEPENDENT style, not screenshots. deltaCompare (per-element computed style + box + inter-card GAP) is the AUTHORITY — it checks the look of ONE card template, identical whether the app shows 2 cards or 200. Whole-surface visualDiff is ADVISORY only: spot a region, then confirm it as a concrete delta assertion (which gates). NEVER flag content (comment count, message text, names, timestamps, reaction counts). The gate rejects a delta spec that covered too little as INCOMPLETE: brief-scaffold auto-derives the inter-card gap + per-slot style elements from the design slice; reaction/action icon identity is icon-lint. A data-controlled single-card capture may set dataMatched to re-enable pixel gating.",
       "confidence": "confirmed",
       "seenOn": [
         "privado",
@@ -126,8 +126,8 @@
         ".velt-composer-open",
         "velt-composer-input-focused"
       ],
-      "symptom": "The composer renders as a raw blue-outlined <textarea> with a misaligned @/send, and has no collapsed\u2192active\u2192typing states. TWO causes: (1) the custom CSS never reached the input \u2014 the surface is missing shadowDom={false} (or injectCustomCss) so selector CSS can't override Velt's shadow-DOM defaults; (2) the 3 states were never wired \u2014 'active' keys off the .velt-composer-open ancestor class and 'typing' off velt-composer-input-focused, not authored markup.",
-      "fix": "Set shadowDom={false} (or injectCustomCss) on the surface so .velt-composer* selector CSS applies (R6). Build a composer SKELETON (rounded pill container + action row with attach/mention left + circular send right) and wire the 3 states to the real Velt classes: collapsed = default, active = .velt-composer-open ancestor, typing = velt-composer-input-focused. The Judge must DRIVE focus\u2192type and assert all three (a static default capture false-passes the state work).",
+      "symptom": "The composer renders as a raw blue-outlined <textarea> with a misaligned @/send, and has no collapsed→active→typing states. TWO causes: (1) the custom CSS never reached the input — the surface is missing shadowDom={false} (or injectCustomCss) so selector CSS can't override Velt's shadow-DOM defaults; (2) the 3 states were never wired — 'active' keys off the .velt-composer-open ancestor class and 'typing' off velt-composer-input-focused, not authored markup.",
+      "fix": "Set shadowDom={false} (or injectCustomCss) on the surface so .velt-composer* selector CSS applies (R6). Build a composer SKELETON (rounded pill container + action row with attach/mention left + circular send right) and wire the 3 states to the real Velt classes: collapsed = default, active = .velt-composer-open ancestor, typing = velt-composer-input-focused. The Judge must DRIVE focus→type and assert all three (a static default capture false-passes the state work).",
       "confidence": "confirmed",
       "seenOn": [
         "privado"
@@ -143,7 +143,7 @@
         ".velt-reaction-pin-emoji",
         "[class*='reaction-pin']"
       ],
-      "symptom": "On-card reactions render as GIANT stacked emoji IMAGES instead of small inline pills with counts \u2014 the pin emoji (VeltReactionPin \u2192 Emoji/Count) has no width/height and no inline-pill layout, so it paints at the image's natural size. (Also easy to mis-wire the big picker VeltReactionsPanel Item\u2192Emoji in place of the on-card pin.)",
+      "symptom": "On-card reactions render as GIANT stacked emoji IMAGES instead of small inline pills with counts — the pin emoji (VeltReactionPin → Emoji/Count) has no width/height and no inline-pill layout, so it paints at the image's natural size. (Also easy to mis-wire the big picker VeltReactionsPanel Item→Emoji in place of the on-card pin.)",
       "fix": "Lay velt-reaction-pin out as an inline-flex PILL (emoji + count, small gap) and SIZE the pin emoji to the design (velt-reaction-pin-emoji ~16-20px, never natural image size). Distinguish the on-CARD pin (small) from the PICKER panel emoji (larger). brief-scaffold must auto-derive a reaction-pill element so the Judge asserts its box and a giant emoji FAILS as a delta row (the RUN-3 blind spot the KB named but the scaffold never emitted).",
       "confidence": "confirmed",
       "seenOn": [
@@ -159,8 +159,8 @@
         "velt-comment-dialog-thread-card-reactions-wireframe",
         "velt-comment-dialog-thread-card-reaction-tool-wireframe"
       ],
-      "symptom": "TWO identical 'add reaction' (smiley+) buttons render on a comment because BOTH ThreadCard.Reactions AND ThreadCard.ReactionTool were declared. Reactions is the composite row that ALREADY contains the add-reaction trigger; ReactionTool is the STANDALONE add button \u2014 declaring both renders the add affordance twice.",
-      "fix": "Use ThreadCard.Reactions (full row: pills + add-reaction tool) OR (ReactionTool + ReactionPin) \u2014 never Reactions alongside ReactionTool. lint-customization flags co-declaration of thread-card-reactions AND thread-card-reaction-tool; icon-lint flags two identical reaction-tool glyphs.",
+      "symptom": "TWO identical 'add reaction' (smiley+) buttons render on a comment because BOTH ThreadCard.Reactions AND ThreadCard.ReactionTool were declared. Reactions is the composite row that ALREADY contains the add-reaction trigger; ReactionTool is the STANDALONE add button — declaring both renders the add affordance twice.",
+      "fix": "Use ThreadCard.Reactions (full row: pills + add-reaction tool) OR (ReactionTool + ReactionPin) — never Reactions alongside ReactionTool. lint-customization flags co-declaration of thread-card-reactions AND thread-card-reaction-tool; icon-lint flags two identical reaction-tool glyphs.",
       "confidence": "confirmed",
       "seenOn": [
         "privado"
@@ -175,8 +175,8 @@
         "velt-comment-dialog-wireframe",
         "velt-comment-composer-wireframe"
       ],
-      "symptom": "The comment dialog renders with NO composer at all. The dialog root was registered as a container wireframe but the Composer subtree was not DECLARED \u2014 undeclared children of a container wireframe DISAPPEAR (they do NOT fall back to Velt's default). Easy to miss because an unselected dialog legitimately hides the composer until a pin is selected.",
-      "fix": "Declare the Composer (and Body\u2192Threads\u2192ThreadCard) subtree inside the dialog wireframe. Put Composer in the dialog manifest mustSupply so first-shot + the gate flag its absence. lint-customization's container-completeness check requires declared children when a container root is registered. Judge smoke must drive pin SELECTION and assert the reply composer renders in the dialog.",
+      "symptom": "The comment dialog renders with NO composer at all. The dialog root was registered as a container wireframe but the Composer subtree was not DECLARED — undeclared children of a container wireframe DISAPPEAR (they do NOT fall back to Velt's default). Easy to miss because an unselected dialog legitimately hides the composer until a pin is selected.",
+      "fix": "Declare the Composer (and Body→Threads→ThreadCard) subtree inside the dialog wireframe. Put Composer in the dialog manifest mustSupply so first-shot + the gate flag its absence. lint-customization's container-completeness check requires declared children when a container root is registered. Judge smoke must drive pin SELECTION and assert the reply composer renders in the dialog.",
       "confidence": "confirmed",
       "seenOn": [
         "privado"
@@ -187,8 +187,8 @@
       "veltVersion": "6.x",
       "component": "any surface on the unstyled base (setUnstyledMode(true,{keepFunctionalStyles:true}))",
       "kind": "behavior",
-      "symptom": "Own-markup wrappers and slot hosts render with browser defaults (display:block/inline, gap:normal, no flex) \u2014 every row STACKS vertically. Measured on a clean build: 28 of ~40 real diffs on the simplest card were pure layout props (display/flex-direction/gap/justify-content/align-items/align-self/padding), and ALL 12 of the builder's appearance-pass fixes were layout reconstruction the plan never carried.",
-      "fix": "The style plan MUST carry the design's layout props for every composing container \u2014 the Figma auto-layout frames (brief nodeKind:'layout-frame') hold exactly these decls; map each frame's display/flex-direction/gap/justify/align/padding onto the live container it corresponds to. Layout left unplanned = the builder improvises it per run = inconsistent results.",
+      "symptom": "Own-markup wrappers and slot hosts render with browser defaults (display:block/inline, gap:normal, no flex) — every row STACKS vertically. Measured on a clean build: 28 of ~40 real diffs on the simplest card were pure layout props (display/flex-direction/gap/justify-content/align-items/align-self/padding), and ALL 12 of the builder's appearance-pass fixes were layout reconstruction the plan never carried.",
+      "fix": "The style plan MUST carry the design's layout props for every composing container — the Figma auto-layout frames (brief nodeKind:'layout-frame') hold exactly these decls; map each frame's display/flex-direction/gap/justify/align/padding onto the live container it corresponds to. Layout left unplanned = the builder improvises it per run = inconsistent results.",
       "confidence": "tentative",
       "seenOn": [
         "harvey (clean-run measured 2026-07-21)"
@@ -204,11 +204,11 @@
         ".s-user-avatar-container",
         ".s-user-avatar-initial-container"
       ],
-      "symptom": "The SDK renders snippyly-user-avatar as a 32\u00d732 subtree with its visible initial-container anchored TOP-LEFT. Sizing/clipping only the slot HOST to the design's avatar size (overflow:hidden) crops the subtree to its top-left corner \u2014 renders as a dark irregular 'blob', not a circle.",
+      "symptom": "The SDK renders snippyly-user-avatar as a 32×32 subtree with its visible initial-container anchored TOP-LEFT. Sizing/clipping only the slot HOST to the design's avatar size (overflow:hidden) crops the subtree to its top-left corner — renders as a dark irregular 'blob', not a circle.",
       "fix": "Size the WHOLE chain to the design's avatar size and center each level: the slot host AND snippyly-user-avatar AND .s-user-avatar-container AND .s-user-avatar-initial-container (width/height/min-width + flex centering). Never clip the 32px subtree into a smaller box. Verified live: all four levels concentric at the design size, letter centered.",
       "confidence": "confirmed",
       "seenOn": [
-        "harvey (measured live 2026-07-21, blob\u2192clean verified)"
+        "harvey (measured live 2026-07-21, blob→clean verified)"
       ]
     },
     {
@@ -220,11 +220,11 @@
         ".s-user-avatar-initial-container",
         ".velt-user-avatar--initial-container"
       ],
-      "symptom": "The SDK writes the per-user avatar color as an INLINE style attribute (style=\"background-color: rgb(253,161,146)\") on .s-user-avatar-initial-container \u2014 a design's avatar fill rule silently loses to it and the SDK's default palette (salmon/etc.) ships.",
-      "fix": "A design-specified avatar fill needs !important to beat the inline style. If the design KEEPS per-user colors, do NOT override \u2014 record a defaultOk instead. The value is design-specific; never bake a fixed color globally.",
+      "symptom": "The SDK writes the per-user avatar color as an INLINE style attribute (style=\"background-color: rgb(253,161,146)\") on .s-user-avatar-initial-container — a design's avatar fill rule silently loses to it and the SDK's default palette (salmon/etc.) ships.",
+      "fix": "A design-specified avatar fill needs !important to beat the inline style. If the design KEEPS per-user colors, do NOT override — record a defaultOk instead. The value is design-specific; never bake a fixed color globally.",
       "confidence": "confirmed",
       "seenOn": [
-        "harvey (measured live: inline salmon \u2192 !important design fill applied)"
+        "harvey (measured live: inline salmon → !important design fill applied)"
       ]
     },
     {
@@ -236,24 +236,24 @@
         ".s-user-avatar-initial",
         ".velt-user-avatar--initial"
       ],
-      "symptom": "The avatar initial <span> is EMPTY \u2014 the letter lives in its data-modal-author-initial attribute and Velt paints it via CSS content:attr(...). The unstyled base STRIPS that painter, so avatars render with no letter (a correctly-styled empty element, invisible to text checks).",
+      "symptom": "The avatar initial <span> is EMPTY — the letter lives in its data-modal-author-initial attribute and Velt paints it via CSS content:attr(...). The unstyled base STRIPS that painter, so avatars render with no letter (a correctly-styled empty element, invisible to text checks).",
       "cssFix": ".s-user-avatar-initial:empty::before, .velt-user-avatar--initial:empty::before { content: attr(data-modal-author-initial); }",
       "confidence": "confirmed",
       "seenOn": [
-        "harvey (verified live twice: empty span \u2192 rendered letter via ::before)"
+        "harvey (verified live twice: empty span → rendered letter via ::before)"
       ]
     },
     {
       "id": "slot-clone-wrapper-blocks-flex",
       "veltVersion": "6.x",
-      "component": "child-bearing slots (ToggleReply, Composer, \u2026)",
+      "component": "child-bearing slots (ToggleReply, Composer, …)",
       "kind": "behavior",
       "selectorHints": [
         ".vc-reply > div",
         "div.velt-comment-dialog-composer"
       ],
-      "symptom": "Velt clones a plain BLOCK div (often role=button, e.g. div.velt-comment-dialog-composer) BETWEEN the slot host and your supplied children \u2014 flex on the host never reaches the children, so an icon+label or avatar+input+send row STACKS even though the host has display:flex.",
-      "fix": "After flexing the slot host, inspect the live DOM for an intervening clone-wrapper and give IT the row layout too (e.g. `.vc-reply > div { display:flex; align-items:center; gap:<design> }`). The dom-snapshot lists these wrappers \u2014 the style plan should carry a disposition for each.",
+      "symptom": "Velt clones a plain BLOCK div (often role=button, e.g. div.velt-comment-dialog-composer) BETWEEN the slot host and your supplied children — flex on the host never reaches the children, so an icon+label or avatar+input+send row STACKS even though the host has display:flex.",
+      "fix": "After flexing the slot host, inspect the live DOM for an intervening clone-wrapper and give IT the row layout too (e.g. `.vc-reply > div { display:flex; align-items:center; gap:<design> }`). The dom-snapshot lists these wrappers — the style plan should carry a disposition for each.",
       "confidence": "confirmed",
       "seenOn": [
         "harvey (ToggleReply verified live; Composer clone-wrapper verified in the prior build)"
@@ -264,7 +264,7 @@
       "veltVersion": "6.x",
       "component": "page-mode / dialog composer hosts",
       "kind": "behavior",
-      "symptom": "A composer host whose internals haven't mounted (unselected card, empty state) collapses to ~18px \u2014 the design's ~40px input row renders as a squashed pill.",
+      "symptom": "A composer host whose internals haven't mounted (unselected card, empty state) collapses to ~18px — the design's ~40px input row renders as a squashed pill.",
       "fix": "Give the composer host the design row's min-height (design-specific value from the spec node). If the design shows the composer ONLY in a selected state, scope its visibility to the stable selected condition instead of min-heighting every instance.",
       "confidence": "tentative",
       "seenOn": [
@@ -276,11 +276,11 @@
       "veltVersion": "n/a",
       "component": "own-markup decorative elements (thread connector lines, spacers)",
       "kind": "behavior",
-      "symptom": "An own-markup decorative <span> (e.g. the thread connector line in the avatar gutter) renders 0\u00d70 inline and is invisible \u2014 it has no intrinsic size and the plan carried no box for it.",
+      "symptom": "An own-markup decorative <span> (e.g. the thread connector line in the avatar gutter) renders 0×0 inline and is invisible — it has no intrinsic size and the plan carried no box for it.",
       "fix": "Every decorative own-markup element needs explicit display + width/height + paint, and gutter/connector lines need position:absolute inside a position:relative SDK container (e.g. .velt-thread-card--container) with offsets derived from the design (avatar center column). Hide the trailing instance (:last-child) when the design shows no dangling connector.",
       "confidence": "confirmed",
       "seenOn": [
-        "harvey (0\u00d70 \u2192 1px\u00d730-50px line verified live)"
+        "harvey (0×0 → 1px×30-50px line verified live)"
       ]
     },
     {
@@ -288,8 +288,8 @@
       "veltVersion": "6.x",
       "component": "VeltComments replyPlaceholder",
       "kind": "behavior",
-      "symptom": "replyPlaceholder is a PLAIN STRING \u2014 a '{name}' token renders literally in the reply composer placeholder ('Reply to {name}\u2026'), it is never interpolated per-user.",
-      "fix": "Use a static placeholder string, or reproduce per-user text via wireframe tokens (velt-data) in own markup \u2014 never pass {tokens} into placeholder props.",
+      "symptom": "replyPlaceholder is a PLAIN STRING — a '{name}' token renders literally in the reply composer placeholder ('Reply to {name}…'), it is never interpolated per-user.",
+      "fix": "Use a static placeholder string, or reproduce per-user text via wireframe tokens (velt-data) in own markup — never pass {tokens} into placeholder props.",
       "confidence": "tentative",
       "seenOn": [
         "harvey (build-structure trial, live-verified)"
@@ -305,8 +305,8 @@
         ".vc-options-trigger",
         ".options-trigger-container"
       ],
-      "symptom": "Design kebab inside Options.Trigger is invisible (resolve may still show) after a prior patch collapsed .vc-options to 0\u00d70 overflow:hidden to hide the SDK default \u2022\u2022\u2022.",
-      "cssFix": "/* knowledge:options-collapse-clips-design-trigger — size Options host; hide only SDK \u2022\u2022\u2022 glyph */\n.vc-options { width: 16px !important; height: 16px !important; overflow: visible !important; }\n.vc-options svg.comment-dialog-options-dropdown-trigger { width: 0 !important; height: 0 !important; opacity: 0 !important; pointer-events: none !important; }\n.vc-options .options-trigger-container,\n.vc-options .mat-mdc-menu-trigger,\n.vc-options .v-dropdown-menu-trigger { width: 16px !important; height: 16px !important; overflow: visible !important; opacity: 1 !important; pointer-events: auto !important; }",
+      "symptom": "Design kebab inside Options.Trigger is invisible (resolve may still show) after a prior patch collapsed .vc-options to 0×0 overflow:hidden to hide the SDK default •••.",
+      "cssFix": "/* knowledge:options-collapse-clips-design-trigger — size Options host; hide only SDK ••• glyph */\n.vc-options { width: 16px !important; height: 16px !important; overflow: visible !important; }\n.vc-options svg.comment-dialog-options-dropdown-trigger { width: 0 !important; height: 0 !important; opacity: 0 !important; pointer-events: none !important; }\n.vc-options .options-trigger-container,\n.vc-options .mat-mdc-menu-trigger,\n.vc-options .v-dropdown-menu-trigger { width: 16px !important; height: 16px !important; overflow: visible !important; opacity: 1 !important; pointer-events: auto !important; }",
       "fix": "Never zero the Options host or the mat trigger container when the design glyph lives inside Options.Trigger. Rest-hide via opacity on .vc-options; reveal on card/dialog hover.",
       "confidence": "confirmed",
       "seenOn": [
@@ -354,6 +354,43 @@
       "confidence": "confirmed",
       "seenOn": [
         "harvey (cursor cloud run 2026-07-28, Judge DEFECT-1: NG0950 ~260/s, 1.2 GB dev log; fixed type=\"submit\" → re-verified 0 occurrences/session)"
+      ]
+    },
+    {
+      "id": "primitive-tag-registry-lists-unregistered-elements",
+      "veltVersion": "1.x",
+      "component": "primitives",
+      "kind": "behavior",
+      "symptom": "A primitive from the SDK tag registry renders nothing and throws nothing. If it is the R2 context anchor, the entire subtree is silently dead.",
+      "fix": "8 of 441 registry tags are never passed to defineCustomElement (velt-comment-dialog-body/-header/-options/-priority/-private-banner/-status, velt-comment-sidebar-v2, snippyly-comment-pin). Six are container-shaped names — exactly what a planner reaches for to wrap and anchor. Verify registration with customElements.get() before emitting; manifest/velt-primitives.json now carries registered:true|false.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "harvey (primitives run, SDK 1.0.0 local build, 2026-08-13)"
+      ]
+    },
+    {
+      "id": "react-primitive-names-are-not-derivable-from-tags",
+      "veltVersion": "1.x",
+      "component": "primitives",
+      "kind": "behavior",
+      "symptom": "A React import fails or a whole family looks like it has no React wrapper.",
+      "fix": "PascalCasing the tag is wrong whenever a token moves: velt-comment-sidebar-header-v2 exports as VeltCommentSidebarV2Header, not VeltCommentSidebarHeaderV2. 55 of 441 names were wrong this way. Resolve names against the installed package exports, never derive them.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "harvey (primitives run, @veltdev/react 6.0.7, 2026-08-13)"
+      ]
+    },
+    {
+      "id": "velt-controls-ignore-synthetic-click-events",
+      "veltVersion": "n/a",
+      "component": "all",
+      "kind": "measurement",
+      "symptom": "A behavioural probe reports a working control as dead — the natural response is to \"fix\" code that is already correct.",
+      "fix": "Velt Angular handlers ignore element.dispatchEvent(new MouseEvent/PointerEvent). Verified: a synthetic click on Show-N-replies changed nothing; a real OS click expanded the thread 170->173 cards. Drive behavioural probes through CDP Input.dispatchMouseEvent or Playwright locator.click() at freshly-measured coordinates.",
+      "confidence": "confirmed",
+      "seenOn": [
+        "harvey (primitives run 2026-08-13)",
+        "pre-existing build-gotchas entry (corroborates)"
       ]
     }
   ]

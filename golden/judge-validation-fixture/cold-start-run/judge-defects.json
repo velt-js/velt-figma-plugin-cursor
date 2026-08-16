@@ -1,12 +1,12 @@
 {
   "stage": "judge",
   "run": "cold-start-run",
-  "generatedAt": "2026-07-29T10:37:17.410Z",
+  "generatedAt": "2026-08-16T09:38:20.529Z",
   "emitter": "emit-judge-defects.mjs",
   "buildFingerprint": {
     "sha256": "130fd39bda84566e3be3beaf54ec858fba87ea00e22d45b1980eb3403196897c",
-    "mtime": "2026-07-29T10:37:17.311Z",
-    "path": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png"
+    "mtime": "2026-08-16T09:38:20.423Z",
+    "path": "/Users/mayankpagar/Documents/plugin-workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png"
   },
   "doctrine": "FORWARD the vision record; never regenerate P0s from pixel regions. VISION/COMPOSED + HOST/MECHANISM first (P0). Unnamed visual-diff regions are P1. Delta micro-rows are P2. Data-density is noise UNLESS above the F9 severity floor. P0 packets carry live+figma CROPS — text alone is insufficient.",
   "notes": [
@@ -63,7 +63,7 @@
       "canonicalId": "cold-start-magenta-stripe",
       "composed": true,
       "source": "vision",
-      "evidence": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png",
+      "evidence": "/Users/mayankpagar/Documents/plugin-workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png",
       "affectedBlocks": [
         "flow"
       ],
@@ -101,8 +101,8 @@
       "composed": true,
       "source": "vision",
       "evidence": {
-        "liveCrop": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/live.png",
-        "figmaCrop": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/figma.png",
+        "liveCrop": "/Users/mayankpagar/Documents/plugin-workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/live.png",
+        "figmaCrop": "/Users/mayankpagar/Documents/plugin-workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/figma.png",
         "box": {
           "x": 0,
           "y": 0,
@@ -154,8 +154,8 @@
         "fixHint": "match figma crop chrome in the routed mode; ignore data text",
         "selectorHint": null,
         "evidence": {
-          "liveCrop": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/live.png",
-          "figmaCrop": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/figma.png",
+          "liveCrop": "/Users/mayankpagar/Documents/plugin-workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/live.png",
+          "figmaCrop": "/Users/mayankpagar/Documents/plugin-workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/figma.png",
           "box": {
             "x": 0,
             "y": 0,
@@ -195,7 +195,7 @@
       "canonicalId": "cold-start-magenta-stripe",
       "composed": true,
       "source": "vision",
-      "evidence": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png",
+      "evidence": "/Users/mayankpagar/Documents/plugin-workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png",
       "affectedBlocks": [
         "flow"
       ],
@@ -228,7 +228,7 @@
       "canonicalId": "cold-start-magenta-stripe",
       "composed": true,
       "source": "vision",
-      "evidence": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png",
+      "evidence": "/Users/mayankpagar/Documents/plugin-workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png",
       "affectedBlocks": [
         "flow"
       ],
@@ -269,7 +269,7 @@
     "evidenceSource": "degraded-source",
     "connected": false,
     "hoverBlocked": [],
-    "at": "2026-07-29T10:37:17.452Z"
+    "at": "2026-08-16T09:38:20.571Z"
   },
   "builderPackets": [
     {
@@ -292,8 +292,8 @@
       "fixHint": "match figma crop chrome in the routed mode; ignore data text",
       "selectorHint": null,
       "evidence": {
-        "liveCrop": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/live.png",
-        "figmaCrop": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/figma.png",
+        "liveCrop": "/Users/mayankpagar/Documents/plugin-workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/live.png",
+        "figmaCrop": "/Users/mayankpagar/Documents/plugin-workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/figma.png",
         "box": {
           "x": 0,
           "y": 0,
@@ -326,8 +326,8 @@
       "fixHint": "match figma crop chrome in the routed mode; ignore data text",
       "selectorHint": null,
       "evidence": {
-        "liveCrop": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/live.png",
-        "figmaCrop": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/figma.png",
+        "liveCrop": "/Users/mayankpagar/Documents/plugin-workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/live.png",
+        "figmaCrop": "/Users/mayankpagar/Documents/plugin-workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/judge-evidence/composed.flow.cold-start-magenta-stripe/figma.png",
         "box": {
           "x": 0,
           "y": 0,

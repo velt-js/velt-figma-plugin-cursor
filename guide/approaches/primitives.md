@@ -177,6 +177,25 @@ Primitives **do** give deep layout control (via sub‑components). The two reaso
 
 ## Notes & deep-dives
 
+### Children, context and data (R1 / R2 / R3)
+
+Three SDK capabilities change what a primitives build can express. Full reference, including every limit and documented absence: [`../reference/primitives-capabilities.md`](../reference/primitives-capabilities.md).
+
+> **⚠️ Not published yet.** These ship in an unmerged SDK change. Verify the target app's installed `@veltdev/*` version first — against an older SDK this code compiles and silently does nothing.
+
+- **R1 children** — markup you write *inside* a primitive tag replaces its default content and is **moved, not cloned**, so your handlers and framework components stay live. This is what wireframes cannot do, and it is why a *leaf* piece no longer forces you back to that leaf's wireframe.
+- **R2 context** — put `annotationId` / `commentId` on the nearest sensible ancestor; nested Velt descendants inherit it. A child's own attribute always wins. This removes the per-component prop drilling the examples above show.
+- **R3 data** — read a surface's live derived state and drive your own conditionals from it, instead of inferring state from rendered DOM. Six getters exist and one React hook; **nothing else**.
+
+**Four rules that produce a correct-looking, wrong-behaving build if missed:**
+
+1. **The dialog root and thread host are not containers** — markup inside them does not render (the composer *is* a container). Compose the dialog's parts directly inside your own element.
+2. **A compound-trigger leaf needs its `-trigger` ancestor.** A chip built from `…TriggerIcon` + `…TriggerName` alone renders pixel-perfect and does nothing — the handler lives on the trigger.
+3. **Children on a repeating container render once**, not per item. Own the loop; R2 feeds each row.
+4. **Hand-placed primitives inherit `shadowDom`**, which silently kills class-based CSS while variables keep working. Resolve it before choosing a CSS strategy.
+
+**Before committing to a primitives-only build, check reachability.** A primitive accepting children does not mean one *exists* everywhere a wireframe slot reaches: **392 of 770 slot positions have no primitive counterpart** (recorder, V1 comment surfaces, reactions, cursor, presence, live state sync). For those, a wireframe stays mandatory.
+
 ### Worked example — a custom dialog header with a custom dropdown (your UI library + Velt items)
 
 A very common need: you build your own comment dialog from primitives, and in the header you want **status / priority / options** dropdowns that use **your own UI‑library dropdown** (Radix/MUI/etc.) for the open/close shell, but still drive Velt's real behavior, with **wireframe‑styled items**. Here's how the pieces fit.

@@ -1,0 +1,30 @@
+{
+  "_doc": [
+    "Tags present in the SDK's docs/primitive-tags.json but NOT registered as custom elements at",
+    "runtime. Emitting one produces an HTMLUnknownElement: it renders nothing and throws nothing,",
+    "so neither a compiler nor a pixel diff can see it.",
+    "",
+    "Captured by probing customElements.get() for all 441 registry tags against a RUNNING SDK.",
+    "The SDK's own capability audits do not check registration, so primitive-tags.json over-reports.",
+    "Re-capture after an SDK change: load the app, then in the console --",
+    "  T.filter(x => !customElements.get(x))"
+  ],
+  "capturedAgainst": {
+    "sdkVersion": "1.0.0",
+    "branch": "mayank/primitives-r3-data",
+    "app": "harvey",
+    "date": "2026-08-13",
+    "tagsProbed": 441,
+    "registered": 433
+  },
+  "unregistered": {
+    "snippyly-comment-pin": "legacy vendor alias; never registered by the V2 tree",
+    "velt-comment-dialog-body": "container-shaped name with no registered element — was picked as an R2 anchor during the first primitives run and would have produced a silently dead thread card",
+    "velt-comment-dialog-header": "container-shaped name, not registered",
+    "velt-comment-dialog-options": "container-shaped name, not registered (the registered control is velt-comment-dialog-thread-card-options)",
+    "velt-comment-dialog-priority": "container-shaped name, not registered (use velt-comment-dialog-priority-dropdown*)",
+    "velt-comment-dialog-private-banner": "container-shaped name, not registered",
+    "velt-comment-dialog-status": "container-shaped name, not registered (use velt-comment-dialog-status-dropdown*)",
+    "velt-comment-sidebar-v2": "SINGULAR; the registered host tag is velt-comments-sidebar-v2 (plural). The SDK's own React parity gate baselines this as a known false positive."
+  }
+}

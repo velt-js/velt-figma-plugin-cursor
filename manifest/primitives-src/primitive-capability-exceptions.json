@@ -1,0 +1,16 @@
+{
+  "_comment": [
+    "Primitives that do NOT support a capability, with the reason. Consumed by",
+    "scripts/audit-primitive-capabilities.js. An entry whose component now PASSES is itself a gate",
+    "failure, so this list can only shrink — it cannot rot into a permanent excuse.",
+    "capability: C1 = R1 children slot, C2 = R2 context publish, C3 = R2 context consume, C4 = R3 data access."
+  ],
+  "exceptions": [
+    {
+      "component": "velt-comment-dialog-internal",
+      "capability": "C1",
+      "reason": "Root orchestrator, not a leaf primitive: it composes the dialog's child primitives directly and renders through #host + showDefault() + shadow DOM across three render modes. Children on the three dialog hosts is a known open design decision (docs/primitives-children.md 'What this release does NOT cover'); every primitive it composes supports children individually.",
+      "owner": "primitives"
+    }
+  ]
+}

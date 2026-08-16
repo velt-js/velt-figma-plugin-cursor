@@ -63,6 +63,19 @@ if (await exists("agents")) {
   }
 }
 
+// 4b. Velt PRIMITIVES capability manifest — present + in sync with the vendored SDK snapshot.
+//     Separate from the Code Connect manifest above; nothing in the wireframe path reads it.
+if (!(await exists("manifest/velt-primitives.json"))) {
+  errors.push("manifest/velt-primitives.json not built — run scripts/sync-primitives.mjs");
+} else {
+  await readJSON("manifest/velt-primitives.json");
+  try {
+    execSync(`node "${path.join(ROOT, "scripts/sync-primitives.mjs")}" --check`, { stdio: ["ignore", "pipe", "pipe"] });
+  } catch (e) {
+    errors.push("primitives manifest is stale vs manifest/primitives-src/:\n" + (e.stdout?.toString() || "") + (e.stderr?.toString() || ""));
+  }
+}
+
 // 5. Component dirs (warn until populated)
 for (const d of ["skills", "agents", "commands", "templates", "rules"]) {
   if (!(await exists(d))) warns.push(`${d}/ not present yet`);

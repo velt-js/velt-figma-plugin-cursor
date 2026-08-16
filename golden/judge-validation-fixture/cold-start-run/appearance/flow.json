@@ -12,17 +12,17 @@
   ],
   "disposition": "open",
   "visionReviewed": true,
-  "figmaFramePng": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/frames/flow.png",
+  "figmaFramePng": "/Users/mayankpagar/Documents/plugin-workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/frames/flow.png",
   "mockScreenshot": null,
-  "liveScreenshot": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png",
+  "liveScreenshot": "/Users/mayankpagar/Documents/plugin-workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png",
   "status": "appearance-reviewed",
-  "visionReviewedAt": "2026-07-29T10:37:17.345Z",
+  "visionReviewedAt": "2026-08-16T09:38:20.455Z",
   "visionMissCount": 1,
   "needsReGlance": false,
   "liveCaptureFingerprint": {
     "sha256": "130fd39bda84566e3be3beaf54ec858fba87ea00e22d45b1980eb3403196897c",
-    "mtime": "2026-07-29T10:37:17.311Z",
-    "path": "/Users/mayankpagar/Documents/Plugin Workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png"
+    "mtime": "2026-08-16T09:38:20.424Z",
+    "path": "/Users/mayankpagar/Documents/plugin-workspace/velt-figma-plugin-cursor/golden/judge-validation-fixture/cold-start-run/composed-audit/live-panel.png"
   },
-  "at": "2026-07-29T10:37:17.346Z"
+  "at": "2026-08-16T09:38:20.455Z"
 }

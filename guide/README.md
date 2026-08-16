@@ -76,6 +76,7 @@ guide/
 │   ├── wireframe-variables.md      The complete {variable} catalog
 │   ├── wireframe-components.md     82 wireframe components + ALL 770 slot elements + slot props
 │   ├── primitives.md               All primitive components (grouped)
+│   ├── primitives-capabilities.md  R1 children / R2 context / R3 data — limits + zero-wireframe reachability
 │   ├── props.md                    ALL props for EVERY component (VeltComments + 38 others)
 │   ├── apis.md                     All feature element API methods (getCommentElement()…)
 │   ├── events.md                   All subscribable events per feature (.on('…'))

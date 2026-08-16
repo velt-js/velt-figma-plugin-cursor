@@ -31,6 +31,7 @@ import { SNAPSHOT_FN } from "../scripts/dom-snapshot.mjs";
 import { calibrateJudgeValidation } from "./judge-validation.mjs";
 import { calibrateDefectContract } from "./defect-contract.mjs";
 import { calibrateCompiledOracle } from "./compiled-oracle.mjs";
+import { calibratePrimitives } from "./primitives-calibration.mjs";   // PRIMITIVES path only (R1/R2/R3)
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -952,6 +953,8 @@ async function main() {
   if (!defectContractCalibrated) failed++;
   const compiledOracleCalibrated = await calibrateCompiledOracle();
   if (!compiledOracleCalibrated) failed++;
+  const primitivesCalibrated = await calibratePrimitives();
+  if (!primitivesCalibrated) failed++;
 
   if (failed) { console.error(`\n✗ golden offline guard FAILED for ${failed} check(s)`); process.exit(1); }
   console.log(`\n✓ golden offline guard passed (probe/gate/judge calibration suites all green)`);

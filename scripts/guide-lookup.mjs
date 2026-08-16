@@ -88,6 +88,7 @@ const APPROACH_FILES = {
   primitives: [
     ["approaches/primitives.md", "the per-layer procedure"],
     ["reference/primitives.md", "only this surface's primitive"],
+    ["reference/primitives-capabilities.md", "R1 children / R2 context / R3 data — capabilities, limits, reachability"],
     ["reference/props.md", "only this surface's component part"],
     ["reference/component-config.md", "config sub-components"],
     ["reference/hooks.md", "hooks catalog (small)"],

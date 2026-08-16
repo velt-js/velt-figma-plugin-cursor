@@ -77,6 +77,10 @@ A block is visually clean only when its matched-state chromatic regions are empt
 - **pixel** — classic per-pixel YIQ threshold regions on **aligned** geometry
 - **mean-shift** — area mean luminance delta; catches sub-threshold uniform tints (e.g. hover card `#f7f6f4` vs `#ffffff`). Also runs a **resting-live vs hover-live** same-geometry pass (`_hover-live-delta`)
 - **text-gap** — strips between adjacent text/avatar bboxes. Name as spacing/micro-gap chrome, never as data text
+- **primitives-probe** — ONLY when the run's mode is `strictly primitives` (every other mode skips this block entirely). A primitives build fails in ways pixel-diff is blind to, because the defect renders *correctly*:
+  - **dead control** — for every composed interactive element, click it with a **real pointer at freshly-measured coordinates** and assert something changed. Synthetic `.click()` silently fails on Velt controls where a real click works, and a stale coordinate produces a false "the menu doesn't open". Overlay menus mount into the overlay container, **outside** the section — a section-scoped query will not find them. A control that renders and does nothing is `demoBreaking`.
+  - **virtualization divergence** — a hand-composed list rendering every row where the built-in shows a window is **expected, not a defect**. Do not score it as a structural failure.
+  - **unverified actions** — the mutating actions were never exercised hand-composed upstream. Report them as unverified; never as confirmed.
 - **chrome-probe** — mechanical only (already `named: true`, `demoBreaking: true`):
   - `card-side-borders-invisible` — L/R ring clipped or absent in pixels
   - `card-double-border` — stacked border + box-shadow rings
