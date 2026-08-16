@@ -1,0 +1,90 @@
+{
+  "runId": "WYAWuEm8DrIk-370-29828-2026-08-16T11-16-18Z",
+  "phaseId": "WYAWuEm8DrIk-370-29828",
+  "app": "harvey-demo-next (Privado)",
+  "mode": "strictly primitives",
+  "node": "370-29828",
+  "pluginSha": "9de2463",
+  "publishedAt": "2026-08-16T11:16:18.060Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "r1-customer-children-unpublished",
+      "statement": "Velt's R1 'customer children' capability is NOT implemented in any published SDK build (checked 6.0.0-beta.15 and the latest stable 6.0.7). Primitives upgrade as custom elements and KEEP the class attribute you set, then discard the children you supplied and render their own default subtree. This includes velt-comment-dialog-composer, which guide/reference/primitives-capabilities.md documents as a container. Consequence: a `strictly primitives` run cannot produce any rendered output today, no matter what the reachability table says — reachability and capability-availability are independent gates.",
+      "category": "sdk-gotcha",
+      "evidence": "Isolated live probe on 4 primitives at SDK 6.0.7: registered=true, class kept, marker child discarded on all 4. React wrapper verified to forward children (node_modules/@veltdev/react/esm/index.js, VeltCommentsSidebarV2 createElement(..., children)), so the loss is in the cdn.velt.dev runtime. Full record: r1-exhaustion-evidence.md. Matches manifest availability.published:false (PR snippyly/sdk#4506 unmerged).",
+      "seenOn": [
+        "privado-harvey-370-29828"
+      ],
+      "destination": "guide",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "composer-action-button-type-required",
+      "statement": "VeltCommentDialogComposerActionButton requires its `type` prop at RUNTIME — it is typed optional but omitting it throws NG0950 from getTypeValue and takes the React tree down with a removeChild NotFoundError. Valid members: 'userMentions' | 'autocomplete' | 'file' | 'audio' | 'video' | 'screen' | 'submit' | 'attachments' | 'format'. Corollary: the mention trigger is this same primitive with type='userMentions', so a composer mention button is NOT a gap.",
+      "category": "sdk-gotcha",
+      "evidence": "Observed 4x NG0950 in the dev log during the structure build when `type` was omitted; resolved by supplying it. Member list read from IVeltCommentDialogComposerActionButtonProps in the installed index.d.ts.",
+      "seenOn": [
+        "privado-harvey-370-29828"
+      ],
+      "destination": "guide",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "verify-host-wiring-cannot-express-v2-mount",
+      "statement": "verify-host-wiring.mjs jsxTagForComponent() collapsed anything matching /Sidebar/i onto the V1 tag `VeltCommentsSidebar`, so a V2 mount (VeltCommentsSidebarV2) was inexpressible: the gate searched for a tag the host deliberately does not have and reported every plan hostProp as missing. Fix: honour an explicit veltComponents.onComponent when it is a well-formed non-Wireframe Velt component name, before falling back to the id/name heuristics.",
+      "category": "pipeline-trap",
+      "evidence": "Gate listed 'VeltCommentsSidebar pageModeComposerVariant' and skipped the V2 props until jsxTagForComponent was patched; after the patch it listed exactly the 7 real items and reached exit 0 once applied.",
+      "seenOn": [
+        "privado-harvey-370-29828"
+      ],
+      "destination": "script",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "pagemode-composer-variant-inference-is-wireframe-only",
+      "statement": "verify-host-wiring.mjs infers a required `pageModeComposerVariant` host prop whenever pageMode is set. Satisfying it means registering a <VeltCommentDialogWireframe variant=...>, which `strictly primitives` forbids, so in that mode it is an unsatisfiable gate item. A primitives build fills the page-mode composer by composing children into the registered composer primitive instead. Fix: skip the inference when the plan's layer is primitives.",
+      "category": "pipeline-trap",
+      "evidence": "Gate required it on an all-primitives plan with no wireframe anywhere; the knowledge-base trap entry for it explicitly prescribes a wireframe registration as the fix.",
+      "seenOn": [
+        "privado-harvey-370-29828"
+      ],
+      "destination": "script",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "unstyled-base-must-be-gated-on-composition-rendering",
+      "statement": "setUnstyledMode(true) is APPLY+KEEP golden path, but it is only correct as the base for a customization that actually renders. If the customization cannot mount (e.g. the R1 gap above), applying it unconditionally strips Velt's default CSS with nothing replacing it and leaves the app strictly worse than before the run — a visible regression shipped by a run that otherwise reports honestly. Gate the call on a runtime capability probe, or make the golden-path gate aware that unstyled-base without a rendering customization is a regression.",
+      "category": "pipeline-trap",
+      "evidence": "Structure stage applied it unconditionally; live screenshot showed a raw unstyled sidebar. Adding a runtime R1 probe (useVeltChildrenSupport.ts) restored 133 Velt stylesheets and a normally-rendered sidebar.",
+      "seenOn": [
+        "privado-harvey-370-29828"
+      ],
+      "destination": "guide",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "attachment-button-leaf-not-container",
+      "statement": "VeltCommentDialogAttachmentButton is exported by @veltdev/react but velt-comment-dialog-attachment-button is absent from the SDK's own primitive-tags.json (the children-accepting registry the plugin manifest is generated from). It is a LEAF, not manifest drift: absence from that registry means 'accepts no children', not 'does not exist'. Planners applying R10 against the manifest should distinguish 'not a container' from 'not a real identifier'.",
+      "category": "mapping-pattern",
+      "evidence": "Cross-checked manifest/velt-primitives.json (441 entries, no attachment-button), manifest/primitives-src/primitive-tags.json (absent), and the installed SDK exports (present).",
+      "seenOn": [
+        "privado-harvey-370-29828"
+      ],
+      "destination": "guide",
+      "verified": true
+    }
+  ]
+}
