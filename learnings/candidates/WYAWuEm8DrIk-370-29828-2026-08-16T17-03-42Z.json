@@ -1,0 +1,181 @@
+{
+  "runId": "WYAWuEm8DrIk-370-29828-2026-08-16T17-03-42Z",
+  "phaseId": "WYAWuEm8DrIk-370-29828",
+  "app": "harvey-demo-next (Privado)",
+  "mode": "strictly primitives",
+  "node": "370-29828",
+  "pluginSha": "9de2463",
+  "publishedAt": "2026-08-16T17:03:42.429Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "composer-action-button-type-required",
+      "statement": "VeltCommentDialogComposerActionButton requires its `type` prop at RUNTIME — it is typed optional but omitting it throws NG0950 from getTypeValue and takes the React tree down with a removeChild NotFoundError. Valid members: 'userMentions' | 'autocomplete' | 'file' | 'audio' | 'video' | 'screen' | 'submit' | 'attachments' | 'format'. Corollary: the mention trigger is this same primitive with type='userMentions', so a composer mention button is NOT a gap.",
+      "category": "sdk-gotcha",
+      "evidence": "Observed 4x NG0950 in the dev log during the structure build when `type` was omitted; resolved by supplying it. Member list read from IVeltCommentDialogComposerActionButtonProps in the installed index.d.ts.",
+      "seenOn": [
+        "privado-harvey-370-29828"
+      ],
+      "destination": "guide",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "verify-host-wiring-cannot-express-v2-mount",
+      "statement": "verify-host-wiring.mjs jsxTagForComponent() collapsed anything matching /Sidebar/i onto the V1 tag `VeltCommentsSidebar`, so a V2 mount (VeltCommentsSidebarV2) was inexpressible: the gate searched for a tag the host deliberately does not have and reported every plan hostProp as missing. Fix: honour an explicit veltComponents.onComponent when it is a well-formed non-Wireframe Velt component name, before falling back to the id/name heuristics.",
+      "category": "pipeline-trap",
+      "evidence": "Gate listed 'VeltCommentsSidebar pageModeComposerVariant' and skipped the V2 props until jsxTagForComponent was patched; after the patch it listed exactly the 7 real items and reached exit 0 once applied.",
+      "seenOn": [
+        "privado-harvey-370-29828"
+      ],
+      "destination": "script",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "pagemode-composer-variant-inference-is-wireframe-only",
+      "statement": "verify-host-wiring.mjs infers a required `pageModeComposerVariant` host prop whenever pageMode is set. Satisfying it means registering a <VeltCommentDialogWireframe variant=...>, which `strictly primitives` forbids, so in that mode it is an unsatisfiable gate item. A primitives build fills the page-mode composer by composing children into the registered composer primitive instead. Fix: skip the inference when the plan's layer is primitives.",
+      "category": "pipeline-trap",
+      "evidence": "Gate required it on an all-primitives plan with no wireframe anywhere; the knowledge-base trap entry for it explicitly prescribes a wireframe registration as the fix.",
+      "seenOn": [
+        "privado-harvey-370-29828"
+      ],
+      "destination": "script",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "unstyled-base-must-be-gated-on-composition-rendering",
+      "statement": "setUnstyledMode(true) is APPLY+KEEP golden path, but it is only correct as the base for a customization that actually renders. If the customization cannot mount (e.g. the R1 gap above), applying it unconditionally strips Velt's default CSS with nothing replacing it and leaves the app strictly worse than before the run — a visible regression shipped by a run that otherwise reports honestly. Gate the call on a runtime capability probe, or make the golden-path gate aware that unstyled-base without a rendering customization is a regression.",
+      "category": "pipeline-trap",
+      "evidence": "Structure stage applied it unconditionally; live screenshot showed a raw unstyled sidebar. Adding a runtime R1 probe (useVeltChildrenSupport.ts) restored 133 Velt stylesheets and a normally-rendered sidebar.",
+      "seenOn": [
+        "privado-harvey-370-29828"
+      ],
+      "destination": "guide",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "attachment-button-leaf-not-container",
+      "statement": "VeltCommentDialogAttachmentButton is exported by @veltdev/react but velt-comment-dialog-attachment-button is absent from the SDK's own primitive-tags.json (the children-accepting registry the plugin manifest is generated from). It is a LEAF, not manifest drift: absence from that registry means 'accepts no children', not 'does not exist'. Planners applying R10 against the manifest should distinguish 'not a container' from 'not a real identifier'.",
+      "category": "mapping-pattern",
+      "evidence": "Cross-checked manifest/velt-primitives.json (441 entries, no attachment-button), manifest/primitives-src/primitive-tags.json (absent), and the installed SDK exports (present).",
+      "seenOn": [
+        "privado-harvey-370-29828"
+      ],
+      "destination": "guide",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "r1-children-is-per-primitive",
+      "statement": "Velt's R1 customer-children capability is implemented in the DEVELOP SDK (6.0.8-beta.1, reached via VeltProvider config={{develop:true,version:'…'}}) but NOT in any published build, and it is PER-PRIMITIVE, not global. Measured 89 accept / 64 reject across 153 sidebar+card+composer tags. Two rules follow: (1) a REJECTING CONTAINER written by hand renders EMPTY - it does NOT fall back to Velt's default subtree - so replace those with your own div and keep only accepting primitives as wrappers; (2) children REPLACE a primitive's own content, so any part that must show SDK data (thread-card name/message/avatar, composer-input) has to stay CHILDLESS. The dev SDK logs an explicit '<tag> does not support children' warning, which is the fastest possible feedback loop - grep the dev log for it.",
+      "category": "sdk-gotcha",
+      "evidence": "r1-capability-map.json (live probe of 153 tags). Our own velt-comment-sidebar-panel-v2 rendered children:[] with no header/list. Corrected from an earlier same-run conclusion that R1 was unimplemented, which was measured only against published builds 6.0.0-beta.15 and 6.0.7.",
+      "seenOn": [
+        "privado-harvey-370-29828"
+      ],
+      "destination": "guide",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "react-wrappers-drop-classname",
+      "statement": "The Velt React wrappers forward only children and their own typed inputs to the underlying custom element - className is NOT forwarded. So a vc-* hook can never land on a velt-* tag: put every hook on your own element and style Velt internals through their own classes (div.velt-thread-card--name/--time/--message/--reply) or --velt-* variables.",
+      "category": "sdk-gotcha",
+      "evidence": "Measured live; confirmed in node_modules/@veltdev/react/esm/index.js where each wrapper spreads only typed inputs plus children.",
+      "seenOn": [
+        "privado-harvey-370-29828"
+      ],
+      "destination": "guide",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "thread-card-parts-need-comment-id",
+      "statement": "thread-card-* primitives are CommentDialog-family and need a COMMENT identity, not just an annotation: velt-comment-sidebar-list-item-v2 publishes only annotation-id, and an annotation is a thread of many comments, so the parts mount and park on velt-skeleton-loader-internal forever. Pass annotationId + commentId (from annotation.comments[0]) on each part. Exception: thread-card-reaction-pin takes commentIndex, not commentId. A skeleton-loader in a composed card is the signature of this bug.",
+      "category": "sdk-gotcha",
+      "evidence": "Live: card 353x36 with velt-skeleton-loader-internal inside -name; after binding, 353x80 with real author/time/message and 0 skeleton loaders document-wide. Props verified in index.d.ts IVeltCommentDialogThreadCard*Props.",
+      "seenOn": [
+        "privado-harvey-370-29828"
+      ],
+      "destination": "guide",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "unstyled-mode-strips-wrapper-insets-late",
+      "statement": "setUnstyledMode strips Velt wrapper padding/border about a second AFTER boot. Any measurement taken shortly after a drive (as measure-block does) sees the transient 16px padding + 1px border on .velt-sidebar-container/.velt-sidebar and reports the whole column ~34px narrow - a phantom width defect that a hand probe of a settled tab cannot reproduce. Zero those insets structurally rather than chasing the delta.",
+      "category": "sdk-gotcha",
+      "evidence": "Settled probe 380->379->379->377; probed ~500ms after drive 380->379(pad16)->347(border1)->345->343. Explained panel-tabs d37, composer d65 and card d29 simultaneously.",
+      "seenOn": [
+        "privado-harvey-370-29828"
+      ],
+      "destination": "guide",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "smoke-specs-scaffold-without-steps",
+      "statement": "The scaffolded briefs/*.smoke.json carry prose checks[] but no steps[], and measure-block smoke executes steps[] - so every R30 suite runs 0/0 and reports GREEN on an empty proof. A green smoke suite with 0 steps is not evidence. Either the scaffold should emit step skeletons or the runner should fail an empty spec.",
+      "category": "pipeline-trap",
+      "evidence": "All four families reported 0/0 ok until steps were authored; with real steps they exercise the toggle, filter trigger, composer focus/typing and reply control.",
+      "seenOn": [
+        "privado-harvey-370-29828"
+      ],
+      "destination": "script",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "measure-block-no-force-passthrough",
+      "statement": "measure-block.mjs accepts no --force and does not forward one to report-block.mjs, so a block finalized STUCK/BLOCKED/GAP can never be re-measured through the normal pipeline - which is exactly what the doctrine s batched fix pass and any resume-after-environment-change requires. The only way through is editing block-report.json by hand.",
+      "category": "pipeline-trap",
+      "evidence": "report-block refused all 7 re-measurements after the SDK changed; had to clear dispositions manually and archive the prior report.",
+      "seenOn": [
+        "privado-harvey-370-29828"
+      ],
+      "destination": "script",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "chrome-probe-hardcodes-vc-body",
+      "statement": "judge2-chrome-probes keys card detection on .vc-body. A build naming its card body .vc-card__body gets chrome-probe-empty-sidebar (named + demoBreaking) against a sidebar with several demonstrably sized cards. The probe self-reports inconclusive, but it lands as a P0 in the work order.",
+      "category": "pipeline-trap",
+      "evidence": "bodies:0 reported while 3 cards measured 356px wide with sized .vc-card__body children.",
+      "seenOn": [
+        "privado-harvey-370-29828"
+      ],
+      "destination": "script",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "structural-invariants-demands-composer-avatar",
+      "statement": "structural-invariants required an avatar on every composer, failing BLOCKED_FOR_REPLAN for any design whose composer is a bare pill - pushing the build toward adding an element the design never shows (R24/R25). Input and send are structural; an avatar is a design choice and belongs in advisories.",
+      "category": "pipeline-trap",
+      "evidence": "composer-incomplete with hasInput:true hasSend:true hasAvatar:false, against three composer frames that draw no avatar.",
+      "seenOn": [
+        "privado-harvey-370-29828"
+      ],
+      "destination": "script",
+      "verified": true
+    }
+  ]
+}
