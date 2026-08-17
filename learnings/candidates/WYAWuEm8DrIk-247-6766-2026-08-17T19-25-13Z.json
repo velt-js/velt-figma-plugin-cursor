@@ -1,0 +1,209 @@
+{
+  "runId": "WYAWuEm8DrIk-247-6766-2026-08-17T19-25-13Z",
+  "phaseId": "WYAWuEm8DrIk-247-6766",
+  "app": "ai-harvey-implementation",
+  "mode": "strictly primitives",
+  "node": "247-6766",
+  "pluginSha": "9de2463",
+  "publishedAt": "2026-08-17T19:25:13.111Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "general",
+      "statement": "velt-autocomplete-panel REFUSES children at 6.0.0-beta.15 ('<velt-autocomplete-panel> does not support children'), and a hand-placed panel does NOT re-template the composer's picker — it instantiates a SECOND independent Angular Material autocomplete with its own CDK overlay. There is no seam lower down either: the built-in rows render velt-autocomplete-option-internal, an Angular selector rather than a registered custom element. manifest/velt-primitives.json records acceptsChildren:true for that tag, which is wrong.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Measured with the full plan-A tree mounted: 2 panels side by side, 8 mat-options, 2 mat-mdc-option-active, and 0 velt-autocomplete-option tags anywhere in the document.",
+      "seenOn": [
+        "harvey-figma-247-6766"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "The mention picker renders in an Angular CDK overlay attached to BODY, not inside the surface. Reachability from the composer, the rail or the sidebar host is zero. The in-composer velt-autocomplete-panel-internal (measured 273.9x2) is only a Material template host and exists even when the picker is closed, so its presence proves nothing. Styling it needs a document-rooted selector gated by an attribute you set on body — the only ancestor a stylesheet shares with the overlay.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "4 options reachable from document, 0 from .vc-composer-states / .hw-rail / velt-comments-sidebar-v2. Painting the in-composer host drew a hairline through the composer, which is why an earlier phase had to suppress it.",
+      "seenOn": [
+        "harvey-figma-247-6766"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "A mention chip is authored at send time and stored on the comment, so seeding one needs addCommentAnnotation with commentHtml carrying <span class='velt-comment-dialog-thread-card-message--email-chip' data-id='<userId>'> AND a taggedUserContacts entry — the SDK resolves data-id against it and mounts velt-autocomplete-chip. The SDK MINTS ITS OWN annotationId and ignores the supplied one, so teardown keyed on the supplied id is a silent no-op that still resolves truthy; match on commentText instead.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "The mounted chip's contact JSON was byte-for-byte the entry passed in; a delete keyed on the supplied id left the thread in place.",
+      "seenOn": [
+        "harvey-figma-247-6766"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "The SDK's injected mention-chip rule is keyed [email='<address>'], and a seeded chip carries only class + data-id — so that rule is a SELF-MENTION highlight that cannot match a seeded chip at all. The specificity worry it creates is real but far narrower than it looks.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "A mention of user1 seeded while signed in as user1 still computed #227277 / weight 500 / transparent background.",
+      "seenOn": [
+        "harvey-figma-247-6766"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "Velt's composer inserts its mention chip with an INLINE style='color: var(--velt-accent)', so a design colour on .vc-composer-input span.velt-mention needs !important. Separately, velt-autocomplete-chip inside a POSTED chip renders shadow-dom='true', so only inherited properties cross — colour and weight work, background/padding/radius aimed inside are silently dropped.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Computed rgb(98,93,245) before the override, rgb(34,114,119) after.",
+      "seenOn": [
+        "harvey-figma-247-6766"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "Read an overlay's open state from the SDK's own published aria-expanded, not from a token proxy over the composer text stream. A trailing-@ proxy scored 6/8 transitions (it misses the close on pick and on Escape); aria-expanded scored 8/8. useContactSelected() never emitted on a real option pick at this version.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Eight-transition table driven live: prelude, type, pick, type sentence, Cancel, re-open, Escape, Cancel.",
+      "seenOn": [
+        "harvey-figma-247-6766"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "When a design frame draws an EMPTY surface, drive the empty state rather than accepting the rows as missing. Applying a filter that matches nothing empties the list through Velt's own gating and makes the placeholder render, binding every design node the frame draws. This is the difference between a block at 48 residual rows and the same block at 7.",
+      "category": "pipeline-trap",
+      "scope": "general",
+      "verified": true,
+      "evidence": "flow 48 -> 7 and flow-2 23 -> 4 after adding the filter idiom to their drives; 32 placeholder rows bound.",
+      "seenOn": [
+        "harvey-figma-247-6766"
+      ],
+      "destination": "guide"
+    },
+    {
+      "kind": "general",
+      "statement": "A design value inherited from the wrong source can cascade through dozens of measured rows. The mention panel was inheriting the composer input's width from Material's anchoring instead of taking the design's own declared 185px — one value, 24 width rows.",
+      "category": "pipeline-trap",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Setting the declared width cleared 24 rows across the two picker blocks.",
+      "seenOn": [
+        "harvey-figma-247-6766"
+      ],
+      "destination": "guide"
+    },
+    {
+      "kind": "general",
+      "statement": "Bind a caret's colour to caret-color, never to background on the contenteditable. A background binding paints nothing and can never read back, so it looks like an unfixable UA gap when the value is in fact already applied correctly. Only the caret's BOX is genuinely unmeasurable, because no DOM node carries it.",
+      "category": "pipeline-trap",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Rebinding the row to caret-color cleared it in both composer blocks; the declaration was already in the stylesheet verbatim.",
+      "seenOn": [
+        "harvey-figma-247-6766"
+      ],
+      "destination": "guide"
+    },
+    {
+      "kind": "general",
+      "statement": "Chrome serialises `text-box: trim-both cap alphabetic` as `cap alphabetic`, so a delta row asserting the shorthand can never match even when the property is applied. Assert the longhands.",
+      "category": "pipeline-trap",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Twelve initials rows across the phase cleared by moving off the shorthand.",
+      "seenOn": [
+        "harvey-figma-247-6766"
+      ],
+      "destination": "script"
+    },
+    {
+      "kind": "general",
+      "statement": "A family smoke spec that ships `checks` prose but no executable `steps` runs 0/0 and reports ok:true — a vacuous pass that certifies nothing. Any phase whose smoke specs are still scaffold has no R30 coverage at all.",
+      "category": "pipeline-trap",
+      "scope": "general",
+      "verified": true,
+      "evidence": "All four phase-3 family smokes shipped as scaffold and self-certified until real steps were written.",
+      "seenOn": [
+        "harvey-figma-247-6766"
+      ],
+      "destination": "script"
+    },
+    {
+      "kind": "general",
+      "statement": "verdict-gate-blocks.mjs skips the R30 family-smoke check for families whose blocks are all terminal (GAP/BLOCKED), so a phase where every block is accounted can exit PASS with a FAILING smoke. The verdict is not a substitute for reading the smoke results.",
+      "category": "pipeline-trap",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Phase 3 exits 0 with fam-comment-component at 0/3.",
+      "seenOn": [
+        "harvey-figma-247-6766"
+      ],
+      "destination": "script"
+    },
+    {
+      "kind": "general",
+      "statement": "Guard event.target before calling Element methods on it. A document-level keydown handler that casts to HTMLElement and calls closest() throws whenever a key event is delivered to the Document itself, which any programmatic reset produces.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "The only console error in the phase; an instanceof Element guard cleared all 8 blocks and all 12 smokes to zero.",
+      "seenOn": [
+        "harvey-figma-247-6766"
+      ],
+      "destination": "guide"
+    },
+    {
+      "kind": "mappings",
+      "element": "mention picker rows",
+      "velt": "Velt's own CDK overlay (mat-option.mat-mdc-option), styled in CSS — NOT composable",
+      "scope": "general",
+      "verified": true,
+      "note": "velt-autocomplete-panel refuses children; a hand-placed panel spawns a second overlay.",
+      "evidence": "evidence/autocomplete-panel-composition-gap.md"
+    },
+    {
+      "kind": "corrections",
+      "what": "read an overlay's open state from the SDK's published aria-expanded",
+      "scope": "general",
+      "verified": true,
+      "note": "A trailing-@ token proxy misses the close on pick and on Escape.",
+      "evidence": "8/8 vs 6/8 across a driven transition table."
+    },
+    {
+      "kind": "corrections",
+      "what": "drive the EMPTY state when the design frame draws an empty surface",
+      "scope": "general",
+      "verified": true,
+      "note": "A filter that matches nothing empties the list through Velt's own gating.",
+      "evidence": "flow 48 -> 7 residual rows."
+    },
+    {
+      "kind": "gaps",
+      "what": "The mention picker is not composable from primitives",
+      "scope": "general",
+      "verified": true,
+      "note": "velt-autocomplete-panel refuses children and a hand-placed instance spawns a duplicate CDK overlay; the manifest's acceptsChildren:true is wrong at this version.",
+      "evidence": "/agent/repos/ai-harvey-implementation/.velt-customize/phases/WYAWuEm8DrIk-247-6766/evidence/autocomplete-panel-composition-gap.md"
+    },
+    {
+      "kind": "gaps",
+      "what": "A comment cannot be posted from the sidebar composer through the UI",
+      "scope": "general",
+      "verified": true,
+      "note": "Third independent confirmation of phase 1's dialogInstanceId blocker. Velt's own submit primitive is mounted, enabled and hit-testable; a real click creates no annotation and logs nothing. Reproduces with the entire stylesheet emptied.",
+      "evidence": "/agent/repos/ai-harvey-implementation/.velt-customize/phases/WYAWuEm8DrIk-247-6766/builder-discovered-defects.json"
+    }
+  ]
+}
