@@ -1,0 +1,90 @@
+{
+  "runId": "WYAWuEm8DrIk-658-34320-2026-08-17T09-08-52Z",
+  "phaseId": "WYAWuEm8DrIk-658-34320",
+  "app": "harvey-demo-next (Privado)",
+  "mode": "strictly primitives",
+  "node": "658-34320",
+  "pluginSha": "9de2463",
+  "publishedAt": "2026-08-17T09:08:52.619Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "empty-placeholder-v2-rejects-children",
+      "statement": "velt-comment-sidebar-empty-placeholder-v2 REJECTS customer children on the develop SDK even though manifest/velt-primitives.json lists it as accepting. A marker child does not survive; the element renders its own ~14 chars. Treat the manifest as a candidate list and confirm any container against a live probe before composing into it.",
+      "category": "sdk-gotcha",
+      "evidence": "Live probe on the upgraded element: marker child absent after upgrade. Manifest and phase-1 code both said accepts.",
+      "seenOn": [
+        "privado-harvey-658-34320"
+      ],
+      "destination": "guide",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "velt-moves-children-single-root",
+      "statement": "Velt MOVES customer children into its own tree rather than cloning them, so a primitive given a multi-root fragment throws \"removeChild: node is not a child of this node\" and can put a dev server into a full-reload loop. Always return exactly ONE stable root element per primitive.",
+      "category": "sdk-gotcha",
+      "evidence": "A two-root fragment on the thread card reproduced the removeChild throw and the reload loop; collapsing to one root fixed it.",
+      "seenOn": [
+        "privado-harvey-658-34320"
+      ],
+      "destination": "guide",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "toggle-reply-stops-propagation",
+      "statement": "velt-comment-dialog-toggle-reply calls stopPropagation on its click, so React delegated onClick handlers never fire for anything wrapping it. Use a capture-phase native listener to observe the click without displacing Velt own handler. It also self-renders a live \"N reply/replies\" label with no host prop, but does NOT render the design avatar group.",
+      "category": "sdk-gotcha",
+      "evidence": "Delegated onClick never fired; capture-phase listener works and Velt expansion still functions.",
+      "seenOn": [
+        "privado-harvey-658-34320"
+      ],
+      "destination": "guide",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "comment-mutators-take-request-objects",
+      "statement": "resolveCommentAnnotation and assignUser take a REQUEST OBJECT, not a bare annotation id: {annotationId} and {annotationId, assignedTo: UserContact} per comment-actions.data.model.d.ts. Passing the bare string RESOLVES WITHOUT ERROR AND DOES NOTHING - a silent no-op that reads as \"the mutating actions are unverified upstream\" when it is really a call-shape bug. Verified: the object form flips status Open->Resolved and populates resolvedByUserId.",
+      "category": "sdk-gotcha",
+      "evidence": "Bare-string calls returned cleanly with status unchanged across two snapshot runs; object form flipped status and rendered the resolved card immediately.",
+      "seenOn": [
+        "privado-harvey-658-34320"
+      ],
+      "destination": "guide",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "validate-drive-steps-missed-missing-companion-field",
+      "statement": "DRIVE_VOCAB declares selectUser:[\"text\"] and validateDriveSteps exists to hard-fail a missing companion field BEFORE a browser boots, but a planner-authored {action:selectUser, user:\"User 1\"} passed every gate and failed at runtime on all 16 blocks (\"selectUser undefined did not stick\"), costing a full 5-minute snapshot run. The pre-loop validator needs to reject unknown/missing companion keys, not just unknown actions.",
+      "category": "pipeline-trap",
+      "evidence": "scaffold-primitives --lint exit 0 and dom-snapshot 0/16 with the same error on every block.",
+      "seenOn": [
+        "privado-harvey-658-34320"
+      ],
+      "destination": "script",
+      "verified": true
+    },
+    {
+      "kind": "gaps",
+      "scope": "general",
+      "key": "selectuser-matches-option-text-not-value",
+      "statement": "selectUserRobust matches the host sign-in <select> on option TEXT. Any app whose option labels are descriptive (here \"User 1 - member of owner-org-1, viewing owner-org-1\") can never be matched by a plain user name, and the failure is reported as a hydration race, which sends debugging the wrong way. Prefer matching by option VALUE, or fall back to it.",
+      "category": "pipeline-trap",
+      "evidence": "selectUser \"User 1\" failed 3 attempts on a page where the select was present and enabled; an idempotent value-based sign-in worked immediately.",
+      "seenOn": [
+        "privado-harvey-658-34320"
+      ],
+      "destination": "script",
+      "verified": true
+    }
+  ]
+}
