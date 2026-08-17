@@ -1,0 +1,220 @@
+{
+  "runId": "WYAWuEm8DrIk-250-7804-2026-08-17T12-21-17Z",
+  "phaseId": "WYAWuEm8DrIk-250-7804",
+  "app": "ai-harvey-implementation",
+  "mode": "strictly primitives",
+  "node": "250-7804",
+  "pluginSha": "9de2463",
+  "publishedAt": "2026-08-17T12:21:17.862Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "general",
+      "statement": "Hand-composed action rows inside a sidebar-hosted card are inert for any SDK action whose implementation is dialog-scoped. Edit opens nothing because the SDK's edit mode needs a dialogInstanceId and a card composed inside velt-comments-sidebar-v2 inherits the sidebar's local UI state, which has none. This is the same root cause as the page-mode composer's silent submit failure.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Real pointer click on the Edit row: handler runs, zero contenteditable appears in the card, text byte-identical after reload. Copy link and Delete on the same menu behave differently, so it is not a projection problem.",
+      "seenOn": [
+        "harvey-figma-250-7804",
+        "harvey-figma-611-31307"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "Hand-placed children are projected INSIDE the primitive's default template div, and that div is where the SDK's (click) binding lives — so composing your own markup into an action row does NOT cost you the binding. The earlier hypothesis that children replace the click-owning node is wrong; going childless would cost every contract class for no behavioural gain.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "CDP reports the click listener on velt-comment-dialog-options-dropdown-content-edit > div with our .vc-options-item as its child. Copy link works unchanged with children in place.",
+      "seenOn": [
+        "harvey-figma-250-7804"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "Where an SDK action row does not fire, the published action hooks are the supported route for customer-owned interactivity: useDeleteCommentAnnotation drove a Delete that the SDK's own row never performed, and the deletion persisted across a reload.",
+      "category": "mapping-pattern",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Thread count 3 -> 2 on a real click; after a full reload drive the seeded thread is gone and both design threads are intact.",
+      "seenOn": [
+        "harvey-figma-250-7804"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "A hand-composed list must read data.filteredAnnotations from getCommentSidebarConfig(), not useCommentAnnotations(), or the sidebar's own filter state changes nothing on screen. data.systemFilteredData appears in the type model but is NOT emitted at 6.0.0-beta.15. The getter is an Observable; getCommentSidebarConfig is also missing from CommentElement's declared type, so the call needs a narrow cast.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "After the rewire, setCommentSidebarFilters took the visible card count 1 -> 0 -> 1. Velt also hides RESOLVED threads from filteredAnnotations by default.",
+      "seenOn": [
+        "harvey-figma-250-7804"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "Style a revealed-on-hover control with opacity:0 at rest, never display:none. display:none leaves the control at a 0x0 box, so no real pointer click can reach it and every interaction drive times out — the surface looks right and is dead.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "With display:none the resolve and kebab controls measured {0,0,0,0} with topmost 'header.hw-topbar' and the family smoke scored 2/5 with three timeouts; with opacity:0 it scored 5/5.",
+      "seenOn": [
+        "harvey-figma-250-7804"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "Key an interaction state off a data-* attribute you set from React, not off :hover. Playwright's element screenshot clears Chrome's native :hover, so a :hover-keyed rule is gone by capture time and the state records as unreachable. Dispatching mouseover to drive onMouseEnter sets component state that survives the screenshot.",
+      "category": "pipeline-trap",
+      "scope": "general",
+      "verified": true,
+      "evidence": "dom-snapshot pass 1 returned 8/9 with the hover block stateUnreachable; after the attribute-driven fix, three consecutive passes returned 9/9.",
+      "seenOn": [
+        "harvey-figma-250-7804"
+      ],
+      "destination": "guide"
+    },
+    {
+      "kind": "general",
+      "statement": "A z-index on an overlay panel is inert if any ancestor creates a stacking context. A transform-centred trigger button (top:50% + translateY(-50%)) is the common culprit; centre with top:0; bottom:0; margin-block:auto instead, which produces the identical box with no stacking context.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "With the transform in place, elementFromPoint at two of the four filter rows returned thread-card nodes rather than the panel despite z-index:40; after the swap all four row centres hit inside the panel.",
+      "seenOn": [
+        "harvey-figma-250-7804"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "scaffold-primitives leaves browser.surfaceSelector at the FAMILY default, which is wrong for any block whose surface is not the family's root element. Every child box is then rebased against the wrong origin and the block reports a uniform offset on every row — ~100 phantom diffs on one block. The tell is the block's own 'surface' row reporting a non-zero box against a spec of 0,0.",
+      "category": "pipeline-trap",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Four blocks hit this: the three flows (default .vc-comment-component vs the real .hw-rail-inner, uniform -16/-120) and a menu block (default .vc-comment-component vs .vc-options-dropdown, uniform +22/+42). Fixing the four cut 451 -> 203 delta rows in combination with the style fixes.",
+      "seenOn": [
+        "harvey-figma-250-7804",
+        "harvey-figma-611-31307"
+      ],
+      "destination": "script"
+    },
+    {
+      "kind": "general",
+      "statement": "When a design nests a padded ROW around a padded content PLATE, both nodes' declarations must sit on their own element. Putting both on the plate and faking the row's inset with a margin leaves the row host unpainted, and delta-compare's paint-descent then walks past it and reports the plate's numbers as the row's — a whole cluster of phantom padding/radius/width diffs.",
+      "category": "pipeline-trap",
+      "scope": "general",
+      "verified": true,
+      "evidence": "The options and filter menu rows: moving the row values onto the primitive host and keeping the plate values on .vc-options-item / .vc-filter-item cleared the cluster with zero pixel change.",
+      "seenOn": [
+        "harvey-figma-250-7804"
+      ],
+      "destination": "guide"
+    },
+    {
+      "kind": "general",
+      "statement": "A negative Figma auto-layout gap is not expressible as CSS (the parser drops it), but when the node has three children the two negative gaps around the middle child are exactly a negative margin on that child. The value can never read back; the effect can be exact.",
+      "category": "mapping-pattern",
+      "scope": "general",
+      "verified": true,
+      "evidence": "gap:-2px on the options panel realised as margin:-2px 0 on the divider band landed band y=76, rule y=82, Delete row y=87 and panel height 129, against a live 84/91/133.",
+      "seenOn": [
+        "harvey-figma-250-7804"
+      ],
+      "destination": "guide"
+    },
+    {
+      "kind": "general",
+      "statement": "When a design frame appears to disagree with itself about a value, check whether the two values belong to two different STATES before recording it as an assumption. The kebab glyph is 12x12 at rest and 16x16 with the menu open; the planner recorded 'the design disagrees with itself' and picked one.",
+      "category": "model-reliability",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Scoping each value to its own state via data-vc-options-open made the glyph union box equal the spec box exactly in both states (10x2 closed, 13x3 open).",
+      "seenOn": [
+        "harvey-figma-250-7804"
+      ],
+      "destination": "guide"
+    },
+    {
+      "kind": "general",
+      "statement": "The V1-scoped Minimal filter family (VeltCommentsSidebarMinimalFilterDropdown*) is exported from @veltdev/react but renders nowhere under a V2 sidebar host and is absent from the primitives manifest because it belongs to registry components-map.comment (surface comment-v1, unreachable). Under VeltCommentsSidebarV2 the filter menu is the generic SidebarV2 ContentList > Category > Item > Indicator/Label shape.",
+      "category": "mapping-pattern",
+      "scope": "general",
+      "verified": true,
+      "evidence": "With the menu open, the document contains only velt-comment-sidebar-filter-dropdown-*-v2 tags and zero minimal-family elements.",
+      "seenOn": [
+        "harvey-figma-250-7804"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "R3 is live at 6.0.0-beta.15 despite the manifest recording availability.published:false — getCommentSidebarConfig() returns a full config, which is how annotation.status ('OPEN' / 'RESOLVED') and the filter state were verified rather than assumed.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Status literal read back off a genuinely resolved annotation after driving Velt's own resolve button: { id: 'RESOLVED', name: 'Resolved' }.",
+      "seenOn": [
+        "harvey-figma-250-7804"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "mappings",
+      "element": "sidebar filter menu under a V2 host",
+      "velt": "VeltCommentSidebarV2FilterDropdownContentList > Category > Item > Indicator/Label",
+      "scope": "general",
+      "verified": true,
+      "note": "The V1 Minimal family is exported but renders nowhere under VeltCommentsSidebarV2.",
+      "evidence": "Live DOM with the menu open contains only the -v2 tags."
+    },
+    {
+      "kind": "mappings",
+      "element": "thread-card options menu",
+      "velt": "VeltCommentDialogThreadCardOptions > OptionsDropdownTrigger + OptionsDropdownContent",
+      "scope": "general",
+      "verified": true,
+      "note": "ThreadCardOptions IS the options dropdown in thread-card context (index.d.ts declares it with {Content, Trigger}), so nesting a separate OptionsDropdown inside it is redundant.",
+      "evidence": "Built and driven; the trigger opens the menu on a real pointer click via a native listener."
+    },
+    {
+      "kind": "corrections",
+      "what": "opacity:0, never display:none, for a revealed-on-hover control",
+      "scope": "general",
+      "verified": true,
+      "note": "display:none leaves a 0x0 box that no real pointer click can reach.",
+      "evidence": "Family smoke 2/5 -> 5/5."
+    },
+    {
+      "kind": "corrections",
+      "what": "browser.surfaceSelector must be the block's own surface, not the family default",
+      "scope": "general",
+      "verified": true,
+      "note": "The scaffold's family default silently rebases every child box.",
+      "evidence": "Four blocks, uniform offsets, ~100 phantom rows."
+    },
+    {
+      "kind": "gaps",
+      "what": "Edit is inert on a hand-composed sidebar card",
+      "scope": "general",
+      "verified": true,
+      "note": "The SDK's edit mode is dialog-scoped; a card composed inside velt-comments-sidebar-v2 has no dialogInstanceId.",
+      "evidence": "/agent/repos/ai-harvey-implementation/.velt-customize/phases/WYAWuEm8DrIk-250-7804/builder-findings-fam-comment-component.json"
+    },
+    {
+      "kind": "gaps",
+      "what": "filterState.sortBy has no public setter",
+      "scope": "general",
+      "verified": true,
+      "note": "The date/unread sort vocabulary is not settable from CommentElement, and the host's sortBy prop is a different vocabulary (lastUpdated/createdAt).",
+      "evidence": "/agent/repos/ai-harvey-implementation/.velt-customize/phases/WYAWuEm8DrIk-250-7804/builder-findings-fam-minimal-filter-dropdown.json"
+    }
+  ]
+}
