@@ -1,0 +1,234 @@
+{
+  "runId": "WYAWuEm8DrIk-369-29362-2026-08-18T12-24-58Z",
+  "phaseId": "WYAWuEm8DrIk-369-29362",
+  "app": "ai-harvey-implementation",
+  "mode": "strictly primitives",
+  "node": "369-29362",
+  "pluginSha": "9de2463",
+  "publishedAt": "2026-08-18T12:24:58.346Z",
+  "review": "candidate — promote to its strongest durable form: script fix > lint rule > guide prose. Bar: seen in ≥2 independent runs, verified against ground truth, or reviewer judgment. Contradicted → mark deprecated here (with evidence), don't delete.",
+  "learnings": [
+    {
+      "kind": "general",
+      "statement": "scaffold-primitives leaves browser.surfaceSelector at the FAMILY default, and when several blocks share a family that default resolves to the FIRST instance in the list — so every other block in the family rebases its child boxes against a foreign origin and reports a uniform offset on every row. Check it FIRST in any phase: it has now appeared five times across four phases and is the single most productive thing to audit.",
+      "category": "pipeline-trap",
+      "scope": "general",
+      "verified": true,
+      "evidence": "5 of 8 phase-4 blocks were wrong; repointing them took one block 34 -> 16 and another 49 -> 33 with no CSS change. The tell is the block's own 'surface' row reporting a non-zero box against a spec of 0,0.",
+      "seenOn": [
+        "harvey-figma-369-29362",
+        "harvey-figma-250-7804",
+        "harvey-figma-247-6766"
+      ],
+      "destination": "script"
+    },
+    {
+      "kind": "general",
+      "statement": "A probe row left at selector:null scores as '(present) -> MISSING' and counts against the whole-surface element-count, so design-only Figma auto-layout wrappers inflate the gross mismatch. Binding each to the live element it legitimately flattens onto lets the harness's own selector-collision path collapse it — which is what that path exists for.",
+      "category": "pipeline-trap",
+      "scope": "general",
+      "verified": true,
+      "evidence": "47 null rows across 8 blocks; binding them resolved 'element-count off — 12 missing' to 0 and took the flow block 47 -> 31.",
+      "seenOn": [
+        "harvey-figma-369-29362"
+      ],
+      "destination": "script"
+    },
+    {
+      "kind": "general",
+      "statement": "The Show-N-replies row is VeltCommentDialogToggleReply, not MoreReply and not HideReply. MoreReply exposes only {Count, Text} with no Icon part; HideReply's parent-owned condition is inlineCommentSectionMode. ToggleReply exposes exactly {Icon, Text, Count} and its own parentOwnedConditions names collapsedRepliesPreview.",
+      "category": "mapping-pattern",
+      "scope": "general",
+      "verified": true,
+      "evidence": "index.d.ts part lists plus the manifest's parentOwnedConditions; built and driven, projecting all three parts.",
+      "seenOn": [
+        "harvey-figma-369-29362"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "collapsedRepliesPreview is declared on IVeltCommentsProps and NOT on IVeltCommentSidebarV2Props, and it gates the built-in dialog template's decision about which comments to render — which a hand-composed list never renders. So in a primitives build the reply collapse must be re-expressed in customer code; setting the host prop changes nothing visible.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "All 52 props of IVeltCommentSidebarV2Props read; the primitive's manifest condition status is 'pending', i.e. it cannot evaluate standalone and renders whenever mounted.",
+      "seenOn": [
+        "harvey-figma-369-29362"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "VeltCommentDialogComposer needs defaultCondition={false} when placed inside a thread card, or the entire hand-placed subtree is discarded (box [0,0], 0 child elements) — even though the same primitive works without it inside VeltCommentSidebarV2PageModeComposer. Inside a card, Velt's own reply-mode condition stays false because a hand-composed build owns the card and never switches it. VeltCommentDialogToggleReply does NOT need the prop.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Measured both ways: without it innerHTML length 14 and no vc-* descendant; with it the composer card measures 283x98 with one input, one action button and one real submit button.",
+      "seenOn": [
+        "harvey-figma-369-29362"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "addCommentAnnotation persists ONLY the first comment of its comments array — a 15-comment request produces a 1-comment thread. Replies must go through el.addComment({annotationId, comment}) one at a time. AddCommentRequest is referenced by index.d.ts but not declared in the installed @veltdev/types, so the shape has to be resolved empirically.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Seeding a 15-comment thread for the 'Show 13 replies...' literal; three candidate shapes tried against a live root annotation, keeping the first that grew the thread.",
+      "seenOn": [
+        "harvey-figma-369-29362"
+      ],
+      "destination": "knowledge"
+    },
+    {
+      "kind": "general",
+      "statement": "A zero-height flex child still consumes a full gap. A wrapper that hosts an SDK action's render target (an edit composer) and is 0px tall until used therefore adds a phantom gap to the column, which cascades as a uniform y-offset on everything below. Gaps cannot be made conditional, so the wrapper must leave layout entirely while its host is childless.",
+      "category": "sdk-gotcha",
+      "scope": "general",
+      "verified": true,
+      "evidence": "The design's comment column is 20+4+40=64px; live measured 72. Removing the wrapper from layout while empty collapsed every residual y-offset in the block to one uniform +4px with a single documented cause.",
+      "seenOn": [
+        "harvey-figma-369-29362"
+      ],
+      "destination": "guide"
+    },
+    {
+      "kind": "general",
+      "statement": "When a design draws one text node and the primitive projects it as several spans, the node's declarations belong on the element that STANDS FOR the node (the flex parent carrying its full width), not on each span. Putting them on the spans leaves the real element at SDK defaults, and the word spaces the single node carried are lost — restore them as ::after content so the run measures and wraps like one node. Note that innerText cannot see pseudo content, so an element-level text assertion on such a row can never pass.",
+      "category": "pipeline-trap",
+      "scope": "general",
+      "verified": true,
+      "evidence": "The Show-N row: 7 diffs from the inner measuring 16px Inter 400 against the design's 12px Poppins 500, and the row reading 'Show13replies...' until the spaces were restored. 41 -> 25 rows.",
+      "seenOn": [
+        "harvey-figma-369-29362"
+      ],
+      "destination": "guide"
+    },
+    {
+      "kind": "general",
+      "statement": "A design frame that omits the button chrome the SDK actually renders will contradict an earlier Loop that included it. Two Loops of the same component can each be internally consistent and still disagree; adopting either regresses the other. That is a design decision to escalate, not a fix to attempt.",
+      "category": "model-reliability",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Phase 2's card head: Item h=24, Frame 62 {256,12,54,24}. Phase 4's: h=20, {270,14,40,16}, drawn as bare 16x16 icons. A working fix (gap:0 + margin-right:-24px) exists and was withheld because it regresses phase 2's passing rows.",
+      "seenOn": [
+        "harvey-figma-369-29362",
+        "harvey-figma-250-7804"
+      ],
+      "destination": "guide"
+    },
+    {
+      "kind": "general",
+      "statement": "When two Loops disagree on a single value rather than a whole composition, check whether the exported asset settles it. The kebab is 16x16 because the export's intrinsic viewBox is 16 units, so rendering it at an earlier Loop's 12px drew the dots at 2x2 instead of 3x3 — that is a resolvable supersession, unlike a geometry contradiction.",
+      "category": "mapping-pattern",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Live measurement of the three dots at 2px before and 3px after; superseded in place with a comment naming the driving blocks.",
+      "seenOn": [
+        "harvey-figma-369-29362"
+      ],
+      "destination": "guide"
+    },
+    {
+      "kind": "general",
+      "statement": "structural-invariants.mjs counts thread cards by three WIREFRAME-mode names, so in a strictly-primitives build its census reads cards=0 and it exits 2 with missing-thread-card / BLOCKED_FOR_REPLAN even though the real invariant probe passes. It only fires once a phase's blockIds match its /thread|comment-dialog|dialog/ trigger, so earlier primitives phases passed it silently at cards=0.",
+      "category": "pipeline-trap",
+      "scope": "general",
+      "verified": true,
+      "evidence": "Re-running the identical logic with primitives-mode selector lists and handing the result to the gate's own evaluator passes at cards=6, replies=2, composers=2.",
+      "seenOn": [
+        "harvey-figma-369-29362"
+      ],
+      "destination": "script"
+    },
+    {
+      "kind": "general",
+      "statement": "A family smoke brief that ships checks/expectedTexts but no executable steps reports '0/0 steps ok' and EXITS 0 — a hollow pass asserting nothing. This has now happened in two consecutive phases, so treat a 0/0 smoke as a missing suite rather than a green one.",
+      "category": "pipeline-trap",
+      "scope": "general",
+      "verified": true,
+      "evidence": "All three phase-4 briefs and all four phase-3 briefs shipped as scaffold; six real steps authored for phase 4.",
+      "seenOn": [
+        "harvey-figma-369-29362",
+        "harvey-figma-247-6766"
+      ],
+      "destination": "script"
+    },
+    {
+      "kind": "general",
+      "statement": "A gap assertion whose two anchors resolve to the same element measures nonsense silently. byName resolves the first match, so two rows sharing a name (two cards both called 'comment') produce a negative gap rather than an error.",
+      "category": "pipeline-trap",
+      "scope": "general",
+      "verified": true,
+      "evidence": "The multiple-comments inter-card gap measured -184px until the second anchor was renamed; it then measured the real 16px and passed.",
+      "seenOn": [
+        "harvey-figma-369-29362"
+      ],
+      "destination": "script"
+    },
+    {
+      "kind": "general",
+      "statement": "Design fixture data can vanish from a shared backend between phases, and it presents as blocks becoming unreachable rather than as an error. Read the UNFILTERED annotations set to tell a deletion from a filter or a resolve, and re-assert the fixture as the last drive of every stage rather than the first.",
+      "category": "pipeline-trap",
+      "scope": "general",
+      "verified": true,
+      "evidence": "A pinned 3-comment thread was absent from both annotations and filteredAnnotations on phase 4's first read, having been present at phase 3's teardown. Restoring it recovered phase 2's flows smoke from 5/6 to 6/6.",
+      "seenOn": [
+        "harvey-figma-369-29362"
+      ],
+      "destination": "guide"
+    },
+    {
+      "kind": "mappings",
+      "element": "Show N replies collapse row",
+      "velt": "VeltCommentDialogToggleReply + ToggleReplyIcon/Count/Text",
+      "scope": "general",
+      "verified": true,
+      "note": "MoreReply has no Icon part; HideReply's condition is inlineCommentSectionMode. The collapse itself is customer-owned.",
+      "evidence": "index.d.ts part lists + manifest parentOwnedConditions; built and driven."
+    },
+    {
+      "kind": "mappings",
+      "element": "selected-state inline reply composer",
+      "velt": "VeltCommentDialogComposer[defaultCondition={false}] + ComposerInput + ComposerActionButton",
+      "scope": "general",
+      "verified": true,
+      "note": "Renders and focuses; SUBMIT is mode_blocked (no dialogInstanceId in a sidebar-hosted tree).",
+      "evidence": "One bordered pill, exactly one composer input; submit probe left comment counts unchanged."
+    },
+    {
+      "kind": "corrections",
+      "what": "audit browser.surfaceSelector before treating any box row as a styling defect",
+      "scope": "general",
+      "verified": true,
+      "note": "Fifth occurrence across four phases; the family default resolves to the first instance in the list.",
+      "evidence": "5 of 8 phase-4 blocks wrong; two blocks nearly halved with no CSS change."
+    },
+    {
+      "kind": "corrections",
+      "what": "a zero-height flex child still consumes a gap",
+      "scope": "general",
+      "verified": true,
+      "note": "Remove the wrapper from layout while its host is childless.",
+      "evidence": "8px phantom column gap cascading as a y-offset on everything below."
+    },
+    {
+      "kind": "gaps",
+      "what": "Submitting from the inline reply composer is blocked",
+      "scope": "general",
+      "verified": true,
+      "note": "Fourth independent confirmation of the sidebar-hosted-composer blocker. Having an annotationId was never the missing piece; dialogInstanceId is.",
+      "evidence": "/agent/repos/ai-harvey-implementation/.velt-customize/phases/WYAWuEm8DrIk-369-29362/builder-findings-fam-comment-thread-components.json"
+    },
+    {
+      "kind": "gaps",
+      "what": "Two Loops of the same card head contradict each other",
+      "scope": "general",
+      "verified": true,
+      "note": "Phase 2 drew the actions group with button chrome, phase 4 as bare icons. A working fix exists but regresses phase 2; the canonical frame is a design decision.",
+      "evidence": "/agent/repos/ai-harvey-implementation/.velt-customize/phases/WYAWuEm8DrIk-369-29362/evidence/strictfix4-cross-phase-head-and-actions-contradiction.md"
+    }
+  ]
+}
